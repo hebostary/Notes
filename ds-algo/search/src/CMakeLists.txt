@@ -11,4 +11,4 @@ add_subdirectory(search)
 
 add_executable(demo ${DIR_SRCS})
 
-target_link_libraries(demo common search)
+target_link_libraries(demo search common)
