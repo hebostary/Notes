@@ -1,9 +1,9 @@
 #include "search/Search.hpp"
 
 int main() {
-    BinarySearchTest();
-    InsertSearchTest();
+    //BinarySearchTest();
+    //InsertSearchTest();
  
-    //BinarySortTreeTest();
+    BinarySearchTreeTest();
     //AVLBinaryTreeTest();
 }

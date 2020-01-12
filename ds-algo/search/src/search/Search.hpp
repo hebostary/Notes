@@ -8,7 +8,7 @@ using namespace std;
 void BinarySearchTest();
 void InsertSearchTest();
 
-int BinarySortTreeTest();
+int BinarySearchTreeTest();
 int AVLBinaryTreeTest();
 
 #endif
