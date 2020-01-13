@@ -1,0 +1,14 @@
+DELIMITER //
+DROP FUNCTION IF EXISTS loop_100;
+CREATE FUNCTION loop_100()
+  RETURNS INTEGER
+BEGIN
+  DECLARE result INTEGER DEFAULT 0;
+  loop_100: LOOP
+    SET result=result + 1;
+    IF result=100 THEN LEAVE loop_100;
+    END IF;
+  END LOOP loop_100;
+  RETURN result;
+END//
+DELIMITER ;
