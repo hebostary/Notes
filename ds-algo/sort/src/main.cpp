@@ -6,6 +6,6 @@ int main() {
     selectsortTest();
     mergesortTest();
     quicksortTest();
-    bucketsortTest();
+    //bucketsortTest();
     countingsortTest();
 }

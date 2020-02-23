@@ -7,8 +7,8 @@
 
 using namespace std;
 
-const int RANDOM_VECTOR_SIZE = 100000;
-const int RANDOM_INT_MAX = 100;
+const int RANDOM_VECTOR_SIZE = 20 * 10000;
+const int RANDOM_INT_MAX = 5000;
 
 void boublesortTest();
 void insertsortTest();
