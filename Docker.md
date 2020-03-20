@@ -11,6 +11,7 @@
 ## 3.2. 网络驱动（Network Drivers）
 
 ### 3.2.1. Host Driver
+
 和后面介绍的Bridge、Macvlan、Overlay Driver不同，用host driver创建的网络没有独立的网络命名空间（network namespace）。对于配置了host driver网络的所有容器，都在相同的主机网络命名空间（host network namespace）中，都直接使用主机的网络接口和IP栈。从网络的角度来看，这些容器里的应用相当于在没有容器的主机上运行多个进程，所以这些容器也不能绑定到相同的主机端口。
 ![Host Driver](https://success.docker.com/api/images/.%2Frefarch%2Fnetworking%2Fimages%2Fhost-driver.png)
 
