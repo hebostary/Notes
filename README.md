@@ -26,6 +26,14 @@
     * [MongoDB University Courses](https://university.mongodb.com/courses/catalog)
     * [MongoDB Documentation](https://docs.mongodb.com)
 
+### 分布式系统
+* RPC框架
+  * [gRPC](https://www.grpc.io/)
+* etcd
+  * [raft一致性协议.pdf](https://raft.github.io/raft.pdf)
+  * [raft动态分析](http://thesecretlivesofdata.com/raft/)
+  * [etcd v3.4文档](https://etcd.io/docs/v3.4.0/)
+
 ### 系统设计
 * 探索系统设计面试
     * [Grokking the System Design Interview](https://www.educative.io/courses/grokking-the-system-design-interview)

@@ -5,7 +5,10 @@ export GOPATH:=$(dir)
 # build example
 # make module=list
 
-all: basics
+all: build run
 
-basics:
-	go run basics --module=$(module)
+build:
+	go build -o ./bin/exe exe
+
+run:
+	./bin/exe --module=$(module)
