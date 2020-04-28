@@ -12,3 +12,6 @@ build:
 
 run:
 	./bin/exe --module=$(module)
+
+escape:
+	go build -gcflags '-m -m' -o ./bin/escape perf/escape

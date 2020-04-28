@@ -32,6 +32,8 @@ import (
 
 	// demo code for 3rd framework
 	"3rd/muxdemo"
+
+	"perf/mem"
 )
 
 /*
@@ -94,7 +96,7 @@ func main() {
 
 	module_list := "module list: default, slice, mapTest, function, " +
 		"structTest, method, interfaces, error, io, goruntine, crawl, walk, " +
-		"chat, mutex, memo, memo1, word, reflect, unsafed, muxdemo"
+		"chat, mutex, memo, memo1, word, reflect, unsafed, muxdemo, mem"
 
 	switch module {
 	case "default":
@@ -139,6 +141,8 @@ func main() {
 		unsafed.Test()
 	case "muxdemo":
 		muxdemo.Test()
+	case "mem":
+		mem.Test()
 	default:
 		fmt.Println(module_list)
 	}
