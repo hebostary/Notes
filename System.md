@@ -134,6 +134,7 @@ lib64/crtn.o
 
 我们也可以手动地调用这些程序来依次编译链接（collect2参数过多，当我们执行gcc -o prog main.o swap.o时，gcc也会自动调用collect2完成链接）。
 下面先看一下编译器的输出main.s，汇编器会根据.s中的符号（包括函数main、swap和变量buf）来构造符号表：
+
 ```c
 [root@hunk c7]# cat main.s 
         .file   "main.i"
@@ -180,7 +181,7 @@ buf:
 
 ELF文件的基本格式：
 
-![ELF格式](https://github.com/hebostary/Notes/blob/master/csapp_v3/png/c7/elf_format.png?raw=true)
+![ELF格式](https://note.youdao.com/yws/api/personal/file/10FBEC087B7B4249BBFB77F8F2FB3733?method=download&shareKey=340be1fa5a56e497c78e9ffcb5643ae7)
 
 
 ## 可重定位目标文件
@@ -400,14 +401,14 @@ Notes
 
 链接器解析符号引用的方法是将每个引用与它输入的可重定位目标文件中的符号表中的一个确定的符号定义关联起来。当编译器遇到一个不在当前模块定义的符号时，会假设该符号是在其它某个模块中定义的，生成一个链接器符号表条目（观察main.o中.symtab中关于swap函数的条目），并把它交给链接器处理。如果链接器在它的任何输入模块中都找不到这个被引用符号的定义，就会报错。
 
-![符号解析](https://github.com/hebostary/Notes/blob/master/csapp_v3/png/c7/symbol_resolution.png?raw=true)
+![符号解析](https://note.youdao.com/yws/api/personal/file/41550823C95F47A0A39A9F16C99B9349?method=download&shareKey=340be1fa5a56e497c78e9ffcb5643ae7)
 
 ## 重定位
 链接器完成符号解析后，就把代码中的每个符号引用和正好一个符号定义（即它的一个输入目标模块中的一个符号表条目）关联起来。并且链接器知道了它的输入目标模块中的代码节和数据节的确切大小，现在就可以开始重定位了，重定位步骤将合并输入模块，并为每个符号分配运行时地址。重定位分两个步骤：
 * 重定位节和符号定义。链接器将所有相同类型的节合并为同一类型的聚合节（比如.data），然后将运行时内存地址赋给新的聚合节，赋给输入模块定义的每个节以及每个符号。这一步完成时，程序中的每条指令和全局变量都有唯一的运行时内存地址了。
 * 重定位节中的符号引用。链接器修改代码节和数据节中对每个符号的引用，使得它们指向正确地运行时地址。链接器的这一步依赖于可重定位目标模块中称为重定位条目的数据结构（在前面我们用readelf解析main.o和swap.o的时候可以看到）。
 
-![重定位](https://github.com/hebostary/Notes/blob/master/csapp_v3/png/c7/relocation.png?raw=true)
+![重定位](https://note.youdao.com/yws/api/personal/file/54AF907415D644D79BCED355857FA6D5?method=download&shareKey=340be1fa5a56e497c78e9ffcb5643ae7)
 
 ## 可执行目标文件
 可执行目标文件包含程序加载到内存并运行它所需的所有信息：
@@ -727,7 +728,7 @@ EH_FRAME off    0x00000000000005c0 vaddr 0x00000000004005c0 paddr 0x000000000040
 * 然后通过跳转到ELF头部里的程序入口点（entry point，指向_start函数）来运行程序。
 * _start函数在系统目标文件ctrl.o中定义，对所有的C程序都一样。_start函数调用系统启动函数__libc_start_main（定义在libc.so中）。它初始化执行环境，调用用户层的main函数，处理main函数的返回值，并在需要的时候把控制返回给内核。
 
-![加载可执行目标文件](https://github.com/hebostary/Notes/blob/master/csapp_v3/png/c7/load_elf.png?raw=true)
+![加载可执行目标文件](https://note.youdao.com/yws/api/personal/file/06D55B784EED482993D2F6BB5E573368?method=download&shareKey=340be1fa5a56e497c78e9ffcb5643ae7)
 
 
 ## 动态链接共享库
@@ -735,7 +736,7 @@ EH_FRAME off    0x00000000000005c0 vaddr 0x00000000004005c0 paddr 0x000000000040
 
 比如下面的例子：
 
-![动态链接](https://github.com/hebostary/Notes/blob/master/csapp_v3/png/c7/dynamic_link.png?raw=true)
+![动态链接](https://note.youdao.com/yws/api/personal/file/DC3EAA4E9E8C4AA48ACD6B90A1BDC8B5?method=download&shareKey=340be1fa5a56e497c78e9ffcb5643ae7)
 
 基本的思路是当创建可执行文件时，静态执行一些链接，然后在程序加载时，由动态链接器执行重定位来动态完成链接过程。此时，没有任何libvector.so的代码和数据节真的被复制到可执行文件中。反之，链接器复制了一些重定位和符号表信息，它们使得运行时可以解析对libvector.so中代码和数据的引用。
 
@@ -757,7 +758,7 @@ EH_FRAME off    0x00000000000005c0 vaddr 0x00000000004005c0 paddr 0x000000000040
 计算机系统的主存被组织成一个由M个连续的字节大小的单元组成的数组，每字节都有一个唯一的物理地址（Physical Address, PA）。CPU使用这个物理地址访问内存的方式称为物理寻址。
 早期的PC使用物理寻址，数字信号处理器、嵌入式微控制器等系统仍然继续使用这种寻址方式。而现代处理器则使用下图所展示的虚拟寻址方式访问内存，使用虚拟寻址，CPU通过生成一个虚拟地址（Virtual Address, VA）来访问主存，这个地址被送到内存之前先被MMU（Memory Management Unit, MMU）翻译成适当的物理地址。
 
-![虚拟寻址](https://github.com/hebostary/Notes/blob/master/csapp_v3/png/c9/virtual_addressing.png?raw=true)
+![虚拟寻址](https://note.youdao.com/yws/api/personal/file/2B1CCFF472DA4573A6F75C27FD42882A?method=download&shareKey=340be1fa5a56e497c78e9ffcb5643ae7)
 
 支持虚拟寻址方式的则是虚拟内存系统，它是处理器、MMU、主存等硬件和操作系统相互配合的一个系统，并不是系统中单独的某个硬件或者软件。
 
@@ -781,7 +782,7 @@ EH_FRAME off    0x00000000000005c0 vaddr 0x00000000004005c0 paddr 0x000000000040
 虚拟内存系统通过一个常驻在物理内存中的叫做页表（Page Table）的数据结构来管理虚拟页和物理页，它将虚拟页映射到物理页。每次MMU中的地址翻译硬件将一个虚拟地址转换成物理地址时，都会读取页表。操作系统内核负责维护这个页表的内容，以及在磁盘与DRAM之间来回传送页。
 下图是页表的基本组织结构：
 
-![页表](https://github.com/hebostary/Notes/blob/master/csapp_v3/png/c9/page_table.png?raw=true)
+![页表](https://note.youdao.com/yws/api/personal/file/55E0B53D191B450381C4A5A7438C1729?method=download&shareKey=340be1fa5a56e497c78e9ffcb5643ae7)
 
 页表就是一个页表条目（Page Table Entry, PTE）的数组。虚拟地址空间的每个页在页表中都有一个PTE。在这张图中，假设了每个PTE是由一个有效位和n位地址字段组组成：
 * 有效位标识虚拟页是否被缓存在DRAM中。如果有效位没有被设置，空地址（null）表示虚拟页还未被分配（未分配的），否则就是虚拟页在磁盘上的起始位置（未缓存的）。
@@ -789,25 +790,26 @@ EH_FRAME off    0x00000000000005c0 vaddr 0x00000000004005c0 paddr 0x000000000040
 
 #### 页面命中（page hit）
 如下图中有效位为1的几个PTEs，CPU访问的虚拟地址（落在的虚拟页面）对应的物理页面已经被缓存到物理内存中，CPU可以直接从物理内存中读到数据字，也叫做DRAM缓存命中（DRAM cache hit）
-![页表命中](https://github.com/hebostary/Notes/blob/master/csapp_v3/png/c9/vm_page_hit.png?raw=true)
+![页表命中](https://note.youdao.com/yws/api/personal/file/C1C45A6803874CE4A4096557DAC16624?method=download&shareKey=340be1fa5a56e497c78e9ffcb5643ae7)
 
 #### 页面未命中（page miss）
 如下图，如果CPU访问的虚拟地址（落在的虚拟页面）对应的物理页面没有被缓存在物理内存中（PTE有效位为0且后面的内容不为NULL，则指向一个磁盘上的地址），则出现了页面未命中，也叫做DRAM缓存未命中（DRAM cache miss）。
 
-![缺页1](https://github.com/hebostary/Notes/blob/master/csapp_v3/png/c9/vm_page_fault1.png?raw=true)
+![缺页1](https://note.youdao.com/yws/api/personal/file/2D7882D37AFE443E9C7E89ED742ED9C9?method=download&shareKey=340be1fa5a56e497c78e9ffcb5643ae7)
 
 页面未命中会触发一个缺页异常（page fault exception），内核的缺页处理程序会选择一个牺牲页（下图中的VP4对应的物理页面，如果已经修改则先换出到磁盘），然后将需要访问的物理页面从磁盘换入到物理内存，并更新页表中的PTE（需要更新两条PTE）。
 
-![缺页2](https://github.com/hebostary/Notes/blob/master/csapp_v3/png/c9/vm_page_fault2.png?raw=true)
+![缺页2](https://note.youdao.com/yws/api/personal/file/D06F522EAC314026BDB7E2198D734B1D?method=download&shareKey=340be1fa5a56e497c78e9ffcb5643ae7)
 
 缺页处理程序处理完成后，CPU会重启开始执行的指令，不过这次就是page hit的流程了。
 
-![缺页3](https://github.com/hebostary/Notes/blob/master/csapp_v3/png/c9/vm_page_fault3.png?raw=true)
+![缺页3](https://note.youdao.com/yws/api/personal/file/90E1A71D36954D97842741E786D9F6F5?method=download&shareKey=340be1fa5a56e497c78e9ffcb5643ae7)
 
 后面会再次描述缺页处理的详细过程。
 
 如下图所示，除了有效位，页表还带有一些许可位来控制页的访问（实际的页表条目包含更多的内容）：
-![带许可位的页表](https://github.com/hebostary/Notes/blob/master/csapp_v3/png/c9/memory_protection.png?raw=true)
+![带许可位的页表](https://note.youdao.com/yws/api/personal/file/F3DE1353B9DD4888B2C2A5E18207C58F?method=download&shareKey=340be1fa5a56e497c78e9ffcb5643ae7)
+
 >* 运行在内核模式的进程可以访问任何页面，运行在用户模式的进程只允许访问部分页面。
 >* 控制用户模式进程对页面的读写权限。
 
@@ -833,7 +835,7 @@ Notes:
 
 下图展示了从虚拟地址到物理地址最简单的翻译过程：
 
-![地址翻译](https://github.com/hebostary/Notes/blob/master/csapp_v3/png/c9/address_translation.png?raw=true)
+![地址翻译](https://note.youdao.com/yws/api/personal/file/153FE65720AD4AD6A5FE8860CE90588D?method=download&shareKey=340be1fa5a56e497c78e9ffcb5643ae7)
 
 CPU中的页表基址寄存器（Page Table Base Register, PTBR，属于控制寄存器）指向当前（进程）页表。n位的虚拟地址包含两部分：
 * p位的虚拟页偏移（Virtual Page Offset, VPO）。
@@ -843,7 +845,7 @@ CPU中的页表基址寄存器（Page Table Base Register, PTBR，属于控制�
 
 页面命中时（已缓存），如下图所示，地址翻译完全由硬件完成处理。
 
-![命中翻译步骤](https://github.com/hebostary/Notes/blob/master/csapp_v3/png/c9/page_hit.png?raw=true)
+![命中翻译步骤](https://note.youdao.com/yws/api/personal/file/1C38FB5EBC5349DE9D3A9F39DF27416C?method=download&shareKey=340be1fa5a56e497c78e9ffcb5643ae7)
 
 详细执行的步骤：
 * 1. 处理器生成一个虚拟地址，并把它传给MMU。
@@ -855,7 +857,7 @@ CPU中的页表基址寄存器（Page Table Base Register, PTBR，属于控制�
 
 页面未命中时（page miss），如下图所示，其处理要求硬件和操作系统内核协作完成。
 
-![未命中翻译步骤](https://github.com/hebostary/Notes/blob/master/csapp_v3/png/c9/page_fault_handling.png?raw=true)
+![未命中翻译步骤](https://note.youdao.com/yws/api/personal/file/1ED17CDD9CDF4F9888B903D22AFB83D4?method=download&shareKey=340be1fa5a56e497c78e9ffcb5643ae7)
 
 详细执行的步骤：
 * 1. 处理器生成一个虚拟地址，并把它传给MMU。
@@ -874,7 +876,7 @@ CPU中的页表基址寄存器（Page Table Base Register, PTBR，属于控制�
 * 高速缓存无须处理保护问题，访问权限的检查是地址翻译的一部分。
 
 下图展示了物理寻址的高速缓存和虚拟内存相结合的情况，其关键思路：地址翻译发生在高速缓存查找之前。需要注意的是，和其他数据字一样，PTE也可以被缓存在SRAM中。
-![高速缓存结合虚拟内存](https://github.com/hebostary/Notes/blob/master/csapp_v3/png/c9/page_hit_with_cache.jpg?raw=true)
+![高速缓存结合虚拟内存](https://note.youdao.com/yws/api/personal/file/A7E8CD2BA22F4C14AAC0FE548821DB58?method=download&shareKey=340be1fa5a56e497c78e9ffcb5643ae7)
 
 ### TLB如何加速地址翻译？
 每次CPU产生一个虚拟地址，MMU就必须从高速缓存/内存查询一个PTE，其时间开销分为两种情况：
@@ -886,7 +888,7 @@ MMU中包含一个关于PTE的小缓存，称为翻译后备缓冲器（Translat
 TLB中的PTE条目通过组选择的索引和行匹配的标记来查询，而索引和标记字段均从虚拟地址的VPN中提取。如果TLB有T=2^t个组，那么TLB索引（TLBI）是由VPN中的t个最低位组成，而TLB标记（TLBT）是由VPB中剩余的位组成。
 
 下图展示了MMU从TLB查询PTE命中时的情况：
-![TLB命中](https://github.com/hebostary/Notes/blob/master/csapp_v3/png/c9/tlb_hit.jpg?raw=true)
+![TLB命中](https://note.youdao.com/yws/api/personal/file/37171C641C4E45C5B6D0F985A40EFB7D?method=download&shareKey=340be1fa5a56e497c78e9ffcb5643ae7)
 
 有了TLB之后，MMU查询PTE的顺序就变为：TLB缓存 -> SRAM高速缓存 -> DRAM主存。如果PTE在TLB中命中，则所有的地址翻译都是在芯片上的MMU中执行的，效率非常高。
 
@@ -907,9 +909,10 @@ TLB中的PTE条目通过组选择的索引和行匹配的标记来查询，而�
 则我们一共需要(2^32 / 2^12) * 2^2 = 2^22（字节）= 4MB，也就是需要一个4MB的页表驻留在内存中。对于地址空间为64位的系统而言，问题将更为复杂。
 
 解决页表占用空间的问题需要引入具有层次结构的多级页表，比如下面的2级页表：
-![2级页表](https://github.com/hebostary/Notes/blob/master/csapp_v3/png/c9/two_level_pg.jpg?raw=true)
+![2级页表](https://note.youdao.com/yws/api/personal/file/ED86D991C77B492EB44A4E33091B0B66?method=download&shareKey=340be1fa5a56e497c78e9ffcb5643ae7)
 图中假设了此时虚拟地址空间中的结构：内存前2K个页面分配给了代码和数据，接下来的6K个页面还未分配，接下来的1个页面分配给了用户栈。
 一级页表的每个PTE负责映射虚拟地址空间中的一个4MB的片（chunk），每个片由1024个连续的页面组成。假设地址空间为4GB，则1024个PTE足够。
+
 > * 如果片i中的每个页面都未被分配，则一级PTEi则为空（图中片2-7）。
 > * 如果片i中至少有一个页是分配的，那么一级PTEi就指向一个二级页表的基址（图中片0、1、8）。
 二级页表中的每个PTE负责映射一个4KB的虚拟内存页面。
@@ -919,7 +922,7 @@ TLB中的PTE条目通过组选择的索引和行匹配的标记来查询，而�
 > * 只有一级页表才总是驻留在内存中。虚拟内存系统再需要时创建、页面调入或调出二级页表，这就减少了主存压力，只有最经常使用的二级页表才需要缓存在主存中。
 
 下图展示了k级页表层次结构的地址翻译，虚拟地址被划分成k个VPN和1个VPO，每个VPNi都是到第i级页表的索引（或者说偏移量），而前面的页表（1到k-1）中的PTE都指向下一级某个页表的基址，只有第k级的页表中的PTE包含某个物理页面的PPN，或者一个磁盘块的地址。
-![多级页表](https://github.com/hebostary/Notes/blob/master/csapp_v3/png/c9/multi_level_pt.jpg?raw=true)
+![多级页表](https://note.youdao.com/yws/api/personal/file/FA2AF03E5B4A460C8C9A9E51F176054E?method=download&shareKey=340be1fa5a56e497c78e9ffcb5643ae7)
 为了构造物理地址，在确定PPN之前，MMU必须访问k个PTE。对于只有一级的页表结构，PPO和VPO是相同的。由于TLB将不同层次上页表的PTE缓存起来，所以实际上带多级页表的地址翻译并不比单级页表慢很多。
 
 ### 案例分析-Core i7/Linux地址翻译
@@ -929,7 +932,8 @@ TLB中的PTE条目通过组选择的索引和行匹配的标记来查询，而�
 * CR3控制寄存器指向第一级页表（L1）的起始位置，CR3的值是每个进程上下文的一部分，每次上下文切换时，CR3的值都会被恢复。
 
 下图展示了Core i7内存系统地址翻译的情况：
-![Core i7](https://github.com/hebostary/Notes/blob/master/csapp_v3/png/c9/e2e_core_i7_trans.jpg?raw=true)
+![Core i7](https://note.youdao.com/yws/api/personal/file/3F910E12B5B34FFDB227E1BEE30B14A6?method=download&shareKey=340be1fa5a56e497c78e9ffcb5643ae7)
+
 > * CO: Byte offset within cache line
 > * CI: Cache index
 > * CT: Cache tag
@@ -937,7 +941,7 @@ TLB中的PTE条目通过组选择的索引和行匹配的标记来查询，而�
 ## Linux虚拟内存系统***
 Linux为每个进程维护了一个单独的虚拟地址空间，下图是x86-64 Linux系统进程地址空间的组织结构：地址空间底部保留给用户程序，包括通常的代码、数据、堆和栈段，代码段总是从虚拟地址0x400000开始。地址空间顶部（从2^48-1开始）保留给内核（操作系统常驻内存部分），这部分对用户代码不可见。
 
-![linux_virtual_memory](https://github.com/hebostary/Notes/blob/master/csapp_v3/png/c9/linux_virtual_memory.png?raw=true)
+![linux_virtual_memory](https://note.youdao.com/yws/api/personal/file/4313DD729BA5414EB21C1F35A88CEAF4?method=download&shareKey=340be1fa5a56e497c78e9ffcb5643ae7)
 
 * 内核虚拟内存包含内核中的代码和数据，内核虚拟内存的某些区域被映射到所有进程共享的物理页面。
 * 内核虚拟内存的其它区域包含每个进程都不相同的数据，比如页表、内核在进程的上下文中执行代码时使用的栈，以及记录虚拟地址空间的各种数据结构。
@@ -948,7 +952,7 @@ Linux将虚拟内存组织成一些区域（area，也叫做段）的集合，�
 内核为系统中的每个进程维护一个单独的任务结构（源码中的：task_struct），这个任务结构包含或者指向内核运行该进程所需要的所有信息，包括PID、指向用户栈的指针、可执行目标文件的名字，以及程序计数器（PC）等。
 下图强调了其中关于进程虚拟内存区域的数据结构：
 
-![linux_vm_area](https://github.com/hebostary/Notes/blob/master/csapp_v3/png/c9/linux_vm_area.png?raw=true)
+![linux_vm_area](https://note.youdao.com/yws/api/personal/file/EFF5A0BC4ED444A7AEE7A151665CE8FF?method=download&shareKey=340be1fa5a56e497c78e9ffcb5643ae7)
 
 task_struct中的一个条目指向mm_struct，它描述了虚拟内存的当前状态。这里重点关注pgd和mmap两个字段：
 * pgd指向第一级页表（页全局目录）的基址。当内核运行这个进程时，就将pgd存放在CR3控制寄存器中。
@@ -966,7 +970,7 @@ vm_next：指向链表中下一个区域结构。
 * 开始处理缺页：选择一个牺牲页面（如果这个牺牲页面被修改过，则需要先交换出去），换入新的页面并更新页表。当缺页处理程序返回时，CPU重新启动引起缺页的指令，这条指令将再次发送A到MMU做地址翻译，只是这次可以翻译成可用的物理地址，而不会再引起缺页中断。
 
 下图展示了其中三种情况：
-![linux_page_fault_handling](https://github.com/hebostary/Notes/blob/master/csapp_v3/png/c9/linux_page_fault_handling.jpg?raw=true)
+![linux_page_fault_handling](https://note.youdao.com/yws/api/personal/file/C889F58C5D0D47F19E7064FC85091D0A?method=download&shareKey=340be1fa5a56e497c78e9ffcb5643ae7)
 
 
 ## 内存映射***
@@ -986,8 +990,8 @@ Linux通过将一个虚拟内存区域与一个磁盘上的对象（object）关
 > * 私有对象：进程对于映射到私有对象的区域（私有区域）做的改变，对于其他进程不可见，并且相应的写操作不会反映到磁盘上的原始对象中。
 
 私有对象使用写时复制（COW, Copy-On-Write）技术被映射到虚拟内存中。如下面两张图所示：对于映射私有对象的进程，相应私有区域的页表条目被标记为只读，并且区域结构被标记为"私有的写时复制"。即使对于多个进程，一个私有对象最开始在物理内存中也只保留一份副本。只要没有进程视图写它自己的私有区域，它们就可以继续共享物理内存对象中的一个单独副本。只要某个进程视图写私有区域内的某个页面，那么这个写操作就会触发一个保护故障。故障处理程序注意到保护异常是因为进程写私有区域的一个页面导致的，就会在物理内存中创建该页面的一个新副本，更新页表条目指向新副本，然后恢复这个页面的可写权限，故障处理程序返回时，CPU重新执行这个写操作。
-![linux_cow1](https://github.com/hebostary/Notes/blob/master/csapp_v3/png/c9/cow1.png?raw=true)
-![linux_cow2](https://github.com/hebostary/Notes/blob/master/csapp_v3/png/c9/cow2.png?raw=true)
+![linux_cow1](https://note.youdao.com/yws/api/personal/file/ABA6521745B546448D4121D0A40C86FC?method=download&shareKey=340be1fa5a56e497c78e9ffcb5643ae7)
+![linux_cow2](https://note.youdao.com/yws/api/personal/file/1CE44C911B14487E8BBA3D5F7A22A271?method=download&shareKey=340be1fa5a56e497c78e9ffcb5643ae7)
 
 ### 从内存映射角度理解fork函数
 fork函数被当前进程调用时，内核为新进程创建各种数据结构，并分配唯一的PID。为了给新进程创建虚拟内存，它创建了当前进程的mm_struct、区域结构（vm_area_structs）和页表的原样副本。它将两个进程中的每个页面都标记为只读，并将两个进程中的每个区域结构都标记为私有的写时复制。
@@ -1005,7 +1009,7 @@ execve函数在当前进程中加载并运行包含在可执行目标文件a.out
 > * 映射共享区域。如果a.out程序与共享对象（或目标）链接，比如C库lic.so，那么这些对象都是动态链接到这个程序的，然后再映射到用户虚拟地址空间中的共享区域内。
 > * 设置程序计数器（PC）。 execve做的最后一件事就是设置当前进程上下文中的程序计数器，使之指向代码区域的入口点。下一次调度这个进程时，将从这个入口开始执行。Linux将根据需要换入代码和数据页面（从磁盘加载到物理内存）。
 
-![linux_execve](https://github.com/hebostary/Notes/blob/master/csapp_v3/png/c9/execve.png?raw=true)
+![linux_execve](https://note.youdao.com/yws/api/personal/file/E8A9CA1401144E7CB605C31EB03B96F4?method=download&shareKey=340be1fa5a56e497c78e9ffcb5643ae7)
 
 
 ### 用mmap函数创建用户级内存映射
@@ -1017,7 +1021,7 @@ void *mmap(void *addr, size_t length, int prot, int flags,
 int munmap(void *addr, size_t length);
 ```
 mmap函数要求内核创建一个新的虚拟内存区域，最好是从地址start开始的一个区域，并将文件描述符fd指定的对象的一个连续的片（chunk）映射到这个新的区域。连续的对象片大小为length字节，从距离问阿金开始处offset字节的地方开始。start仅仅是一个暗示，通常被定义为NULL。
-![mmap](https://github.com/hebostary/Notes/blob/master/csapp_v3/png/c9/mmap.png?raw=true)
+![mmap](https://note.youdao.com/yws/api/personal/file/42DEC76CEB544DEC8C48848070AFC810?method=download&shareKey=340be1fa5a56e497c78e9ffcb5643ae7)
 
 munmap函数删除从虚拟地址start开始的，长度为length字节的区域。
 
@@ -1030,13 +1034,13 @@ munmap函数删除从虚拟地址start开始的，长度为length字节的区域
 >* 所有进程共享一张v-node表（v-node table）。
 
 图一：进程打开两个不同的文件。
-![open_files1](https://github.com/hebostary/Notes/blob/master/csapp_v3/png/c10/open_files1.png?raw=true)
+![open_files1](https://note.youdao.com/yws/api/personal/file/8563E0DEC0C142EB85883DF622C8DEDD?method=download&shareKey=340be1fa5a56e497c78e9ffcb5643ae7)
 图二：进程对同一个文件调用open两次，产生两个文件描述符，它们在打开文件表里各有一个条目，但是共享v-node表条目
-![open_files2](https://github.com/hebostary/Notes/blob/master/csapp_v3/png/c10/open_files2.png?raw=true)
+![open_files2](https://note.youdao.com/yws/api/personal/file/77662A572ECA4BDD8A73BDEE17D2D5B5?method=download&shareKey=340be1fa5a56e497c78e9ffcb5643ae7)
 图三：fork调用前
-![open_files3](https://github.com/hebostary/Notes/blob/master/csapp_v3/png/c10/open_files3.png?raw=true)
+![open_files3](https://note.youdao.com/yws/api/personal/file/30AA0A7298DC408B8DB8AF2893516834?method=download&shareKey=340be1fa5a56e497c78e9ffcb5643ae7)
 图四：fork调用后，子进程继承父进程打开的文件，共享打开文件表和v-node表中的条目。
-![open_files4](https://github.com/hebostary/Notes/blob/master/csapp_v3/png/c10/open_files4.png?raw=true)
+![open_files4](https://note.youdao.com/yws/api/personal/file/4E1576D891B94888BD5755A865F08DF1?method=download&shareKey=340be1fa5a56e497c78e9ffcb5643ae7)
 
 
 ## I/O重定向的原理
@@ -1053,14 +1057,14 @@ int dup2(int oldfd, int newfd);
 //如果newfd已经打开了，dup2会在复制oldfd之前先close掉newfd。
 ```
 Step1：shell在执行ls程序时，会创建用于执行ls的子进程p1，然后在p1中打开需要重定向的文件out.text，得到下图中的fd4。
-![io_redirection1](https://github.com/hebostary/Notes/blob/master/csapp_v3/png/c10/io_redirection1.png?raw=true)
+![io_redirection1](https://note.youdao.com/yws/api/personal/file/5F66DCD256604C78931DAE96BD87E9DE?method=download&shareKey=340be1fa5a56e497c78e9ffcb5643ae7)
 Step2：调用dup2(4, 1)将进程描述符表中的fd4的表项复制到fd1的表项，所以fd1和fd4指向了相同的磁盘文件。此后，原本写入fd1（标准输出）的内容就被写入重定向的磁盘文件了。
-![io_redirection2](https://github.com/hebostary/Notes/blob/master/csapp_v3/png/c10/io_redirection2.png?raw=true)
+![io_redirection2](https://note.youdao.com/yws/api/personal/file/E5748420909948F9A84BFDD018D2167B?method=download&shareKey=340be1fa5a56e497c78e9ffcb5643ae7)
 
 注意，这两个步骤都应该发生在shell在p1中执行execve("ls", NULL， NULL)之前。
 
 ## Unix I/O和标准I/O对比
-![io](https://github.com/hebostary/Notes/blob/master/csapp_v3/png/c10/io.png?raw=true)
+![io](https://note.youdao.com/yws/api/personal/file/B7177D1B8A9B4BD8AA429B0C5623B6F9?method=download&shareKey=340be1fa5a56e497c78e9ffcb5643ae7)
 
 Unix I/O：
 >* 通过系统调用来访问，I/O操作的对象是int型的文件描述符。
@@ -1125,15 +1129,17 @@ int fflush(FILE *fp);
 ## 基于多线程的并发编程
 ### 理解线程
 理解线程一定是在理解进程的基础上，下面是最简化的进程视图（不引入线程概念）：进程 = 进程上下文 + 代码、数据、和栈
-![process_view1](https://github.com/hebostary/Notes/blob/master/csapp_v3/png/c12/process_view1.png?raw=true)
+![process_view1](https://note.youdao.com/yws/api/personal/file/46C9DA727B0A46E6B4058BA37A328DCD?method=download&shareKey=340be1fa5a56e497c78e9ffcb5643ae7)
 
 下面是引入线程概念后的进程视图：进程 = 线程 + 代码、数据和内核上下文
-![process_view2](https://github.com/hebostary/Notes/blob/master/csapp_v3/png/c12/process_view2.png?raw=true)
+![process_view2](https://note.youdao.com/yws/api/personal/file/19BCD444E4824AB49CE724484EE66716?method=download&shareKey=340be1fa5a56e497c78e9ffcb5643ae7)
+
 * 线程有自己独立的逻辑控制流。
 * 每个进程开始生命周期时都是单一线程（主线程），在某一时刻，主线程创建一个对等线程（peer thread），从这个时间点开始，两个线程就并发的运行。
 
 下面是多线程进程的视图：
-![process_view3](https://github.com/hebostary/Notes/blob/master/csapp_v3/png/c12/process_view3.png?raw=true)
+![process_view3](https://note.youdao.com/yws/api/personal/file/1C129EF72FB54FB18295C8210878511A?method=download&shareKey=340be1fa5a56e497c78e9ffcb5643ae7)
+
 * 运行在一个进程内的所有线程共享该进程的整个地址空间的内容，包括代码、数据、堆、共享库和打开的文件。
 * 每个线程都有自己的线程上下文，包括唯一的整数线程ID、栈、栈指针SP、程序计数器PC、通用目的寄存器和条件码、调度优先级和策略、信号屏蔽字以及errno变量。尽管每个线程都有自己的栈用于保存本地变量，但是不能阻止其它线程访问线程的栈。
 * 一个进程中运行着1-n个线程，线程由内核调度，内核通过线程ID来识别线程。
@@ -1143,7 +1149,7 @@ int fflush(FILE *fp);
 * 进程控制（创建和回收）的开销差不多是线程控制（创建和回收）的两倍。在Linux系统上，前者大约花费20K个周期，后者开销大约为10K个周期。
 * 一个线程的上下文比进程的上下文小得多，所以线程的上下文切换要比进程的上下文切换快得多。
 * 如下图，线程不像进程那样按照严格的父子层次来组织，和一个进程相关的线程组成一个对等的线程池，独立于其它线程创建的线程，主线程和其它线程的区别仅在于它总是进程中第一个运行的线程。
-![process_thread](https://github.com/hebostary/Notes/blob/master/csapp_v3/png/c12/process_thread.png?raw=true)
+![process_thread](https://note.youdao.com/yws/api/personal/file/50624EF8FA0E40D4A636E8F9E91F6D41?method=download&shareKey=340be1fa5a56e497c78e9ffcb5643ae7)
 
 Notes:
 >* 一个线程可以杀死它的任何对等线程，或者等待它的任意对等线程终止。
