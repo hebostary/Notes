@@ -1,3 +1,5 @@
+package com.hebostary.corejava;
+
 import java.io.PrintWriter;
 import java.lang.reflect.Array;
 import java.math.BigInteger;
@@ -12,10 +14,13 @@ import java.util.Scanner;
  */
 public class HelloWorld {
     public static final String HELLO_STRING = "Hello Java!!!";
-    public static void main(String[] args) {
+    
+    public static void Test() {
+        Common.PrintHeader("HelloWorld");
+
         System.out.println(HELLO_STRING);
 
-        System.out.println("-----------------------------");
+        System.out.println("--------------1---------------");
         int age = 13;
         String user = "hunk" + age;
         System.out.println(user);
@@ -30,13 +35,13 @@ public class HelloWorld {
         System.out.println(user == user1); //false
         System.out.println(user1 == user2); //true
 
-        System.out.println("-----------------------------");
+        System.out.println("-------------2----------------");
         System.out.println(user2.length());//6
         System.out.println(user2.codePointCount(0, user2.length()));//6
 
         System.out.println(user2.charAt(0));//h
 
-        System.out.println("-----------------------------");
+        System.out.println("-------------3----------------");
         String str = "tringbuilder";
         StringBuilder builder = new StringBuilder();
         builder.append('S');
@@ -44,7 +49,7 @@ public class HelloWorld {
         String compString = builder.toString();
         System.out.println(compString); //Stringbuilder
 
-        System.out.println("-----------------------------");
+        System.out.println("-------------4----------------");
         String message = String.format("Hello %s %d", "java", 11);
         System.out.println(message); //Hello java 11
         System.out.printf("%tc\n", new Date()); //周日 5月 03 10:17:45 CST 2020
@@ -52,7 +57,7 @@ public class HelloWorld {
         System.out.printf("%tD\n", new Date()); //05/03/20
         System.out.printf("%tT\n", new Date()); //10:17:46
 
-        System.out.println("-----------------------------");
+        System.out.println("--------------5---------------");
         try {
             String fileString = "myFile.txt";
             //写文件
@@ -70,7 +75,7 @@ public class HelloWorld {
             //TODO: handle exception
         }
 
-        System.out.println("-----------------------------");
+        System.out.println("-------------6----------------");
         BigInteger a = BigInteger.valueOf(100);
         BigInteger b = BigInteger.valueOf(200);
         BigInteger c = a.add(b); //a + b
@@ -78,7 +83,7 @@ public class HelloWorld {
         System.out.println(c); //300
         System.out.println(d); //30600
 
-        System.out.println("-----------------------------");
+        System.out.println("-------------7----------------");
         //声明一个数组变量，但是并未将其初始化为一个真正的数组，在调用new初始化之前不能使用
         int[] a0;
         //使用new运算符创建数组：
