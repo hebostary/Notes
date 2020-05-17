@@ -708,7 +708,7 @@ swap(a, b);
 
 实际上，上面的调用代码并没有改变存储在变量a和b中的对象引用，无法达到交换a和b的目的。swap方法的参数x和y被初始化为两个对象引用的拷贝，这个方法交换的是这两个拷贝，方法调用结束后，这两个拷贝也就被自动释放。
 
-这个例子说明，Java对对象采用的不是引用调用，实际上，对象引用调用是按值传递的。也就意味着，一个方法不能让对象参数引用一个新的对象。
+这个例子说明，Java对对象采用的不是引用调用，实际上，对象引用调用是按**值传递**的。也就意味着，一个方法不能让对象参数引用一个新的对象。
 
 ### 对象构造
 
@@ -953,7 +953,885 @@ public class Employee {
 
 ## 继承
 
-# Java接口
+通过一个最简单的例子理解类继承：
+
+```java
+package com.hebostary.corejava;
+
+public class Manager extends Employee {
+    //子类继承父类的方法和域，也可以添加自己的方法和域
+    private double bonus;
+
+    public  Manager(String n, double s, double b) 
+    {
+        //通过super调用父类中的构造器方法
+        //使用super调用构造器的语句必须是子类构造器的第一条语句
+        super(n, s);
+        bonus = b;
+    }
+
+    public void setBonus(double b) {
+        bonus = b;
+    }
+
+    //覆盖父类中的方法实现
+    public double getSalary()
+    {
+        //子类中无法直接访问父类中的private实例域
+        //通过super来调用父类中的public方法
+        double baseSalary = super.getSalary();
+        return baseSalary + bonus;
+    }
+
+    public static void Test() {
+        Common.PrintHeader("Manager");
+        Employee[] staff = new Employee[3];
+        staff[0] = new Manager("Hunk", 6000, 3000);
+        staff[1] = new Employee("Jack", 7000);
+        staff[2] = new Employee("Harry", 8000);
+        for (Employee e : staff) {
+            System.out.printf("%s's total salary: %8.2f.\n", e.getName(), e.getSalary());
+        }
+    }
+}
+```
+
+请注意， 尽管在foreach循环中将 e 声明为 Employee 类型，但实际上 e 既可以引用 Employee 类型的对象，也可以引用 Manager 类型的对象。当 e 引用 Employee 对象时， e.getSalary( ) 调用的是 Employee 类中的 getSalary 方法；当e 引用 Manager 对象时，e.getSalary( ) 调用的是 Manager 类中的 getSalary 方法。虚拟机知道
+e 实际引用的对象类型，因此能够正确地调用相应的方法。
+
+> 关键字this有两个用途：1.引用隐式参数；2.调用该类的其它构造器。类似地，super关键字也有两个用途：1.调用超类的方法；2.调用超类的构造器。在调用构造器的时候， 这两个关键字的使用方式很相似。调用构造器的语句只能作为另一个构造器的第一条语句出现。 构造参数既可以传递给本类 （ this) 的其他构造器， 也可以传递给超类（super ) 的构造器。  
+
+### 继承层次
+
+继承并不仅限于一个层次，而是可以任意派生。在继承层次中， 从某个特定的类到其祖先的路径被称为该类的继承链 ( inheritance chain) 。
+
+> 和C++不同，Java 不支持多继承。  
+
+### 多态
+
+一个对象变量（例如， 变量 e ) 可以指示多种实际类型的现象被称为**多态（ polymorphism)**。在运行时能够自动地选择调用哪个方法的现象称为**动态绑定（dynamic binding)**。
+
+```java
+Employee[] staff = new Employee[3];
+Manager boss =  new Manager("Hunk", 6000, 3000);
+staff[0] = boss;
+```
+
+需要注意的是，在上面的例子中，尽管staff[0]和boss变量引用了同一个Manager对象（实际上也是一个Employee对象），但编译器是将staff[0]看成Employee对象，这就意味着：
+
+```java
+boss.setBonus(2000); //OK
+//but
+staff[0].setBonus(2000); //Error
+```
+
+这是因为staff[0]声明的类型是Employee，而setBonus不是Employee类的方法。
+
+此外，也不能将一个超类的引用赋给子类变量。例如，下面的赋值是非法的 ：
+
+```java
+Manager m = staff[i]; //Error
+```
+
+因为Manager is a Employee，但是Employee not is a Manager 。
+
+在Java中，子类数组的引用可以转换成超类数组的引用，而不需要采用强制类型转换，例如：
+
+```java
+Manager[] managers = new Manager[10];
+Employee[] staff = managers; //OK
+
+staff[0] = new Employee(...); //编译器竟然允许这个赋值操作
+```
+
+**需要强调的是：staff[0]和managers[0]引用的是同一个对象**。所以，最后的赋值操作把一个普通的雇员归入经理的行列了。这可能导致严重的错误，比如调用manages[0].setBonus(1000);的时候，将会导致调用一个不存在的实例域，进而扰乱相邻存储空间的内容。
+
+>为了确保不发生这类错误，所有数组都要牢记创建它们的元素类型，并负责监督仅将类型兼容的引用存储到数组中。例如， 使用 new managers[10] 创建的数组是一个经理数组。如果试图存储一个 Employee 类型的引用就会引发 ArrayStoreException 异常。  
+
+### 阻止继承：final类和方法
+
+有时候，可能希望阻止人们利用某个类定义子类。不允许扩展的类被称为 final 类。如果在定义类的时候使用了 final 修饰符就表明这个类是 final 类。 例如， 假设希望阻止人们定义Executive类的子类，就可以在定义这个类的时候使用 final 修饰符声明。声明格式如下所示：  
+
+```java
+public final class Executive extends Manager
+{
+    //...
+}
+```
+
+> 类中的特定方法也可以被声明为final。如果这样做，子类就不能覆盖这个方法（final类中的所有方法自动地成为final方法）。实际上，域也可以被声明为final，对于final域来说，构造对象之后就不允许改变它们的值了。不过，如果将一个类声明为final，只有其中的方法自动地成为final，而不包括域。
+
+将方法或类声明为final的主要目的是：确保它们不会在子类中改变语义。比如标准库的String类就是final类，这意味着不允许任何人定义String的子类，换言之，如果有一个 String 的引用， 它引用的一定是一个 String 对象， 而不可能是其他类的对象。  
+
+### 强制类型转换
+
+在 Java 中，每个对象变量都属于一个类型。类型描述了这个变量所引用的以及能够引用的对象类型。例如， staff[i] 引用一个 Employee 对象（因此它还可以引用 Manager对象。)  
+
+将一个值存人变量时， 编译器将检查是否允许该操作。将一个子-类的引用赋给一个超类变量， 编译器是允许的。但将一个超类的引用赋给一个子类变量， 必须进行类型转换， 这样才能够通过运行时的检査。  
+
+进行类型转换的唯一原因是：在暂时忽视对象的实际类型之后， 使用对象的全部功能。 比如，我们需要将数组中引用经理的元素复原成 Manager 类， 以便能够访问新增加的所有变量 。
+
+```java
+Employee[] staff = new Employee[3];
+Manager boss =  new Manager("Hunk", 6000, 3000);
+staff[0] = boss;
+
+Manager boss = (Manager) staff[0]; //OK
+```
+
+但是，如果试图在继承链上进行向下的类型转换（超类 --> 子类），并且“ 谎报” 有关对象包含的内容，会发生什么情况呢？
+
+```java
+Manager boss = (Manager) staff[1]; //Error
+```
+
+运行这个程序时， Java 运行时系统将报告这个错误， 并产生一个 ClassCastException异常。 如果没有捕获这个异常，那么程序就会终止。因此，应该养成这样一个良好的程序设计习惯： 在进行类型转换之前，先查看一下是否能够成功地转换。这个过程简单地使用instanceof 操作符就可以实现。 例如：  
+
+```java
+if (staff[1] instanceof Manager)
+{
+    boos = (Manager)staff[1];
+    ...
+}
+```
+
+>  实际上，通过类型转换调整对象的类型并不是一种好的做法。在我们列举的示例中，大多数情况并不需要将 Employee 对象转换成 Manager 对象， 两个类的对象都能够正确地调用getSalary 方法，这是因为实现多态性的动态绑定机制能够自动地找到相应的方法。只有在使用 Manager 中特有的方法时才需要进行类型转换， 例如， setBonus 方法。如果鉴于某种原因，发现需要通过 Employee 对象调用 setBonus 方法， 那么就应该检查一下超类的设计是否合理。重新设计一下超类，并添加 setBonus方法才是正确的选择。请记住，只要没有捕获*ClassCastException*异常，程序就会终止执行。 在一般情况下，应该尽量少用类型转换和*instanceof*运算符。  
+>
+> Java的类型转换处理过程类似于C++的dynamic_cast操作，它们之间只有一点重要的区别： 当类型转换失败时， Java 不会生成一个 null 对象，而是抛出一个异常。  
+>
+> ```c++
+> Manager* boos = dynamic_cast<Manager*>(staff[1]);
+> if (boss != NULL) ...
+> ```
+
+### 抽象类
+
+考虑Employee类的更高层次抽象，我们设计它的超类Person，每个Employee都是一个Person。每个人都有名字这样的属性，因此我们可以把name和对应的getName()方法放到Person类中，这样就可以从Person类派生出Student这样的子类。
+
+现在，再增加一个getDescription方法，它可以返回对一个人的简短描述。在Employee类中实现这个方法很容易，但是Person类中应该提供什么内容呢？除了name之外，Person类一无所知，最简单的方法是让Person类中的getDescription方法返回空字符串，但这不够优雅，我们可以采用*abstract*关键字来定义这样的方法和类：
+
+```java
+public abstract class Person
+{
+    private String name;
+    public Person(String name)
+    {
+        this.name = name;
+    }
+    
+    public abstract String getDescription();
+    
+    public String getName()
+    {
+        return name;
+    }
+}
+```
+
+为了提高程序的清晰度， **包含一个或多个抽象方法的类本身必须被声明为抽象的**。  除了抽象方法之外，抽象类还可以包含具体数据和具体方法。例如， Person 类还保存着姓名和一个返回姓名的具体方法。  
+
+下面总结一下抽象类的一些特点：
+
+* 抽象方法充当着占位的角色， 它们的具体实现在子类中。扩展抽象类可以有两种选择：
+  * 一种是在抽象类中定义部分抽象类方法或不定义抽象类方法，这样就必须将子类也标记为抽象类；
+  * 另一种是定义全部的抽象方法，这样一来，子类就不是抽象的了。  
+* 类即使不含抽象方法，也可以将类声明为抽象类。  
+* 抽象类不能被实例化。也就是说，如果将一个类声明为 *abstract*, 就不能创建这个类的对象。
+* 可以定义一个抽象类的对象变量， 但是它只能引用非抽象子类的对象。  
+
+```java
+Person[] people = new Person[2];
+people[0] = new Enp1oyee(...);
+people[1] = new Student(...) ;
+
+for (Person p : people)
+	System.out.println(p.getName() + ", " + p.getDescription())；
+```
+
+考虑上面代码中的两个细节：
+
+1. Person类没有定义有效的getDescription方法，p.getDescription()为什么可以被调用？因为，**由于变量p永远不会引用Person对象，而是引用Employee和Student这样的具体类对象**，而这些对象中都定义了这个方法。
+2. 是否可以省略Person超类中的抽象方法，而仅在Employee和Student类中定义getDescription方法呢？答案是不能。因为**编译器只允许调用在类中声明的方法。**
+
+### 受保护访问
+
+任何声明为public的内容对其它类都是可见的，任何声明为private的内容对其它类都是不可见的。因此，出于封装性和安全性的考虑，建议最好将类中的域标记为private，而方法标记为public。
+
+但是有些时候，我们希望超类中的某些方法允许被子类访问，或允许子类的方法访问超类的某个域。这就需要一种介于public和private之间的访问控制，即声明受保护的（protected）方法或域。
+
+例如， 如果将超类 Employee中的 hireDay 声明为*protected*, 而不是私有的，Manager中的方法就可以直接地访问它。  不过， Manager 类中的方法只能够访问 Manager 对象中的 hireDay 域， 而不能访问其他Employee 对象中的这个域。 这种限制有助于避免滥用受保护机制，使得子类只能获得访问受保护域的权利。  
+
+受保护的方法更具有实际意义。 如果需要限制某个方法的使用， 就可以将它声明为protected。这表明子类（可能很熟悉祖先类）得到信任， 可以正确地使用这个方法， 而其他类则不行。  这种方法最好的示例就是Object类中的clone方法。
+
+> 事实上，Java中的受保护部分对所有子类及同一个包中的所有其他类都可见。
+
+下面，归纳一下Java用于控制可见性的4个访问修饰符：
+
+1. private：仅对本类可见。
+2. public：对所有类可见。
+3. protected：对本包和所有子类可见。
+4. 默认（没有修饰符时）：对本包可见。
+
+## Object超类
+
+Object类是Java中所有类的始祖，在Java中每个类都是由它扩展而来的。如果没有明确地指出超类，Object就被认为是这个类的超类。
+
+可以使用Object类型的变量引用任何类型的对象：
+
+```java
+Object obj = new Employee(...);
+```
+
+但是，Object类型的变量只能用于作为各种值得通用持有者，要想对其中的内容进行具体的操作，还需要清楚对象的原始类型，并进行相应的类型转换：
+
+```java
+Employee e = (Employee)obj;
+```
+
+在Java中，只有基本数据类型（数值/字符/布尔）不是对象。但是，**所有的数组类型，不管是对象数组还是基本类型的数组都扩展了Object类。**
+
+```java
+Employee[] staff = new Employee[10];
+obj = staff; //ok
+obj = new int[10]; //OK
+```
+
+> 在C++中没有所有类的基类，只是每个指针都可以转换成void*指针。
+
+### equals方法
+
+Object类中的equals方法用于检测一个对象是否等于另外一个对象，即判断两个对象是否具有相同的引用。
+
+Java 语言规范要求 equals 方法具有下面的特性：
+
+1. 自反性： 对于任何非空引用 x, x.equals(?0 应该返回 true。
+2. 对称性: 对于任何引用 x 和 y, 当且仅当 y.equals(x) 返回 true, x.equals(y) 也应该返回true。
+3. 传递性： 对于任何引用 x、 y 和 z, 如果 x.equals(y) 返 N true， y.equals(z) 返回 true，x.equals(z) 也应该返回 true。
+4. 一致性： 如果 x 和 y 引用的对象没有发生变化，反复调用 x.eqimIS(y) 应该返回同样的结果。
+5. 对于任意非空引用 x, x.equals(null) 应该返回 false。
+
+在决定两个类对象是否相等时，不同的相等语义需要不同的处理，比如：
+
+1. **如果子类能够拥有自己的相等概念，则对称性需求将强制采用getClass进行检测，意味着不是同一个类的对象一定不相等。**比如两个Manager对象的姓名，薪水和雇佣日期均相等，而奖金不相等，我们就认为它们是不同的。在这种相等语义中，就可以使用getClass检测。
+2. **如果由超类决定相等的概念，那么就可以使用instanceof进行检测，这样可以在不同子类对象之间进行相等的比较。**比如使用雇员ID作为相等的检测标准，并且这个相等的概念适用于所有的子类，就可以使用instanceof进行检测，并应该将Employee.equals方法声明为final。
+
+标准的equals方法实现：
+
+```java
+public class Employee
+{
+    // 1.显示参数命名为otherObject
+    // 显示参数类型不能声明成Employee，否则无法覆盖Object类的equals方法，而是定义了一个完全无关的方法
+    // 为了避免发生类型错误，可以使用@Override对覆盖超类的方法进行标记
+    @Override public boolean equals(Object otherObject)
+	{
+        // 2.检测this与otherObject是否引用同一个对象，实际上这是一个优化
+        if (this == otherObject) return true;
+        
+        // 3.检测otherObject是否为null
+        if (otherObject == null) return false;
+        
+        // 4.1 比较this与otherObject是否属于同一个类。如果equals的语义在每个子类中都有改变，
+        // 就使用getClass检测，也就是上面的相等语义1的处理.
+        if (getClass() != otherObject.getClass()) return false;
+        
+        // or 4.2 如果所有子类都有统一的相等语义，就使用instanceof检测
+        // 也就是上面的相等语义2的处理：
+        if(!(otherObject instanceof Employee)) return false;
+        
+        // 5.将otherObject转换为相应的类类型变量：
+        Employee other = (Employee) otherObject;
+        
+        // 6.如果在子类中重新定义equals，就要在其中包含调用super.equals(other)。
+        // 并对所有需要比较的域进行比较，基本类型域使用==比较，对象域使用equals比较：
+        return Objects.equals(name, other.name)
+        	&& salary == other.salary;
+    }
+}
+```
+
+
+
+### hashCode方法
+
+hashCode方法定义在Object类中，因此每个对象都有一个默认的散列码，其值为对象的存储地址。
+
+如果重新定义equals方法，就必须重新定义hashCode方法，以便用户可以将对象插入对象散列表中。
+
+hashCode方法应该返回一个整型数值（也可以是负数），并合理地组合实例域的散列码，以便能让各个不同的对象产生的散列码更加均匀，比如:
+
+```java
+public int hashCode()
+{
+    return 7 * Objects.hashCode(name) // Objects.hashCode是null安全的，如果参数为null，返回0
+        + 11 * Double.hashCode(salary) //使用Double.hashCode避免创建Double对象
+        + 13 * Objects.hashCode(hireDay);
+}
+```
+
+还有更好的方法，需要组合多个散列值时，可以调用*Objects.hash*并提供多个参数，这个方法会对各个参数调用Objects.hashCode，并组合这些散列值：
+
+```java
+public int hashCode()
+{
+    return Objects.hash(name, salary, hireDay);
+}
+```
+
+equals和hashCode的定义必须一致：如果x.equals(y)返回true，那么x.hashCode()就必须域y.hashCode()具有相同的值。例如， 如果用定义的 Employee.equals 比较雇员的 ID， 那么 hashCode 方法就需要散列 ID，而不是雇员的姓名或存储址。  
+
+> 如果存在数组类型的域，那么可以使用静态的Arrays.hashCode方法计算一个散列码，这个散列码由数组元素的散列码组成。
+
+### toString方法
+
+```java
+public String toString()
+{
+    return getClass().getName() + "[name=" + name + ",id=" + id +
+        ", salary=" + salary + "]";
+}
+```
+
+只要对象与一个字符串通过操作符“+”连接起来，Java编译器就会自动地调用toString方法，以便获得这个对象地字符串描述。如果x是任意一个对象，并调用：*System.out.println(x)*，println方法就会直接地调用x.toString()，并打印输出得到的字符串。
+
+使用静态方法打印数组：
+
+```java
+[]int numbers = {1, 4, 5};
+String s = Arrays.toString(numbers);
+```
+
+> 强烈建议为自定义的每个类增加toString方法。
+
+## 泛型数组列表ArrayList
+
+在C++中，必须在编译时就确定整个数组的大小。在Java中，允许在运行时确定数组的大小：
+
+```java
+int actualSize = ...;
+Employee[] staff = new Employee[actualSize];
+```
+
+上面的数组在确定大小并分配数组空间后，要想改变也不容易，需要我们自己重新分配新的数组空间并拷贝所有元素。
+
+数组列表ArrayList是一个采用类型参数的泛型类（generic class），可以自动地帮助我们管理数组空间的动态分配。
+
+```java
+package com.hebostary.corejava;
+
+import java.util.ArrayList;
+
+public class ArrayListTest {
+    public static void Test() {
+        Common.PrintHeader("ArrayList");
+        //构造一个空的数组列表
+        ArrayList<Employee> staff = new ArrayList<>();
+        //等价于ArrayList<Employee> staff = new ArrayList<Employee>();
+
+        //用指定容量构造一个数组列表
+        ArrayList<Employee> staff1 = new ArrayList<>(2);
+        staff1.add(new Employee("Hunk", 10000));
+        staff1.add(new Employee("Bob", 10000));
+        System.out.printf("Current address of staff1: 0x%x\n", System.identityHashCode(staff1));
+        Common.printAllArrayEleAddr(staff1);
+
+        staff1.add(new Employee("Jack", 10000));
+        System.out.printf("Current address of staff1: 0x%x\n", System.identityHashCode(staff1));
+        Common.printAllArrayEleAddr(staff1);
+
+        //确保数组列表在不重新分配存储空间的情况下就能够保存给定数量的元素。
+        //可能会重新分配存储空间
+        staff1.ensureCapacity(10);
+
+        //将数组列表的存储容量削减到当前尺寸。
+        //可能会重新分配存储空间，仅在确定数组的大小不会再改变时才使用
+        staff1.trimToSize();
+
+//当数组元素的数量超出capacity后，ArrayList会先自动扩容，创建新的底层数组，并拷贝现有数组的所有元素
+//实际上底层数组的每个元素都是对对象的引用，因此数组元素引用的实际对象并不会重新分配
+        /*
+        Current address of staff1: 0xea4a92b
+        Current address of index[0]: 0x3c5a99da
+        Current address of index[1]: 0x47f37ef1
+        Current address of staff1: 0xea4a92b
+        Current address of index[0]: 0x3c5a99da
+        Current address of index[1]: 0x47f37ef1
+        Current address of index[2]: 0x5a01ccaa
+        */
+
+        //在指定位置插入元素，后面的所有元素都需要向后移动
+        //如果插人新元素后，数组列表的大小超过了容量， 数组列表就会被重新分配存储空间。
+        staff1.add(0, new Employee("Grice", 10000));
+        //删除指定位置元素，后面的所有元素都需要向前移动
+        staff1.remove(0);
+    }
+}
+```
+
+> 对数组列表实施插人和删除元素的操作其效率比较低。如果数组存储的元素数比较多， 又经常需要在中间位置插入、删除元素，就应该考虑使用链表了。
+
+## 对象包装器与自动装箱
+
+有时， 需要将 int 这样的基本类型转换为对象。 所有的基本类型都有一个与之对应的类。例如，Integer 类对应基本类型 int。通常，这些类称为包装器 （ wrapper )。 这些对象包装器类拥有很明显的名字：Integer、Long、Float、Double、Short、Byte、Character 、 Void 和 Boolean (前6 个类派生于公共的超类 Number)。**对象包装器类是不可变的，即一旦构造了包装器，就不允许更改包装在其中的值。**同时， 对象包装器类还是 final , 因此不能定义它们的子类。 
+
+ 比如，ArrayList尖括号中的类型参数不允许是基本类型：
+
+```java
+//ArrayList<int> list = new ArrayList<>(); //NOT OK
+ArrayList<Integer> list = new ArrayList<>();
+```
+
+> 由于每个值分别包装在对象中，所以ArrayList<Integer>的效率远低于int[]数组。因此，应该用它构造小型集合，依次获得操作的方便性，同时对执行性能没有太多的要求。
+
+### 自动装箱autoboxing
+
+举例说明：
+
+```java
+//添加元素，下面这个调用将自动变换成：
+//list.add(Integer.valueOf(3)); 
+//这种变换称为自动装箱（autoboxing）
+list.add(3);
+```
+
+> 自动装箱规范要求boolean、byte、char <= 127，介于-128 ~ 127之间的 short 和int 被包装到固定的对象中。  
+>
+> ```java
+> Integer a = 127;
+> Integer b = 127;
+> Integer c = 128;
+> Integer d = 128;
+> System.out.println((a == b) ? "a equals to b." : "a not equals to b."); //a equals to b.
+> System.out.println((c == d) ? "c equals to d." : "c not equals to d."); //c not equals to d.
+> ```
+
+### 自动拆箱
+
+相反地，当将一个 Integer 对象赋给一个 int 值时， 将会自动地拆箱。  
+
+```java
+//编译器将下面地语句翻译成：
+//int n = list.get(i).intValue();
+int n = list.get(i);
+```
+
+甚至在算术表达式中也能够自动地装箱和拆箱。例如，可以将自增操作符应用于一个包装器引用：  
+
+```java
+Integer n = 3;
+n++; //编译器将自动地插人一条对象拆箱的指令， 然后进行自增计算， 最后再将结果装箱。
+```
+
+> 装箱和拆箱是编译器认可的，而不是虚拟机。编译器在生成类的字节码时，插入必要的方法调用。虚拟机只是执行这些字节码。
+
+另外，包装器类放置了很多通用的基本方法，这些方法基本都是静态的：
+
+```java
+int x = Integer.parseInt(s); //将字符串转换成整型，
+String s = Integer.toString(x);//以一个新 String 对象的形式返回给定数值 i 的十进制表示。
+...
+```
+
+## 参数数量可变的方法
+
+以System.out.printf方法为例：
+
+```java
+public PrintStream printf(String format, Object ... args) {
+    return format(format, args);
+}
+```
+
+这里的省略号...是Java代码的一部分，它表明这个方法可以接收任意数量的对象（除format参数之外）。
+
+实际上，printf 方法接收两个参数，一个是格式字符串， 另一个是 Object []数组， 其中保存着所有的参数（如果调用者提供的是整型数组或者其他基本类型的值， 自动装箱功能将把它们转换成对象 )。现在将扫描 format字符串， 并将第 i 个格式说明符与 args[i] 的值匹配起来。
+换句话说，对于 printf 的实现者来说，Object… 参数类型与 Object[ ] 完全一样。 
+
+用户自定义变参函数 :
+
+```java
+public static double max(double... values)
+{
+    double largest = Double.NEGATIVE_INFINITY;
+    for (double d : values) {
+        if (d > largest) {
+            largest = d;
+        }
+    }
+    return largest;
+}
+
+//caller
+System.out.println(ArrayListTest.max(3.1, 300, -43));
+```
+
+## 枚举类
+
+实际上，下面的枚举声明定义的类型是一个类，它刚好有4个实例，在此尽量不要构造新对象。
+
+```java
+public enum Size { SMALL, MEDIUM, LARGE };
+```
+
+因此， 在比较两个枚举类型的值时， 永远不需要调用 equals, 而直接使用“ = =” 就可以了。
+如果需要的话， 可以在枚举类型中添加一些构造器、 方法和域。 当然， 构造器只是在构造枚举常量的时候被调用。  
+
+```java
+enum Size
+{
+    //括号里可以存放实例的缩写
+    SMALL("S"), MEDIUM("M"), LARGE("L");
+
+    private Size(String abbreviation) {
+        this.abbreviation = abbreviation;
+    }
+    public String getAbbreviation() {
+        return abbreviation;
+    }
+
+    private String abbreviation;
+}
+```
+
+所有的枚举类型都是 *Enum* 类的子类，它们继承了这个类的许多方法：  
+
+```java
+public class EnumTest {
+    public static void Test() {
+       Common.PrintHeader("EnumTest");
+       Scanner in = new Scanner(System.in);
+       System.out.println("Enter a size: (SMALL, MEDIUM, LARGE)");
+       String input = in.next().toUpperCase();//input: small
+
+       //静态方法Enum.valueOf是toString方法的逆方法
+       //将size设置成Size.SMALL
+       Size size = Enum.valueOf(Size.class, input);
+
+       //自动调用size.toString()，返回枚举常量名
+       System.out.println("size=" + size);//size=SMALL
+       System.out.println("abbreviation=" + size.getAbbreviation());//S
+       
+       //每个枚举类型都有一个静态的values方法，返回一个包含全部枚举值的数组
+       Size[] values = Size.values();
+       System.out.println(Arrays.toString(values));//[SMALL, MEDIUM, LARGE]
+
+       //ordinal方法返回enum声明中枚举常量的位置，位置从0开始计数
+       System.out.println(size.ordinal());//0
+
+    }
+}
+```
+
+## 反射
+
+### Class类
+
+如同Employee/Manager对象表示一个特定的雇员属性一样，一个Class对象将表示一个特定类的属性。**虚拟机为每个类型（包括基础类型）管理一个Class对象，用以存储类的域和方法等属性信息，这些类属性和具体类对象无关**。
+
+下面的代码将展示获取Class对象的3种方法，以及如何通过Class对象的newInstance方法动态创建类对象：
+
+```java
+Employee employee = new Employee("Grace", 10000);
+Manager manager= new Manager("Hunk", 10000, 5000);
+
+//1.从具体的类对象获得相应的Class对象 
+//Object类中的getClass()方法将会返回一个Class类型的实例
+Class class1 = employee.getClass();
+Class class2 = manager.getClass();
+
+//Class对象最常用的方法是getName()，它将返回类的名字
+//如果类在一个包里，包的名字也作为类的一部分
+System.out.println(class1.getName() + " " + employee.getName());
+//com.hebostary.corejava.Employee Grace
+System.out.println(class2.getName() + " " + manager.getName());
+//com.hebostary.corejava.Manager Hunk
+
+//2. 调用Class的静态方法forName获得类名对应的Class对象
+//只有className是类名或接口时才能执行，否则将会抛出已检查异常（checked exception）
+//无论何时使用这个方法，都应该提供异常处理器
+String className = "com.hebostary.corejava.Manager";
+try {
+    Class class3 = Class.forName(className);
+
+    //可以通过Class对象的newInstance()方法动态地创建类实例：
+    //newInstance()方法调用默认的构造器初始化新创建的对象
+    //如果这个类没有默认的构造器，就会抛出一个异常
+    Employee employee2 = (Employee) class3.newInstance();
+    System.out.println(employee2.getName());//NoneName
+
+    //虚拟机为每个类型管理一个Class对象，因此，可以利用==运算符
+    //比较两个类对象
+    System.out.println(class2 == class3);//true
+} catch (Exception e) {
+    System.out.println(e);
+}
+
+//3. T是任意的Java类型（或void关键字），T.class将代表匹配的类对象
+//注意，一个Class对象实际上表示的是一个类型，而这个类型不一定是类
+//也可以是int这种基本类型
+Class class4 = int.class;
+Class class5 = Manager.class;
+System.out.println(class4.getName());//int
+System.out.println(class5.getName());
+```
+
+>Class类实际上是一个泛型类：Manager.class的类型是Class<Manager>。
+
+### 利用反射分析类
+
+在 java.lang.reflect 包中有三个类 Field、 Method 和 Constructor 分别用于描述类的域、 方法和构造器的详细信息：
+
+1.  **名称**：这三个类都有一个叫做 getName 的方法， 用来返回域，方法或构造器的名称。 
+2. **域的Class对象**：Field类有一个 getType 方法， 用来返回描述域所属类型的 Class 对象。 
+3. **返回值及参数类型**：Method 和 Constructor 类有能够报告参数类型的getParameterTypes方法， Method 类还有一个可以报告返回类型的getReturnType方法。
+4. **访问修饰符**：这 三个类还有一个叫做 getModifiers 的方法， 它将返回一个整型数值， 用不同的位开关描述 public 和 static 这样的修饰符使用状况。另外， 还可以用 java.lang.refleCt 包中的 Modifier类的静态方法分析getModifiers 返回的整型数值。 例如， 可以使用 Modifier 类中的 isPublic、 isPrivate 或 isFinal判断方法或构造器是否是 public、 private 或 final。 我们需要做的全部工作就是调用 Modifier类的相应方法， 并对返回的整型数值进行分析， 另外，还可以利用 Modifier.toString方法将修饰符打印出来。
+
+Class类中的 getFields、 getMethods 和 getConstructors 方 法 将 分 别 返 回 类 提 供 的public 域、 方法和构造器数组， 其中包括超类的公有成员。
+
+Class 类种的 getDeclareFields、getDeclareMethods 和 getDeclaredConstructors 方法将分别返回类中声明的全部域、 方法和构造器， 其中包括私有和受保护成员，但不包括超类的成员。  
+
+下面用例子说明这些类的基本用法：
+
+1. 获得对应的Class对象。
+2. 通过Class对象调用相应的方法获取域，方法和构造器。
+
+```java
+//打印类的所有构造器，方法和域信息
+public static void printMetadataOfClass() {
+    Scanner in = new Scanner(System.in);
+    System.out.println("Enter class name (e.g. com.hebostary.corejava.Manager):");
+    String name = in.next();
+
+    try {
+        //打印类和超类的名字
+        Class cl = Class.forName(name);
+        Class superCl = cl.getSuperclass();
+        String modifiers = Modifier.toString(cl.getModifiers());
+        if (modifiers.length() > 0) System.out.print(modifiers + " ");
+        System.out.print("class "+ name);
+
+        if (superCl != null && superCl != Object.class) 
+        {
+            System.out.print(" extends " + superCl.getName());
+        }
+
+        System.out.print("\n{");
+        printConstructors(cl);
+
+        System.out.println();
+        printMethods(cl);
+
+        System.out.println();
+        printFiels(cl);
+        System.out.println("\n}");
+    } catch (ClassNotFoundException e) {
+        e.printStackTrace();
+    }
+}
+```
+
+```java
+/**
+     * 1.打印一个类的所有构造器方法
+    */
+public static void printConstructors(Class cl) {
+    //获取类中声明的全部构造器，其中包括私有和受保护成员，但不包括超类成员
+    Constructor[] constructors = cl.getDeclaredConstructors();
+
+    for (Constructor constructor : constructors) {
+        System.out.print("\n    ");
+        //打印构造器的访问修饰符
+        String modifiers = Modifier.toString(constructor.getModifiers());
+        if (modifiers.length() > 0) System.out.print(modifiers + " ");
+        System.out.print(constructor.getName() + "(");
+
+        //打印参数类型
+        Class[] paramTypes = constructor.getParameterTypes();
+        for (int i = 0; i < paramTypes.length; i++) {
+            if (i > 0) System.out.print(",");
+            System.out.print(paramTypes[i].getName());
+        }
+        System.out.print(");");
+    }
+}
+```
+
+```java
+/**
+     * 2.打印一个类的所有方法
+    */
+public static void printMethods(Class cl) {
+    //获取类中声明的全部方法，其中包括私有和受保护成员，但不包括超类成员
+    Method[] methods = cl.getDeclaredMethods();
+
+    for (Method method : methods) {
+        Class returnType = method.getReturnType();
+
+        System.out.print("\n    ");
+        String modifiers = Modifier.toString(method.getModifiers());
+        if (modifiers.length() > 0) System.out.print(modifiers + " ");
+        System.out.print(returnType.getName() + " " + method.getName() + "(");
+
+        //打印参数类型
+        Class[] paramTypes = method.getParameterTypes();
+        for (int i = 0; i < paramTypes.length; i++) {
+            if (i > 0) System.out.print(",");
+            System.out.print(paramTypes[i].getName());
+        }
+        System.out.print(");");
+    }
+}
+```
+
+```java
+/**
+     * 3.打印类的所有域
+    */
+public static void printFiels(Class cl) {
+    //获取类中声明的全部域，其中包括私有和受保护成员，但不包括超类成员
+    Field[] fields = cl.getDeclaredFields();
+
+    for (Field field : fields) {
+        //获取域的Class对象
+        Class type = field.getType();
+        System.out.print("\n    ");
+        String modifiers = Modifier.toString(field.getModifiers());
+        if (modifiers.length() > 0) System.out.print(modifiers + " ");
+        System.out.print(type.getName() + field.getName() + ";");
+    }
+}
+```
+
+测试printMetadataOfClass函数：
+
+```sh
+Enter class name (e.g. com.hebostary.corejava.Manager):
+com.hebostary.corejava.Manager
+public class com.hebostary.corejava.Manager extends com.hebostary.corejava.Employee
+{
+    public com.hebostary.corejava.Manager();
+    public com.hebostary.corejava.Manager(java.lang.String,double,double);
+
+    public static void Test();
+    public void setBonus(double);
+    public double getSalary();
+
+    private doublebonus;
+}
+```
+
+### 利用反射分析对象
+
+上一节中，我们只是利用反射分析了类的基本属性，基本与具体的类对象无关。利用反射机制还可以查看在编译时还不清楚的具体对象的数据域（值）。
+
+ 查看对象域的关键方法是 Field类中的 get 方法。 如果 f 是一个 Field 类型的对象（例如，通过 getDeclaredFields 得到的对象)， obj 是某个包含 f 域的类的对象，f.get(obj) 将返回一个对象，其值为 obj 域的当前值。   
+
+```java
+Employee employee = new Employee("Grace", 10000);
+Manager manager= new Manager("Hunk", 10000, 5000);
+
+Class class1 = employee.getClass();
+Class class2 = manager.getClass();
+
+try {
+    //获取类中指定名字的域（不能获取超类的成员）
+    Field field = class1.getDeclaredField("name");
+
+    //反射机制的默认行为受限于 Java 的访问控制。
+    //因此需要调用setAccessible方法覆盖访问控制
+    //setAccessible 方法是 AccessibleObject 类中的一个方法， 
+    //它是 Field、 Method 和 Constructor类的公共超类。
+    field.setAccessible(true);
+    Object object = field.get(manager);
+    System.out.println(object);//Hunk
+} catch (Exception e) {
+    e.printStackTrace();
+}
+```
+
+当然，可以获得就可以设置。 调用 f.set(obj ，value) 可以将 obj 对象的 f 域设置成新值。  
+
+### 使用反射编写泛型数组代码
+
+Arrays包中的copyOf函数可以用来扩展任意类型的数组，甚至可以在扩展时完成数组元素类型的转换：
+
+```java
+public static <T> T[] copyOf(T[] original, int newLength) {
+    return (T[]) copyOf(original, newLength, original.getClass());
+}
+
+public static <T,U> T[] copyOf(U[] original, int newLength, Class<? extends T[]> newType) {
+    @SuppressWarnings("unchecked")
+    T[] copy = ((Object)newType == (Object)Object[].class)
+        ? (T[]) new Object[newLength]
+        : (T[]) Array.newInstance(newType.getComponentType(), newLength);
+    System.arraycopy(original, 0, copy, 0,
+                     Math.min(original.length, newLength));
+    return copy;
+}
+```
+
+这里的关键在于通过数组的Class对象的getComponentType方法确定数组对应的类型。
+
+### 调用任意方法
+
+类似于C/C++中的方法指针，在Method类中有一个invoke方法，它允许调用包装在当前Method对象中的方法，invoke方法的的签名：
+
+```java
+Object invoke(Object obj, Object... args)
+```
+
+如果invoke方法执行的是非静态方法，那么它一定需要在某个类对象的基础上操作，因此第一个参数就是隐式参数，而对于静态方法，第一个参数可以被忽略，即可以将它设置为null。
+
+如果在调用方法的时候提供了一个错误的参数，那么 invoke 方法将会抛出一个异常  。
+
+```java
+Method ml = Employee.class.getMethod("getName");
+Method m2 = Employee.class.getMethod("raiseSalary", double.class);
+
+String n = (String) ml.invoke(harry);
+
+//如果返回类型是基本类型， invoke方法会返回其包装器类型。
+//必须相应地完成类型转换。可以使用自动拆箱将它转换为一个 double
+double s = (Double) m2.invoke(harry);
+```
+
+> invoke 的参数和返回值必须是 Object 类型的。这就意味着必须进行多次的类型转换。这样做将会使编译器错过检查代码的机会。因此， 等到测试阶段才会发现这些错误， 找到并改正它们将会更加困难。不仅如此， 使用反射获得方法指针的代码要比仅仅直接调用方法明显慢一些。  
+
+## 继承的设计技巧
+
+下面总结一些对设计继承关系很有帮助的建议：
+
+1. **将公共操作和域放在超类**。
+
+2. **不要使用受保护的（protected）域**。protected 机制并不能够带来更好的封装保护， 其原因主要有两点：（1）子类集合是无限制的， 任何人都能够由某个类派生一个子类，并编写代码以直接访问 protected 的实例域， 从而破坏了封装性。（2）在 Java 中，在同一个包中的所有类都可以访问 proteced 域，而不管它是否为这个类的子类。  
+
+3. **使用继承实现“is-a”关系**。比如钟点工的信息包含姓名和雇佣日期，但是没有薪水。他们按小时计薪，并且不会因为拖延时间而获得加薪。 钟点工与雇员之间不属于“ is-a” 关系。钟点工不是特殊的雇员。 因此，直接从Employee派生出Contractor 类然后再增加一个 hourlyWage域并不是一个好的设计。因为这样一来， 每个钟点工对橡中都包含了薪水和计时工资这两个域。在实现打印支票或税单方法耐候， 会带来诞的麻烦， 并且与不采用继承，会多写很制戈码。  
+
+4. **除非所有继承的方法都有意义，否则不要使用继承**。
+
+5. **在覆盖方法时，不要改变预期的行为**。
+
+6. **使用多态，而非类型信息**。比如下面的代码，都应该考虑多态性：
+
+   ```java
+   if (x is of type 1)
+       action1(x);
+   else if (x is of type 2)
+       action2(x);
+   ```
+
+   如果action1和action2表示相同的概念，就应该为它们定义一个方法，并将其放到两个类的超类或接口中，然后简化调用：
+
+   ```java
+   x.action();
+   ```
+
+7. **不要过多的使用反射**。反射是很脆弱的，意味着编译器很难帮助发现程序中的错误，只有运行时才能发现有些错误并导致异常。
+
+# Java接口/lambda表达式/内部类
+
+
 
 # 异常处理
 

@@ -1,9 +1,7 @@
 package com.hebostary.corejava;
 
 import java.io.PrintWriter;
-import java.lang.reflect.Array;
 import java.math.BigInteger;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Date;
@@ -16,7 +14,7 @@ public class HelloWorld {
     public static final String HELLO_STRING = "Hello Java!!!";
     
     public static void Test() {
-        Common.PrintHeader("HelloWorld");
+        Common.PrintHeader(HelloWorld.class.getName());
 
         System.out.println(HELLO_STRING);
 
