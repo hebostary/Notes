@@ -21,7 +21,10 @@ public class CoreJavaTest
         //6.测试反射
         //Reflection.Test();
 
-        //7.测试Comparablr接口
-        EmployeeSort.Test();
+        //7.测试Comparable接口
+        //EmployeeSort.Test();
+
+        //8.测试lambda表达式
+        Lambda.Test();
     }
 }

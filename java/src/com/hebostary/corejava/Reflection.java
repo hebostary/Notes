@@ -168,7 +168,7 @@ public class Reflection {
             System.out.print("\n    ");
             String modifiers = Modifier.toString(field.getModifiers());
             if (modifiers.length() > 0) System.out.print(modifiers + " ");
-            System.out.print(type.getName() + field.getName() + ";");
+            System.out.print(type.getName() + " " + field.getName() + ";");
         }
     }
 
