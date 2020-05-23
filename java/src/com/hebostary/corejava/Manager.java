@@ -32,7 +32,7 @@ public class Manager extends Employee {
     }
 
     public static void Test() {
-        Common.PrintHeader(Manager.class.getName());
+        Common.PrintClassHeader(Manager.class.getName());
         Employee[] staff = new Employee[3];
         staff[0] = new Manager("Hunk", 6000, 3000);
         staff[1] = new Employee("Jack", 7000);

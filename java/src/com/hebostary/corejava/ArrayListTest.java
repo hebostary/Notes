@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 public class ArrayListTest {
     public static void Test() {
-        Common.PrintHeader(ArrayList.class.getName());
+        Common.PrintClassHeader(new Object(){}.getClass().getEnclosingClass().toString());
         //构造一个空的数组列表
         //ArrayList<Employee> staff = new ArrayList<>();
         //等价于ArrayList<Employee> staff = new ArrayList<Employee>();

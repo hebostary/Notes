@@ -1,10 +1,13 @@
 import com.hebostary.corejava.*;
+import com.hebostary.corejava.lambda.*;
+import com.hebostary.corejava.reflect.*;
+import com.hebostary.corejava.proxy.*;
 
 public class CoreJavaTest
 {
     public static void main(String[] args) {
         //1.测试基础数据类型
-        //HelloWorld.Test();
+        HelloWorld.Test();
 
         //2.测试基础类编写
         //Employee.Test();
@@ -26,5 +29,10 @@ public class CoreJavaTest
 
         //8.测试lambda表达式
         Lambda.Test();
+
+        //9.测试内部类
+
+        //10.测试代理对象
+        //ProxyTest.Test();
     }
 }

@@ -5,7 +5,7 @@ import java.util.Scanner;
 
 public class EnumTest {
     public static void Test() {
-       Common.PrintHeader(EnumTest.class.getName());
+       Common.PrintClassHeader(EnumTest.class.getName());
        Scanner in = new Scanner(System.in);
        System.out.println("Enter a size: (SMALL, MEDIUM, LARGE)");
        String input = in.next().toUpperCase();//input: small

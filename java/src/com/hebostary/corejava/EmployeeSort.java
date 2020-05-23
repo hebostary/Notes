@@ -5,7 +5,7 @@ import java.util.Arrays;
 public class EmployeeSort {
     public static void Test()
     {
-        Common.PrintHeader(EmployeeSort.class.getName());
+        Common.PrintClassHeader(EmployeeSort.class.getName());
         Employee[] staff = new Employee[3];
 
         staff[0] = new Employee("Hunk", 10000);

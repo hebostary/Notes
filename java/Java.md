@@ -984,7 +984,7 @@ public class Manager extends Employee {
     }
 
     public static void Test() {
-        Common.PrintHeader("Manager");
+        Common.PrintClassHeader("Manager");
         Employee[] staff = new Employee[3];
         staff[0] = new Manager("Hunk", 6000, 3000);
         staff[1] = new Employee("Jack", 7000);
@@ -1323,7 +1323,7 @@ import java.util.ArrayList;
 
 public class ArrayListTest {
     public static void Test() {
-        Common.PrintHeader("ArrayList");
+        Common.PrintClassHeader("ArrayList");
         //构造一个空的数组列表
         ArrayList<Employee> staff = new ArrayList<>();
         //等价于ArrayList<Employee> staff = new ArrayList<Employee>();
@@ -1498,7 +1498,7 @@ enum Size
 ```java
 public class EnumTest {
     public static void Test() {
-       Common.PrintHeader("EnumTest");
+       Common.PrintClassHeader("EnumTest");
        Scanner in = new Scanner(System.in);
        System.out.println("Enter a size: (SMALL, MEDIUM, LARGE)");
        String input = in.next().toUpperCase();//input: small
@@ -1829,10 +1829,125 @@ double s = (Double) m2.invoke(harry);
 
 7. **不要过多的使用反射**。反射是很脆弱的，意味着编译器很难帮助发现程序中的错误，只有运行时才能发现有些错误并导致异常。
 
-# Java接口/lambda表达式/内部类
+# Java接口/lambda表达式/内部类/代理
 
+## 代理类
 
+利用代理可以在运行时创建一个实现了一组给定接口的新类 : 这种功能只有在编译时无法确定需要实现哪个接口时才有必要使用。  代理类具有以下方法：
+
+* 指定接口所需要的全部方法。
+* Object类中的全部方法，例如toString, equals等。
+
+因为无法在运行时定义这些方法的新代码，需要提供一个调用处理器（invocation handler），调用处理器是实现了InvocationHandler接口的类对象，这个接口中只有一个方法：
+
+```java
+public Object invoke(Object proxy, Method method, Object[] args)
+        throws Throwable;
+```
+
+无论何时调用代理对象的方法，调用处理器的invoke方法都会被调用，并向其传递Method对象和原始的调用参数。调用处理器必须给出处理调用的方式。下面来看例子：
+
+```java
+public class ProxyTest {
+    public static void Test(){
+        Common.PrintClassHeader(new Object(){}.getClass()
+            .getEnclosingClass().toString());
+
+        Object[] elements = new Object[1000];
+
+        for (int i = 0; i < elements.length; i++) {
+            //1.创建一个整型对象
+            Integer value = i + 1;
+
+            //2.创建一个用于处理value对象的调用处理器
+            InvocationHandler handler = new TraceHandler(value);
+            
+            //3.构造实现指定接口的代理类的一个新实例
+            //代理对象属于在运行时定义的类（比如 $Proxy0）
+            //这个类也实现了Comparable接口
+            //但是它的compareTo方法实际上是调用了代理对象处理器（handler）的invoke方法
+            Object proxy = Proxy.newProxyInstance(
+                null, //类加载器，null表示使用默认的类加载器
+                new Class[] { Comparable.class }, //Class对象数组，每个元素都是需要实现的接口 
+                handler //调用处理器
+            );
+
+            //4.在数组中填充代理对象，
+            //所以 compareTo 调用了 TraceHander 类中的 invoke 方法。
+            //这个方法打印出了方法名和参数， 
+            //之后用包装好的 Integer 对象调用 compareTo
+            elements[i] = proxy;
+        }
+
+        //创建一个随机整数
+        Integer key = new Random().nextInt(elements.length) + 1;
+
+        //对key执行二分查找
+        int result = Arrays.binarySearch(elements, key);
+
+        //打印查找结果
+        if (result >= 0) System.out.println(result);
+    }
+}
+
+/**
+ * 调用处理器：用于跟踪方法调用，先打印方法名和参数，然后再执行原来的方法
+*/
+class TraceHandler implements InvocationHandler
+{
+    private Object targeObject;
+
+    public TraceHandler(Object t)
+    {
+        targeObject = t;
+    }
+
+    public Object invoke(Object proxy, Method m, Object[] args) throws Throwable
+    {
+        //打印隐式参数
+        System.out.print(targeObject);
+
+        //打印方法名字
+        System.out.print("." + m.getName() + "(");
+    
+        //打印显式参数
+        if (args != null)
+        {
+            for (int i = 0; i < args.length; i++) {
+                System.out.print(args[i]);
+                if (i < args.length - 1) System.out.print(",");
+            }
+        }
+        System.out.println(")");
+
+        //执行实际的方法
+        return m.invoke(targeObject, args);
+    }
+}
+```
+
+调用Test()的输出：
+
+```shell
+500.compareTo(632)
+750.compareTo(632)
+625.compareTo(632)
+687.compareTo(632)
+656.compareTo(632)
+640.compareTo(632)
+632.compareTo(632)
+631
+```
+
+> 代理类是在程序运行过程中创建的，它一旦被创建，就变成了常规类，与虚拟机中的任何其它类没有什么区别。
+>
+> 所有的代理类都扩展于 Proxy 类，一个代理类只有一个实例域—调用处理器，它定义在 Proxy 的超类中。 为了履行代理对象的职责， 所需要的任何附加数据都必须存储在调用处理器中。比如上面的例子，代理 Comparable 对象时，TraceHandler 包装了实际的对象。
+>
+> 对于特定的类加载器和预设的一组接口来说，只能有一个代理类。如果使用同一个类加载器和接口数组调用两次 newProxylustance 方法的话， 那么只能够得到同一个类的两个对象 。
 
 # 异常处理
 
 # 泛型编程
+
+# 集合
+

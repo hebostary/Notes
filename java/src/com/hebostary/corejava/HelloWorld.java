@@ -14,7 +14,7 @@ public class HelloWorld {
     public static final String HELLO_STRING = "Hello Java!!!";
     
     public static void Test() {
-        Common.PrintHeader(HelloWorld.class.getName());
+        Common.PrintClassHeader(HelloWorld.class.getName());
 
         System.out.println(HELLO_STRING);
 

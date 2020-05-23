@@ -98,7 +98,7 @@ public class Employee implements Comparable<Employee>
      * @return void
     */
     public static void Test() {
-        Common.PrintHeader(Employee.class.getName());
+        Common.PrintClassHeader(Employee.class.getName());
         Employee employee1 = new Employee("hunk", 6000);
         Employee employee2 = new Employee("jack", 6000);
         //com.hebostary.corejava.Employee[name=hunk,id=0, salary=6000.0]

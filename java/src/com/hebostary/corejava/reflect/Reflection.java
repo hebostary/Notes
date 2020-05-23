@@ -1,12 +1,12 @@
-package com.hebostary.corejava;
+package com.hebostary.corejava.reflect;
 
-import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Arrays;
 import java.util.Scanner;
+
+import com.hebostary.corejava.*;
 
 public class Reflection {
     private static void testClass() {
@@ -173,7 +173,7 @@ public class Reflection {
     }
 
     public static void Test() {
-        Common.PrintHeader("Reflection");
+        Common.PrintClassHeader("Reflection");
         testClass();
 
         printMetadataOfClass();
