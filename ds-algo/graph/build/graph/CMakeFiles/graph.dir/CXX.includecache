@@ -1,0 +1,18 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/workspace/Notes/ds-algo/graph/src/graph/graph.cpp
+graph.hpp
+/home/workspace/Notes/ds-algo/graph/src/graph/graph.hpp
+
+/home/workspace/Notes/ds-algo/graph/src/graph/graph.hpp
+iostream
+-
+vector
+-
+
