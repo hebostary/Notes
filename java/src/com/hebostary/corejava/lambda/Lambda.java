@@ -3,6 +3,7 @@ package com.hebostary.corejava.lambda;
 import java.util.Arrays;
 import java.util.Date;
 
+import javax.swing.Action;
 import javax.swing.JOptionPane;
 import javax.swing.Timer;
 
@@ -40,9 +41,26 @@ public class Lambda {
         }
     }
 
+    private static void repeatPrint(int delay, String text) {
+        for (int i = 0; i < 3; i++) {
+            Timer t = new Timer(delay, event -> {
+                System.out.println(text);
+                //delay--; //ERROR:Local variable delay defined in an enclosing scope must be final or effectively finalJava(536871575)
+                System.out.println(delay);
+    
+                //System.out.println(i); //ERROR:Local variable i defined in an enclosing scope must be final or effectively finalJava(536871575)
+            });
+    
+            t.start();
+        }
+    }
+
     private static void runnableLambda() {
         Common.PrintMethodHeader("runnableLambda");
         repeat(5, () -> System.out.println("Hello Runnable Lambda."));
+        repeatPrint(2000, "Hello Lambda, delay 2000 ms.");
+        int delay = 3000;
+        repeatPrint(delay, "Hello Lambda, delay 3000 ms.");
     }
     public static void Test() {
         //Common.PrintClassHeader(Lambda.class.getName());

@@ -22,6 +22,10 @@ public class Manager extends Employee {
         bonus = b;
     }
 
+    public double getBonus() {
+        return bonus;
+    }
+
     //覆盖父类中的方法实现
     public double getSalary()
     {
