@@ -1,3 +1,0 @@
-/home/workspace/Notes/ds-algo/graph/build/common/CMakeFiles/common.dir
-/home/workspace/Notes/ds-algo/graph/build/CMakeFiles/demo.dir
-/home/workspace/Notes/ds-algo/graph/build/graph/CMakeFiles/graph.dir
