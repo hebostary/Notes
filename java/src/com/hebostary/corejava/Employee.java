@@ -1,5 +1,7 @@
 package com.hebostary.corejava;
 
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.Objects;
 
 /**
@@ -9,13 +11,14 @@ import java.util.Objects;
  * @version 1.0
  * ...
 */
-public class Employee implements Comparable<Employee>
+public class Employee implements Comparable<Employee>, Cloneable
 {
     //1.在声明中赋值初始化
     private static int nextId = 0;
     private int id;
     private String name;
     private double salary;
+    private Date hireDay;
 
     //2.初始化块（initialization block）
     //在一个类中可以包含多个代码块，只要构造类的对象，这些块就会被执行。
@@ -30,12 +33,27 @@ public class Employee implements Comparable<Employee>
         name = n;
         salary = s;
         nextId++;
+
+        Date date = new GregorianCalendar(2020, 5, 24).getTime();
+        hireDay = new Date();
+        hireDay.setTime(date.getTime());
     }
 
     //实现Comparable接口的compareTo方法
     public int compareTo(Employee other)
     {
         return Double.compare(salary, other.salary);
+    }
+
+    public Employee clone() throws CloneNotSupportedException {
+        //调用Object类默认的clone函数，仅仅拷贝整数类型的实例域（salary和id）
+        //和不可变的String类型的实例域（name）
+        Employee cloned = (Employee) super.clone();
+
+        //拷贝可变实例域
+        cloned.hireDay = (Date) hireDay.clone();
+
+        return cloned;
     }
 
     public double getSalary() {
@@ -50,6 +68,23 @@ public class Employee implements Comparable<Employee>
 
     public String getName() {
         return name;
+    }
+
+    /**
+     * @param name the name to set
+     */
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Date getHireDay()
+    {
+        return hireDay;
+    }
+
+    public void setHireDay(int year, int month, int day) {
+        Date date = new GregorianCalendar(year, month - 1, day).getTime();
+        hireDay.setTime(date.getTime());
     }
 
     // 1.显示参数命名为otherObject
@@ -89,7 +124,7 @@ public class Employee implements Comparable<Employee>
     public String toString()
     {
         return getClass().getName() + "[name=" + name + ",id=" + id +
-        ", salary=" + salary + "]";
+        ", salary=" + salary + ", hireDay=" + hireDay.toString() + "]";
     }
 
     /**
@@ -104,9 +139,32 @@ public class Employee implements Comparable<Employee>
         //com.hebostary.corejava.Employee[name=hunk,id=0, salary=6000.0]
         System.out.println(employee1); 
         //com.hebostary.corejava.Employee[name=jack,id=1, salary=6000.0]
-        System.out.println(employee2); //1
+        System.out.println(employee2); 
 
         System.out.println(employee1.equals(employee1));//true
         System.out.println(employee1.equals(employee2));//false
+
+        //对象的浅拷贝
+        Employee copy = employee1;
+        copy.raiseSalary(10);
+        copy.setName("hunk.copy");
+        //com.hebostary.corejava.Employee[name=hunk.copy,id=0, salary=6600.0]
+        System.out.println(copy); 
+        //com.hebostary.corejava.Employee[name=hunk.copy,id=0, salary=6600.0]
+        System.out.println(employee1); 
+
+        //测试对象的深拷贝
+        try {
+            Employee copy2 = employee2.clone();
+            copy2.raiseSalary(10);
+            copy2.setName("hunk.copy2");
+            copy2.setHireDay(2050, 5, 24);
+            //com.hebostary.corejava.Employee[name=hunk.copy2,id=1, salary=6600.0, hireDay=Tue May 24 00:00:00 CST 2050]
+            System.out.println(copy2); 
+            //com.hebostary.corejava.Employee[name=jack,id=1, salary=6000.0, hireDay=Tue May 24 00:00:00 CST 2050]
+            System.out.println(employee2); 
+        } catch (CloneNotSupportedException e) {
+            //TODO: handle exception
+        }
     }
 }

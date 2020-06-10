@@ -1,4 +1,4 @@
-# 认识Java
+认识Java
 
 Java并不只是一个编程语言，而是一个完整的平台，有一个庞大的库，其中包含了很多可重用的代码和一个提供诸如安全性，跨操作系统的可移植性以及自动垃圾回收等服务的执行环境。
 
@@ -1829,7 +1829,637 @@ double s = (Double) m2.invoke(harry);
 
 7. **不要过多的使用反射**。反射是很脆弱的，意味着编译器很难帮助发现程序中的错误，只有运行时才能发现有些错误并导致异常。
 
-# Java接口/lambda表达式/内部类/代理
+# 接口/lambda表达式/内部类
+
+## 接口
+
+### 接口基本概念
+
+在Java中，接口（interface）不是类，而是主要用来描述类具有什么功能，接口并不给出每个功能的具体实现。一个类可以实现（implement）一个或多个接口，并在需要接口的地方，随时使用实现了相应接口的对象。
+
+比如Arrays类中的sort方法承诺可以对对象数组进行排序，但要求对象所属的类必须实现了Comparable接口：
+
+```java
+//JAVA SE 5.0中，这个接口被改进为泛型类型
+public interface Comparable<T> {
+    public int compareTo(T o);
+}
+```
+
+任何实现Comparable接口的类都需要包含compareTo方法，并且这个方法的参数必须是一个Object对象，返回一个整型数值。比如下面的Employee类：
+
+```java
+public class Employee implements Comparable<Employee>
+{
+    ...
+
+    //实现Comparable接口的compareTo方法
+    public int compareTo(Employee other)
+    {
+        return Double.compare(salary, other.salary);
+    }
+```
+
+**为什么不能在 Employee 类直接提供一个 compareTo 方法，而必须实现 Comparable 接口呢？**主要原因在于 Java 程序设计语言是一种强类型（ strongly typed）语言。在调用方法的时候， 编译器将会检查这个方法是否存在。在 sort 方法中可能存在下面这样的语句：  
+
+```java
+if (a[i].compareTo(a[j]) > 0) { ... }
+```
+
+为此， 编译器必须确认 a[i]—定有 compareTo 方法。 如果 a 是一个 Comparable 对象的数组， 就可以确保拥有compareTo 方法，因为每个实现 Comparable 接口的类都必须提供这个方法的定义。  
+
+> 语言标 准 规 定： 对 于 任 意 的 x 和 y, 实现必须能够保证 sgn(x.compareTo(y)) = -sgn(y.compareTo(x))。（也就是说， 如 果 y.compareTo(x) 抛出一个异常， 那么 x.compareTo(y)也应该抛出一个异常。这里的“ sgn” 是一个数值的符号：如果n是负值，sgn(n)等于-1 ; 如果n是0, sgn(n)等于0; 如果n是正值，sgn(n)等于1。 简单地讲，如果调换compareTo 的参数，结 果的符号也应该调换。
+
+### 接口的基本特性
+
+1. **接口中的所有方法自动地属于public**。因此，在接口中声明方法时，可以不提供关键字public。但是，在实现接口时， 必须把方法声明为public。否则， 编译器将认为这个方法的访问属性是包可见性， 即类的默认访问属性，之后编译器就会给出试图提供更严格的访问权限的警告信息。  
+
+2. **接口可以包含常量（将被自动设为public static final），但绝不能含有实例域**。提供实例域和方法实现的任务应该由实现接口的那个类来完成。Java SE 8以前，也不能在接口中实现方法，新版本允许在接口中增加静态方法。
+
+3. **接口不是类，因此不能用new运算符实例化一个接口对象。但是，我们可以声明接口的变量，接口变量必须引用实现了接口的类对象:**
+
+   ```java
+   Comparable x; //OK
+   x = new Employee(...);
+   ```
+
+   如同使用instanceof检查一个对象是否属于某个特定类一样，也可以用instanceof检查一个对象是否实现了某个特定的接口：
+
+   ```java
+   if (anObject instanceof Comparable) { ... }
+   ```
+
+4. **类似于类的继承关系，接口也可以被扩展**。即允许存在多条从具有较高通用性的接口到较高专用性的接口的链。
+
+   ```java
+   public interface Moveable{
+       void move(double x, double y);
+   }
+   
+   public interface Powered extends Moveable {
+       double milesPerGallon();
+       double SPEED_LIMIT = 95; //a public static final constant
+   }
+   ```
+
+5. **每个类只能拥有一个超类，但却可以实现多个接口**，这就为定义类的行为提供了极大的灵活性。 这也是为什么不直接将接口设计为抽象类的原因：每个类只能扩展于一个类。
+
+   ```java
+   //如果某个类实现了这个Cloneable接口，Object类中的clone方法就可以创建类对象的一个拷贝。
+   class Employee implements Cloneable, Comparable {...}
+   
+   abstract class Comparable //why not
+   {
+       public abstract int compareTo(Object other);
+   }
+   ```
+
+6. 可以为接口方法提供一个默认实现，即**默认方法**，必须用default修饰符进行标记：
+
+   ```java
+   public interface Comparable<T> {
+       default int compareTo(T other) {return 0;}
+   }
+   ```
+
+   这个例子不太实际，因为Comparable的每一个实现都要覆盖这个方法。但是，在有些场景下，接口为自己声明的方法提供默认实现，则允许具体类只实现接口中感兴趣的部分方法。
+
+   默认方法的一个重要用法是**接口演化**。比如新版本为某个接口添加了新的方法，同时提供这个方法的默认实现，就可以保证实现该接口的现有类“源代码兼容”。
+
+7. **解决默认方法冲突。**如果先在一个接口中将一个方法定义为默认方法， 然后又在超类或另一个接口中定义了同样的方法（同名且参数类型相同），会发生什么情况？  规则很简单：（1）超类优先。接口的所有默认方法都会被忽略。（2）接口冲突，实现接口的类必须覆盖方法来解决冲突。
+
+### 比较器接口Comparator
+
+我们可以用Arrays.sort方法对字符串数组进行排序，因为String类实现了Comparable<String>接口，而且String.compareTo方法可以按照字典序比较字符串。
+
+现在假设我们希望根据长度对字符串进行排序，而不是字典序。我们无法修改String类的compareTo方法的实现，那如何才能做到呢？要处理这种情况，ArrayS.Sort 方法还有第二个版本， 有一个数组和一个比较器 ( comparator ) 作为参数， 比较器是实现了 Comparator 接口的类的实例。  
+
+```java
+public interface Comparator<T> {
+    int compare(T first, T second);
+}
+```
+
+要实现按长度比较字符串，可以如下定义一个实现Comparator<String>的类：
+
+```java
+class lengthComparator implements Comparator<String> {
+    public int compare(String first, String second) {
+        return first.length() - second.length();
+    }
+}
+```
+
+这个compare方法要在比较器对象上调用，而不是在字符串本身上调用。因此，具体完成比较时，需要建立一个实例（非静态方法）：
+
+```java
+Comparator<String> comp = new lengthComparator();
+if (comp.compare(word[i], word[j]) > 0) {...}
+```
+
+现在，我们可以用lengthComparator来实现字符串数组的长度排序了：
+
+```java
+String[] friends = { "Peter", "Paul", "Mary" };
+Arrays,sort(friends, new LengthComparatorO):
+```
+
+### 对象克隆Cloneable
+
+#### 浅拷贝和深拷贝
+
+浅拷贝只是复制了对象的引用，或者只拷贝了部分实例域（基本类型（int）和不变类型（String）的实例域），而不会拷贝所有子对象，修改其中一个时会影响另一个。
+
+![](https://note.youdao.com/yws/api/personal/file/0D40BECDF98F40D6B230E92993A83C65?method=download&shareKey=340be1fa5a56e497c78e9ffcb5643ae7)
+
+在下面这个典型的浅拷贝例子中，赋值操作仅仅复制了一个Employee对象的引用，所有实例域都是共享的，包括基本类型的域。
+
+```java
+Employee employee1 = new Employee("hunk", 6000);
+
+Employee copy = employee1; //严格的说，这个赋值操作并没有执行任何真正的拷贝操作
+copy.raiseSalary(10); //修改基本类型的域
+copy.setName("hunk.copy");//修改对象域
+//com.hebostary.corejava.Employee[name=hunk.copy,id=0, salary=6600.0]
+System.out.println(copy); 
+//com.hebostary.corejava.Employee[name=hunk.copy,id=0, salary=6600.0]
+System.out.println(employee1); 
+```
+
+深拷贝则会拷贝所有的实例域（包括实例域中引用的子对象），深拷贝需要通过实现后面介绍的clone方法来实现。
+
+```java
+Employee copy = orignal.clone();//深拷贝，前提是Employee类实现了可以完成深拷贝的clone方法
+```
+
+浅拷贝会有什么影响吗？ 这要看具体情况。如果原对象和浅克隆对象共享的子对象是不可变的， 那么这种共享就是安全的。如果子对象属于一个不可变的类， 如 String，就是这种情况。或者在对象的生命期中，子对象一直包含不变的常量，没有更改器方法会改变它，也没有方法会生成它的引用，这种情况下同样是安全的。  
+
+遗憾的是，通常子对象都是可变的，必须重新定义 clone 方法来建立一个深拷贝， 同时克隆所有子对象。
+
+#### Cloneable接口
+
+Cloneable 接口的出现与接口的正常使用并没有关系。具体来说，它没有指定clone 方法，这个方法是从 Object 类继承的。这个接口只是作为一个标记，指示类设计者了解克隆过程，称为标记接口（tagging interface）。标记接口不包含任何方法，唯一作用就是允许在类型查询中使用instanceof。 
+
+**Object 类中 clone 方法声明为 protected ,  重新定义clone方法时，需要指定public访问修饰符**。实际上，即使clone的默认实现能够满足要求，还是需要实现Cloneable接口，将clone重新定义为public，再调用super.clone()。类实现了clone方法就一定可以实现深拷贝吗？继续看下面的例子：
+
+```java
+class Employee implements Cloneable { 
+    private int id;
+    private String name;
+    private double salary;
+    private Date hireDay;
+    
+	public Employee clone() throws CloneNotSupportedException {
+        Employee cloned = (Employee) super.clone();
+
+        return cloned;
+    }
+}
+```
+
+```java
+Employee employee2 = new Employee("jack", 6000);
+//为了简化，构造函数里会把hireDay设置为2020年
+
+try {
+    Employee copy2 = employee2.clone();
+    copy2.raiseSalary(10);
+    copy2.setName("hunk.copy2");
+    copy2.setHireDay(2050, 5, 24);
+    System.out.println(copy2); 
+    System.out.println(employee2); 
+} catch (CloneNotSupportedException e) {
+    //TODO: handle exception
+}
+```
+
+测试代码的输出：
+
+```shell
+com.hebostary.corejava.Employee[name=hunk.copy2,id=1, salary=6600.0, hireDay=Tue May 24 00:00:00 CST 2050]
+com.hebostary.corejava.Employee[name=jack,id=1, salary=6000.0, hireDay=Tue May 24 00:00:00 CST 2050]
+```
+
+我们发现，如果只调用Object类默认的clone函数，仅仅拷贝了整数类型的实例域（salary和id）和不可变的String类型的实例域（name），而可变对象的实例域（hireDay）仍然被共享，这依然是浅拷贝。
+
+这就说明，如果类中有可变类型的实例域，我们需要依次调用它们的clone方法拷贝子对象：
+
+```java
+//如果在一个对象上调用clone，但这个对象的类并没有实现Cloneable接口
+//Object类的clone方法就会抛出一个CloneNotSupportedException
+//在final类中可以选择捕获这个异常，否则，最好还是如下保留 throws 说明符，
+//这样就允许子类在不支持克隆时选择抛出一个 CloneNotSupportedException。
+class Employee implements Cloneable {
+    public Employee clone() throws CloneNotSupportedException {
+        //调用Object.clone()
+        Employee cloned = (Employee) super.clone();
+
+        //拷贝可变实例域
+        cloned.hireDay = (Date) hireDay.clone();
+
+        return cloned;
+    }
+}
+```
+
+再次执行前面的测试，输出如下：
+
+```shell
+com.hebostary.corejava.Employee[name=hunk.copy2,id=1, salary=6600.0, hireDay=Tue May 24 00:00:00 CST 2050]
+com.hebostary.corejava.Employee[name=jack,id=1, salary=6000.0, hireDay=Wed Jun 24 00:00:00 CST 2020]
+```
+
+这个版本的clone方法实现了真正的深拷贝。
+
+## Lambda表达式
+
+前面为了实现按长度对字符串数组进行排序，我们实现了Comparator接口，其中compare方法的主要工作就是计算下面这个表达式：
+
+```java
+first.length() - second.length()
+```
+
+compare 方法不是立即调用。 实际上， 在数组完成排序之前， sort 方法会一直调用compare 方法， 只要元素的顺序不正确就会重新排列元素。  这里，为了传递这么一个代码块，必须构造一个对象，这个对象的类需要有一个方法能包含所需的代码块。
+
+Lambda表达式提供了更简洁的传递代码块的方案。Lambda表达式本身就是一个可传递的代码块，以及必须传入代码的变量规范，可以在以后执行一次或多次。
+
+### Lambda表达式的语法
+
+最简单的Lambda表达式写法：  
+
+```java
+(String first, String second)
+   -> first.length() - second.length()
+```
+
+Java 是一种强类型语言， 所以我们还要指定参数的类型(String)，但是无需指定 lambda 表达式的返回类型。 lambda 表达式的返回类型总是会由上下文推导得出。 比如上面的表达式可以在需要 int类型结果的上下文中使用。  
+
+ 如果表达式需要完成更复杂的工作，可以如下编写代码：
+
+```java
+(String first, String second) -> 
+  {
+     if (first.length() < second.length()) return -1;
+    else if (first.length() > second.length()) return 1;
+    else return 0;
+  }
+```
+
+即使Lambda表达式没有参数，仍然需要提供括号，就像无参数方法一样：
+
+```java
+() -> {for (inti = 100;i >= 0;i ) System.out.println(i);}
+```
+
+如果可以推导出一个 lambda 表达式的参数类型，则可以忽略其类型。例如：  
+
+```java
+//在这里，编译器可以推导出first和 second 必然是字符串，因为这个lambda表达式将赋给一个字符串比较器。
+Comparator<String> comp
+  = (first, second) // Same as (String first, String second)
+    -> first.length() - second.length();
+```
+
+如果方法只有一个参数， 而且这个参数的类型可以推导得出，那么甚至还可以省略小括号：
+
+```java
+ActionListener listener =  event ->
+    System.out.println("The time is " + new Date());
+//等价于
+ActionListener listener =  (event) ->
+    System.out.println("The time is " + new Date());
+```
+
+> 如果一个 lambda 表达式只在某些分支返回一个值， 而在另外一些分支不返回值，这是不合法的。 例如，（int x)-> { if (x >= 0) return 1; } 就不合法。  
+
+### 函数式接口
+
+Java中已经有很多封装代码块的接口， 如 ActionListener 或Comparator。lambda 表达式与这些接口是兼容的。对于只有一个抽象方法的接口，需要这种接口的对象时，就可以提供一个lambda表达式，这种接口称为**函数式接口**。
+
+> 为什么函数式接口必须有一个抽象方法，不是接口中的所有方法都是抽象的吗？ 实际上， 接口完全有可能重新声明 Object 类的方法， 如 toString 或 clone，这些声明有可能会让方法不再是抽象的。 
+
+最好把 lambda 表达式看作是一个函数， 而不是一个对象， 另外要接受 lambda 表达式可以传递到函数式接口。 
+
+```java
+Arrays.sort(planets, (first, second) -> first.length() - second.length());
+```
+
+lambda表达式可以转换为接口，这个特性使得Lambda表达式的应用更加灵活。比如下面的写法：
+
+```java
+Timer t = new Timer(1000, event ->
+    System.out.println("Time time is " + new Date()));
+t.start();
+
+//or
+
+public static void thraderFunc(){
+    new Thread(
+            () -> {
+                System.out.println("1");
+            }
+    ).start();
+}
+```
+
+Timer类和Thread类的声明如下：
+
+```java
+javax.swing.Timer.Timer(int delay, ActionListener listener)
+java.lang.Thread.Thread(Runnable target)
+```
+
+实际上，在 Java 中， 对 lambda 表达式所能做的也只是能转换为函数式接口。  
+
+### 方法引用
+
+```java
+Timer t = new Timer(1000, event -> System.out.println(event)):
+//等价于
+Timer t = new Timer(1000, Systei.out::println);//直接把println方法传递到Timer构造器
+
+//对字符串排序，而不考虑字母的大小写
+Arrays.sort(strings，String::conpareToIgnoreCase)
+```
+
+表达式 System.out::println 是一个方法引用（method reference )，它等价于 lambda 表达式x -> System.out.println(x)。  
+
+注意，要用::操作符分隔方法名与对象或类名，主要有下面3种情况：
+
+1. object::instanceMethod
+2. Class::staticMethod
+3. Class::instanceMethod
+
+前2种情况，方法引用等价于提供方法参数的lambda表达式。System.out::println 等价于 x -> System.out.println(x)。 类似地， Math::pow 等价于（x，y) -> Math.pow(x, y)。
+
+对于第3种情况，第1个参数会成为方法的目标。String::conpareToIgnoreCase等同于(x, y) -> x.conpareToIgnoreCase(y)。
+
+>  **类似于lambda表达式，方法引用不能独立存在，总是会转换为函数式接口的实例。**
+
+### 构造器引用
+
+### 变量作用域（闭包）
+
+观察下面的例子：
+
+```java
+private static void repeatPrint(int delay, String text) {
+    for (int i = 0; i < 3; i++) {
+        Timer t = new Timer(delay, event -> {
+            System.out.println(text);
+            //delay--; //ERROR:Local variable delay defined in an enclosing scope must be final or effectively finalJava(536871575)
+            System.out.println(delay);
+
+            //System.out.println(i); //ERROR:Local variable i defined in an enclosing scope must be final or effectively finalJava(536871575)
+        });
+
+        t.start();
+    }
+}
+```
+
+我们在lmabda表达式中打印了text和delay两个变量，而这两个变量是repeatPrint的方法参数，并不是在lambda表达式中定义的。lambda 表达式的代码可能会在repeatPrint调用返回很久以后才运行， 而那时这些参数变量已经不存在了。 如何保留 text和delay变量呢？  
+
+继续理解lambda表达式的3个组成部分：
+
+1. 一个代码块，{ ... }。
+2. 参数，( event )。
+3. 自由变量的值，这是指非参数而且不在代码中定义的变量。
+
+在上面的代码中，lambda表达式有两个自由变量text和delay。表示lambda表达式的数据结构必须存储自由变量的指，在这里就是text和delay的值，我们说它们被lambda表达式**捕获（captured）**了。
+
+> 关于代码块以及自由变量值有一个术语：闭包（closure）。在Java中，lambda表达式就是闭包。
+
+可以看到， lambda 表达式可以捕获外围作用域中变量的值。 在 Java 中， 要确保所捕获的值是明确定义的，这里有一个重要的限制。**在 lambda 表达式中， 只能引用值不会改变的变量**。  因此，在上面代码中我们试图在表达式中修改delay时，编译器就会报错。这个限制有一定原因，如果在lambda表达式中改变变量，并发执行多个动作时就会不安全。
+
+此外，**如果在 lambda 表达式中引用变量， 而这个变量可能在外部改变，这也是不合法的**。比如上面代码中，我们试图去引用循环变量 i 的值，也会触发编译器错误。
+
+实际上，这里有一条规则：lambda表达式中捕获的变量必须实际上是最终变量（effectively final）。实际上的最终变量是指，这个变量初始化之后就不会再为它赋新值。
+
+lambda 表达式的体与嵌套块有相同的作用域。因此，在 lambda 表达式中声明与一个局部变量同名的参数或局部变量是不合法的。  
+
+在一个lambda表达式中使用*this*关键字时，是指创建这个lambda表达式的方法的this参数。在下面的代码中，this.toString()将会调用Application对象的toString方法，而不是ActionListener实例的方法。
+
+```java
+public class Application() {
+    public void init(){
+        ActionListener listener = event ->
+        {
+            System.out.println(this.toString());
+        }
+    }
+}
+```
+
+### 再谈Comparator
+
+Comparator 接口包含很多方便的静态方法来创建比较器。 这些方法可以用于 lambda 表达式或方法引用。
+静态 comparing 方法取一个“ 键提取器” 函数， 它将类型 T 映射为一个可比较的类型( 如 String )。 对要比较的对象应用这个函数， 然后对返回的键完成比较。 例如， 假设有一个Person 对象数组，可以如下按名字对这些对象排序：  
+
+```java
+Arrays.sort(people, Comparator.comparing(Person::getName));
+```
+
+可以把比较器与thenComparing方法串起来，如果两个人的姓相同，就会使用第二个比较器。
+
+```java
+Arrays.sort(people, Comparator.comparing(Person::getLastName)
+           .thenComparing(Person::getFirstName));
+```
+
+还可以为comparing和thenComparing方法提取的键指定一个比较器，这里我们就可以再次使用lambda表达式来实现按字符串长度排序：
+
+```java
+Arrays.sort(people, Comparator.comparing(Person::getName,
+            (s, t) -> Integer.compare(s.length(), t.length())));
+```
+
+## 内部类
+
+内部类（inner class）是定义在另一个类中的类，使用内部类的主要原因：
+
+1. 内部类方法可以访问该类定义所在的作用域中的数据，包括私有的数据。内部类既可以访问自身的数据，也可以访问创建它的外围类对象的数据域。 因为内部类的对象总有一个隐式引用，它指向了创建它的外部类对象。
+2. 内部类可以对同一个包中的其他类隐藏起来。
+3. 当想要定义一个回调函数且不想编写大量代码时，使用匿名内部类比较便捷。
+
+内部类的一些约束：
+
+1. 内部类中声明的所有静态域都必须是final。因为我们希望静态域只有一个实例，而每个外部对象都可能创建单独的内部类实例，如果这个域不是final的，它可能就不是唯一的。
+2. 内部类不能有static方法。
+
+内部类是一种编译器现象，与虚拟机无关。编译器会把内部类翻译成用$分割外部类名与内部类名的常规类文件，虚拟机对此一无所知。
+
+### 局部内部类
+
+创建在外部类的某个方法中的内部类，称为局部内部类。它的作用域被限定在声明这个局部类的块中。
+
+局部内部类不能用public或private访问修饰符进行说明，它的作用域被限定在这个局部类的块中。比如这里只能在start函数里使用LocalTimerPrinter。
+与其他内部类相比较，局部类不仅能访问包含它们的外部类，还可以访问局部变量。不过，这些局部变量必须事实上为final。
+
+```java
+public class InnerClass {
+    public static void Test() {
+        TestTalkingClock();
+    }
+
+    public static void TestTalkingClock() {
+        TalkingClock clock = new TalkingClock(1000, true);
+        clock.start();
+
+        //弹窗保持程序运行
+        JOptionPane.showMessageDialog(null, "Quit program?");
+        System.exit(0);
+    }
+}
+
+class TalkingClock
+{
+    private int interval;
+    private boolean beep;
+
+    /**
+     * 构造一个talking clock
+    */
+    public TalkingClock(int interval, boolean beep) {
+        this.interval = interval;
+        this.beep = beep;
+    }
+
+    public void start() {
+        ActionListener listener = new TimerPrinter();
+        Timer t = new Timer(interval, listener);
+        t.start();
+
+        /*
+            局部内部类
+        */
+        class LocalTimerPrinter implements ActionListener
+        {
+            //内部类中声明的所有静态域都必须是final
+            private static final String message = "LocalTimerPrinter";
+    
+            public void actionPerformed (ActionEvent event) {
+                System.out.println("At the tone, the time is " + new Date());
+                //注意，这里的beep是start方法的参数变量，而start方法会提前退出，
+                //beep参数变量也随之消失，为了保证局部内部类的访问
+                //编译器必须检测对局部变量的访问，为每一个变量建立相应的数据域
+                //并将局部变量拷贝到构造器中，以便将这些数据域初始化为局部变量的副本
+                if (beep) {
+                    System.out.println("Beeping 3... " + message);
+                }
+            }
+        }
+
+        ActionListener listener1 = new LocalTimerPrinter();
+        Timer t1 = new Timer(interval, listener1);
+        t1.start();
+    }
+}
+```
+
+
+
+### 匿名内部类
+
+```java
+class TalkingClock
+{
+
+    private int interval;
+    private boolean beep;
+
+    /**
+     * 构造一个talking clock
+    */
+    public TalkingClock(int interval, boolean beep) {
+        this.interval = interval;
+        this.beep = beep;
+    }
+
+    public void start() {
+        /*
+            匿名内部类
+        */
+        //写法的含义：创建一个实现 ActionListener 接口的类的新
+        //对象，需要实现的方法 actionPerformed 定义在括号内。
+        //由于构造器的名字必须与类名相同，而匿名类没有类名，所以匿名类不能有构造器。
+        //相比之下，其实Lambda表达式更有吸引力
+        ActionListener listener2 = new ActionListener() {
+            private static final String message1 = "AnonymousTimerPrinter";
+            public void actionPerformed (ActionEvent event) {
+                System.out.println("At the tone, the time is " + new Date());
+                if (beep) {
+                    System.out.println("Beeping 4... " + message1);
+                }
+            }
+        }; //注意这里的分号
+
+        Timer t2 = new Timer(interval, listener2);
+        t2.start();
+    }
+}
+```
+
+### 静态内部类
+
+有时使用内部类只是为了把一个类隐藏在另外一个类的内部，并不需要内部类引用外围类对象。为此，可以将内部类声明为 static, 以便取消产生的引用。只有内部类可以声明为static。
+
+静态内部类的对象除了没有对生成它的外围类对象的引用特权外，与其它所有内部类完全一样。在内部类不需要访问外部类对象的时候，应该使用静态内部类。
+
+```java
+public class StaticInnerClass {
+    public static void Test() {
+        double[] values = new double[20];
+        for (int i = 0; i < values.length; i++) {
+            values[i] = 100 * Math.random();
+        }
+        ArrayAlg.Pair p = ArrayAlg.mixmax(values);
+        System.out.println(Arrays.toString(values));
+        System.out.println("Min: " + p.getFirst());
+        System.out.println("Max: " + p.getSecond());
+    }
+}
+
+class ArrayAlg
+{
+    /*
+        静态内部类
+    */
+    public static class Pair
+    {
+        private double first;
+        private double second;
+
+        //Pair构造器
+        public Pair(double f, double s) {
+            first = f;
+            second = s;
+        }
+
+        public double getFirst() {
+            return first;
+        }
+
+        public double getSecond() {
+            return second;
+        }
+    }
+
+    //提供一个ArrayAlg的静态方法，返回数组中的最大值和最小值
+    public static Pair mixmax(double[] values) {
+        double min = Double.POSITIVE_INFINITY;
+        double max = Double.NEGATIVE_INFINITY;
+
+        for (double d : values) {
+            if (d > max) max = d;
+            if (d < min) min = d;
+        }
+
+        //将最大值和最小值封装在一个Pair中
+        return new Pair(min, max);
+    }
+}
+```
 
 ## 代理类
 
@@ -1951,3 +2581,35 @@ class TraceHandler implements InvocationHandler
 
 # 集合
 
+## Java集合框架
+
+[ProcessOn：Java Collection Framwork](https://www.processon.com/view/link/5ed7adfe637689186214f6a1)
+
+### Collection接口
+
+### Iterator迭代器
+
+### Map接口
+
+### Queue接口
+
+## Java库中的具体集合
+
+| 集合类型        | 描述                                                         | 底层数据结构       |
+| --------------- | ------------------------------------------------------------ | ------------------ |
+| ArrayList       | 数组列表：一种可以动态增长和缩减的索引序列                   |                    |
+| LinkedList      | 链接列表：一种可以在任何位置进行高效地插人和删除操作的有序序列，也是实现了Deque接口的双端队列 | 链表               |
+| ArrayDeque      | 数组队列：一种用循环数组实现的双端队列                       |                    |
+| HashSet         | 散列集合：一种没有重复元素的无序集合                         | 链表数组（哈希桶） |
+| TreeSet         | 树集：—种有序集，元素插入后自动排序                          | 红黑树             |
+| EnumSet         | 枚举集合：一种包含枚举类型值的集                             |                    |
+| LinkedHashSet   | 链接散列集合：一种可以记住元素插人次序的散列集合             |                    |
+| PriorityQueue   | 优先队列：一种允许高效删除最小元素的集合                     | 堆                 |
+| HashMap         | 散列映射：一种存储键 / 值关联的数据结构                      |                    |
+| TreeMap         | 树映射：—种键值有序排列的映射表                              | 红黑树             |
+| EnumMap         | 枚举映射：一种键值属于枚举类型的映射表                       |                    |
+| LinkedHashMap   | 链接散列映射：一种可以记住键 / 值项添加次序的映射表          |                    |
+| WeakHashMap     | 弱(引用)散列映射：一种其值无用武之地后可以被垃圾回收器回收的映射表 |                    |
+| IdentityHashMap | 标识散列映射：一种用 == 而不是用 equals 比较键值（即比较内存地址而不是hashCode值）的映射表， |                    |
+
+## 视图
