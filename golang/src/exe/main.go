@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"perf/gmp"
 	"runtime"
 	"time"
 
@@ -96,7 +97,8 @@ func main() {
 
 	module_list := "module list: default, slice, mapTest, function, " +
 		"structTest, method, interfaces, error, io, goruntine, crawl, walk, " +
-		"chat, mutex, memo, memo1, word, reflect, unsafed, muxdemo, mem"
+		"chat, mutex, memo, memo1, word, reflect, unsafed, muxdemo, mem, " +
+		"gmp"
 
 	switch module {
 	case "default":
@@ -143,6 +145,8 @@ func main() {
 		muxdemo.Test()
 	case "mem":
 		mem.Test()
+	case "gmp":
+		gmp.Test()
 	default:
 		fmt.Println(module_list)
 	}
