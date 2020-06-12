@@ -1,4 +1,4 @@
-认识Java
+# 认识Java
 
 Java并不只是一个编程语言，而是一个完整的平台，有一个庞大的库，其中包含了很多可重用的代码和一个提供诸如安全性，跨操作系统的可移植性以及自动垃圾回收等服务的执行环境。
 
@@ -22,6 +22,106 @@ Java并不只是一个编程语言，而是一个完整的平台，有一个庞�
 * // comments
 * /* comments */ --这种注释不能嵌套，不能简单地把代码用/\*和\*/括起来，因为这段代码本身也可能包含一个\*/。
 * /**  comments */  --可用于自动生成文档。
+
+## 编译打包和运行
+
+这一小节的内容可以在后面练习一些基础代码，对包有一些了解之后再看。
+
+### 编译
+
+```shell
+javac -d ./bin -cp ./src:$CLASSPATH ./src/CoreJavaTest.java ./src/com/hebostary/corejava/*.java
+```
+
+### 打包jar包
+
+```shell
+cd bin
+jar -cvfe  ../pkg/CoreJavaTest.jar CoreJavaTest .
+cd -
+```
+
+### 解压jar包
+
+```shell
+jar -xvf pkg/CoreJavaTest.jar
+```
+
+### 运行jar包
+
+```shell
+java -jar pkg/CoreJavaTest.jar
+```
+
+### 目录结构
+
+```shell
+[root@izuf682lz6444cynn96up0z java]# tree
+.
+├── bin
+│   ├── com
+│   │   └── hebostary
+│   │       └── corejava
+│   │           ├── ArrayListTest$1.class
+│   │           ├── ArrayListTest.class
+│   │           ├── collection
+│   │           │   ├── BitSetTest$1.class
+│   │           │   ├── BitSetTest.class
+│   │           │   ├── CollectionTest$1.class
+│   │           │   ├── CollectionTest.class
+│   │           │   ├── EnumSetMapTest$1.class
+│   │           │   ├── EnumSetMapTest.class
+│   │           │   ├── EnumSetMapTest$Weekday.class
+│   │           │   ├── MapTest$1.class
+│   │           │   └── MapTest.class
+│   │           ├── Common.class
+│   │           ├── Employee.class
+│   │           ├── EmployeeSort.class
+│   │           ├── EnumTest.class
+│   │           ├── HelloWorld.class
+│   │           ├── Manager.class
+│   │           └── Size.class
+│   └── CoreJavaTest.class
+├── build.sh
+├── pkg
+│   └── CoreJavaTest.jar
+└── src
+    ├── com
+    │   └── hebostary
+    │       └── corejava
+    │           ├── ArrayListTest.java
+    │           ├── collection
+    │           │   ├── BitSetTest.java
+    │           │   ├── CollectionTest.java
+    │           │   ├── EnumSetMapTest.java
+    │           │   └── MapTest.java
+    │           ├── Common.java
+    │           ├── Employee.java
+    │           ├── EmployeeSort.java
+    │           ├── EnumTest.java
+    │           ├── exception
+    │           │   ├── ExceptionTest.java
+    │           │   └── FileFormatException.java
+    │           ├── generic
+    │           │   ├── GenericMethod.java
+    │           │   └── PairTest.java
+    │           ├── HelloWorld.java
+    │           ├── innerClass
+    │           │   ├── InnerClass.java
+    │           │   └── StaticInnerClass.java
+    │           ├── lambda
+    │           │   └── Lambda.java
+    │           ├── Manager.java
+    │           ├── proxy
+    │           │   └── ProxyTest.java
+    │           ├── reflect
+    │           │   └── Reflection.java
+    │           └── stackTrace
+    │               ├── StackTrace$1.class
+    │               ├── StackTrace.class
+    │               └── StackTrace.java
+    └── CoreJavaTest.java
+```
 
 # 基础语法
 

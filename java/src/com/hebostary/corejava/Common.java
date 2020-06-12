@@ -22,4 +22,9 @@ public class Common {
             System.out.printf("Current address of index[%d]: 0x%x\n", i, System.identityHashCode(arrayList.get(i)));
         }
     }
+
+    public static void printThreadInfo(Thread t, String msg) {
+        System.out.println("[INFO] I'm thread[ " + t.getName() + "], id[ " 
+            + t.getId() + " ], state[ " + t.getState() + " ];" + msg);
+    }
 }

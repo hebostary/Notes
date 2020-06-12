@@ -12,6 +12,7 @@ import com.hebostary.corejava.proxy.*;
 import com.hebostary.corejava.exception.*;
 import com.hebostary.corejava.generic.GenericMethod;
 import com.hebostary.corejava.generic.PairTest;
+import com.hebostary.corejava.concurrence.*;
 
 public class CoreJavaTest
 {
@@ -59,6 +60,9 @@ public class CoreJavaTest
         //CollectionTest.Test();
         //MapTest.Test();
         //EnumSetMapTest.Test();
-        BitSetTest.Test();
+        //BitSetTest.Test();
+
+        //14.并发测试
+        ThreadInterrupt.Test();
     }
 }
