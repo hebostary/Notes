@@ -2713,3 +2713,393 @@ class TraceHandler implements InvocationHandler
 | IdentityHashMap | 标识散列映射：一种用 == 而不是用 equals 比较键值（即比较内存地址而不是hashCode值）的映射表， |                    |
 
 ## 视图
+
+
+
+# Java SE8 流库
+
+流（Stream）提供了一种可以在比集合更高的概念级别上指定计算的数据视图。通过使用流，我们可以说明想要完成什么任务，而不是说明如何去实现它。
+
+流表面上看起来和集合很类似，但是它们之间存在着显著的差异：
+
+1. 流并不存储其元素。这些元素可能是存储在底层的集合中，或者是按需生成的。
+2. 流的操作不会修改其数据源。
+3. 流的操作是尽可能惰性执行的。这意味着直至需要其结果时，操作才会执行。
+
+
+
+流操作的典型流程可以总结为下面3个步骤：
+
+1. 创建一个流。
+2. 指定将初始流转换为其它流的中间操作，可能包含多个步骤。
+3. 应用终止操作，从而产生结果。这个操作会强制执行之前的惰性操作，从此之后，这个流就再也不能用了。
+
+## 流的创建
+
+常见的用于创建流的操作：
+
+1. 用Collection接口的stream方法将任何集合转换为一个流。
+2. Stream.of：将数组转换为一个流。
+3. Stream.empty：方法创建不包含任何元素的流。
+4. Arrays.stream：由数组中指定范围的元素产生一个流。
+5. Stream.generate：不断调用参数函数产生无限流。
+6. Stream.iterate：从种子值迭代产生无限流。
+7. 还可以从文件Files和正则表达式Pattern产生流，用法类似。
+
+下面给出部分创建流操作的例子：
+
+```java
+String[] strings = {"a","bb","ccc","dddd","eeeee","ffffff", "hhhhhhh"};
+
+//从数组创建流
+Stream<String> words = Stream.of(strings);
+show("words", words);
+//从数组指定范围元素创建流
+Stream<String> subWords = Arrays.stream(strings, 2, 5);
+show("subWords", subWords);
+Stream<String> song = Stream.of("gently", "down", "the", "stream");
+show("song", song);
+
+//创建一个空的流
+Stream<String> silence = Stream.empty();
+show("silence", silence);
+
+//generate函数产生一个无限流，它的元素是通过不断调用传入的参数函数生成的
+Stream<String> echos = Stream.generate(() -> { return "Echo"; });
+show("echos", echos);
+
+Stream<Double> randoms = Stream.generate(Math::random);
+show("randoms", randoms);
+
+//iterate函数也是产生无限流，它的元素包含一个种子seed（BigInteger.ONE），以及不断调用f(seed)，
+//然后继续调用f(f(seed))，从而可以产生无限元素
+Stream<BigInteger> integers = Stream.iterate(BigInteger.ONE, n -> n.add(BigInteger.ONE));
+show("integers", integers); 
+```
+
+show函数：
+
+```java
+private static <T> void show(String title, Stream<T> stream) {
+  final int LIMIT_SIZE = 10;
+  List<T> firstElements = stream
+    .limit(LIMIT_SIZE + 1)
+    .collect(Collectors.toList());
+
+  System.out.print(title + ":");
+  for (int i = 0; i < firstElements.size(); i++) {
+    if (i > 0) System.out.print(",");
+    if (i < LIMIT_SIZE) System.out.print(firstElements.get(i));
+    else System.out.print("...");
+  }
+
+  System.out.println();
+}
+```
+
+我们也可以通过创建流来惰性处理大文件的所有行：
+
+```java
+try(Stream<String> lines = Files.lines(path, charset))
+{
+  ...
+}
+```
+
+
+
+## 流的转换
+
+本节介绍的流转换操作都是在原有流的元素基础上，通过过滤、排序等操作产生一个新的流。
+
+### 流的filter/map/flatMap操作
+
+```java
+//过滤长度大于3的元素，生成一个新的流
+Stream<String> filterWords = Stream.of(strings).filter(w -> w.length() > 3);
+show("filterWords", filterWords);//filterWords:dddd,eeeee,ffffff,hhhhhhh
+
+//将所有元素从小写转换成大写，生成一个新的流
+Stream<String> upperWords = Stream.of(strings).map(String::toUpperCase);
+show("upperWords", upperWords);//upperWords:A,BB,CCC,DDDD,EEEEE,FFFFFF,HHHHHHH
+
+//对words流的每个元素调用letters方法都产生了一个流，
+//因此最终的结果mapWords时一个流中流，也就是每个元素都是一个流
+Stream<Stream<String>> mapWords = Stream.of(strings).map(w -> letters(w));
+show("mapWords", mapWords);
+//而flatMap方法可以把这种流中流摊平合并成一个结果流
+Stream<String> flatMapWords = Stream.of(strings).flatMap(w -> letters(w));
+show("flatMapWords", flatMapWords);//flatMapWords:a,b,b,c,c,c,d,d,d,d,...
+```
+
+### 抽取子流和连接流
+
+stream.limit(n)：返回一个新的流，它在n个元素之后结束。这个方法对于裁剪无限流的尺寸会显得特别有用。
+
+stream.skip(n)：与limit方法相反，skip方法是丢弃前n个元素。
+
+Stream.contact(stream1, stream2)：将两个流连接起来，但是第一个流不应该是无限的，否则第二个流永远都不会被处理。
+
+### 流的去重
+
+stream.distinct()：返回一个流，元素从原有流中产生，重复元素被剔除。
+
+### 流的排序
+
+stream.sorted()：产生一个新流，元素按照顺序排序
+
+### 并发流
+
+```java
+Stream<String> words = Stream.of(strings);
+words = words.parallel();
+```
+
+
+
+### 流的调试
+
+stream.peek(func)：peek方法会产生另一个流，它的元素与原来流中的元素相同，但是在每次获取一个元素时，都会调用一个函数func。这对于调试非常有帮助。
+
+比如：
+
+```java
+Stream<String> subWords = Arrays.stream(strings, 2, 5).peek(w -> System.out.println("Fetching: " + w));
+```
+
+## 流的约简
+
+约简是一种终结操作（terminal operation），它们会将流约简为可以在程序中使用的非流值，或者说得到从数据流中得到答案。
+
+stream.count()：返回流中元素的数量。
+
+stream.max()：返回最大值。
+
+stream.min()：返回最小值。
+
+stream.findFirst()：返回非空集合中的第一个值，通常与filter组合使用，比如获得第一个以Q开头的元素：
+
+```java
+Optional<String> startWithQ = words.filter(s -> s.startWith("Q")).findFirst();
+```
+
+类似的操作还有anyMatch，findAny等，可以在具体使用时查看手册。
+
+这些方法返回的是一个类型Optional<T>的值，Optional<T>对象是一种包装器对象，它要么在其中包装了类型T的对象，要么没有包装任何对象，表示没有任何值（流为空）。
+
+## Optional类型
+
+### 如何正确的使用Optional值
+
+```java
+//没有任何匹配时，使用默认值
+String result = optionalString.orElse("");
+
+//没有任何值时抛出异常
+String result = optionalString.orElseThrow(IllegalStateException::new);
+
+//可选值存在则传递给参数函数处理，否则，不会发生任何事情
+optionalValue.ifPresent(v -> results.add(v));
+//或者直接写成
+optionalValue.ifPresent(results::add);
+//或者，需要处理返回值
+Optional<Boolean> added = optionalValue.map(results::add);
+```
+
+### 创建Optional值
+
+```java
+//obj不为null的情况下返回Optional.of(obj)，否则返回Optional.empty()
+Optional.ofNullable(obj);
+```
+
+## 收集结果
+
+当处理完流之后，通常会想要查看其元素，可以将结果收集到指定的数据结构中，比如数组，集合以及映射。
+
+### 收集到数组集合
+
+```java
+public class CollectingStream {
+    public static void Test() {
+        Common.PrintClassHeader(new Object(){}.getClass().getEnclosingClass().toString());
+        String[] strings = {"a","bb","ccc","dddd","eeeee","ffffff", "hhhhhhh"};
+
+        Stream<String> words = Stream.of(strings);
+        //将流的结果收集到一个集合中并打印
+        //Collectors类提供了很多用于生成公共收集器的工厂方法
+        show("words", words.collect(Collectors.toSet()));//words:java.util.HashSet
+
+        words = Stream.of(strings);
+        //将流的结果保存到指定的类型集合中
+        show("words", words.collect(Collectors.toCollection(TreeSet::new)));//words:java.util.TreeSet
+
+        //将流结果收集到列表
+        words = Stream.of(strings);
+        List<String> list = words.collect(Collectors.toList());
+        System.out.println(list);
+
+        //将流结果收集到数组
+        //注意：因为无法在运行时创建泛型数组，因此toArray()返回的是Object[]数组
+        //想要得到正确类型的数组，传入指定的数组构造器
+        words = Stream.of(strings);
+        String[] array = words.toArray(String[]::new);
+        System.out.println(array);
+
+        //从流生成一个普通的迭代器
+        Iterator<Integer> iter = Stream.iterate(0, n -> n + 1).limit(10).iterator();
+        while (iter.hasNext()) {
+            System.out.print(iter.next());
+        }
+        System.out.println();
+    }
+
+    private static <T> void show(String label, Set<T> set) {
+        System.out.println(label + ":" + set.getClass().getName());
+        //打印集合元素时，通过流处理来加上分隔符
+        System.out.println("[" + set.stream().limit(10)
+            .map(Object::toString).collect(Collectors.joining(",")) + "]");
+    }
+}
+```
+
+### 收集到映射
+
+实际上，我们还可以将流元素收集到映射表甚至并发映射表中，更灵活的用法可以在使用时再研究。
+
+```java
+private static void collectToMap() {
+  Common.PrintMethodHeader("collectToMap");
+  Stream<Locale> locales = Stream.of(Locale.getAvailableLocales());
+  //默认Locale中的名字为键，而其本地化的名字为值
+  //这里我们不关心同一种语言是否会出现两次，比如很多国家都用英语，因此只记录第一项
+  Map<String, String> localesMap = locales.collect(Collectors.toMap(Locale::getDisplayLanguage, 
+                                                                    l -> l.getDisplayLanguage(l), (existingValue, newValue) -> existingValue));
+  System.out.println(localesMap.get("Chinese"));
+}
+```
+
+### 群组/分区以及下游收集器
+
+```java
+private static void grouping() {
+  Common.PrintMethodHeader("grouping");
+  Stream<Locale> locales = Stream.of(Locale.getAvailableLocales());
+  //通过群组方法收集给定国家的语言，并输出到映射表中
+  //Locale::getCountry是群组的分类函数
+  Map<String, List<Locale>> countryToLocales = locales.collect(
+    Collectors.groupingBy(Locale::getCountry));
+  System.out.println(countryToLocales.get("CH")); //[gsw_CH, de_CH, pt_CH, fr_CH, rm_CH, it_CH, wae_CH, en_CH]
+
+  //groupingBy会产生一个映射表，它的每个值都是一个列表
+  //如果想要一某种方式处理这些列表，就需要提供“下游处理器”
+  //Collectors包提供了很多“下游收集器”方法来获取不同类型的映射表结果
+  //群组分类的值是集合而不是默认的列表
+  locales = Stream.of(Locale.getAvailableLocales());
+  Map<String, Set<Locale>> countryToLocalesSet = locales.collect(
+    Collectors.groupingBy(Locale::getCountry, Collectors.toSet()));
+  System.out.println(countryToLocalesSet.get("CH")); 
+
+  //群组分类的值是计数
+  locales = Stream.of(Locale.getAvailableLocales());
+  Map<String, Long> countryToLocalesCount = locales.collect(
+    Collectors.groupingBy(Locale::getCountry, Collectors.counting()));
+  System.out.println(countryToLocalesCount.get("CH")); //8
+}
+```
+
+## 约简操作
+
+reduce方法是一种用于从流中计算某个值的通用机制。通常，如果reduce方法有一项约简操作op，那么该约简操作就会产生v0 *op* v1 *op* v2 *op* ..。这个操作op应该是可结合的：即组合元素时使用的顺序不应该成为问题，这使得在使用并行流时，可以执行高效的约简。来看下面的例子：
+
+```java
+private static void reduce()
+{
+  Common.PrintMethodHeader("reduce");
+  //计算所有元素的和，参数函数称作累积器（accumulator）
+  Stream<Integer> iStream = Stream.iterate(0, n -> n + 1).limit(10);
+  Optional<Integer> sum = iStream.reduce((x, y) -> x + y);
+  System.out.println(sum.orElse(999));//45等价于将流中的所有元素相加
+
+  //计算所有字符串的长度总和
+  //reduce的第一个参数函数叫累积器（accumulator），这个函数会被反复调用，产生累积的总和
+  //第二个参数函数叫组合器（combiner），因为并行计算时，会有多个累积器的运算结果，需要通过组合器来合并结果
+  String[] words = {"a","bb","ccc","dddd","eeeee","ffffff", "hhhhhhh"};
+  int result = Stream.of(words).reduce(0, 
+                                       (total, w) -> total + w.length(), 
+                                       (total1, total2) -> total1 + total2);
+  System.out.println("Total length: " + result);//28
+  //对于这个特例，使用下面的方法更加高效，因为不涉及装箱操作
+  //stream.mapToInt返回一个IntStream，它的元素就是将后面的参数函数应用到原有流的每个元素所得到的结果
+  result = Stream.of(words).mapToInt(String::length).sum();
+  System.out.println("Total length: " + result);//28
+}
+```
+
+## 基本类型流
+
+前面介绍的各种流操作中，大多是将整数收集到Stream<Integer>中。实际上，将每个整数都包装到包装器对象中是很低效的。流库中有专门的类型IntStream，LongStream，DoubleStream，用来直接存储基本类型值，而无需使用包装器：
+
+1. IntStream可以用来存储short，char，byte和boolean。
+2. DoubleStream可以用来存储double。
+
+构造基本类型流：
+
+```java
+IntStream stream = IntStream.of(1,2,3,4);
+stream = Arrays.stream(values, from, to);//values是一个int[]类型的数组
+```
+
+当有一个对象流时，可以用mapToInt，mapToLong和mapToDouble将其转换为基本类型流。比如：
+
+```java
+IntStream stream = Stream.of(words).mapToInt(String::length);
+```
+
+也可以使用boxed方法将基本类型流转换成对象流：
+
+```java
+//range生成步长为1的整数范围
+Stream<Integer> integers = IntStream.range(0, 100).boxed();
+```
+
+## 并行流
+
+先通过简单的例子了解并行流的基本用法：
+
+```java
+public class ParallelStream {
+    public static void Test() {
+        Common.PrintClassHeader(new Object(){}.getClass().getEnclosingClass().toString());
+        String[] strings = {"a","bb","ccc","dddd","eeee","ffffff", "hhhhhhh"};
+        //先根据元素长度进行群组，再收集到映射表，这个并行流操作是安全的
+        Map<Integer, Long> result = Stream.of(strings).parallel()
+            .filter(w -> w.length() < 10)
+            .collect(Collectors.groupingBy(String::length, Collectors.counting()));
+        System.out.println(result);
+
+        //groupingByConcurrent使用了共享的并发映射表
+        Map<Integer, List<String>> rMap = Stream.of(strings).parallel()
+            .filter(w -> w.length() < 10)
+            .collect(Collectors.groupingByConcurrent(String::length));
+        System.out.println(rMap);
+    }
+}
+```
+
+为了让并行流正常工作，需要满足下面条件（这也是我们计划使用并行流时应该考虑的问题）：
+
+1. 数据应该在内存中。必须等到数据到达是非常低效的。
+2. 流应该可以被高效地分成若干个子部分。由数组或平衡二叉树支撑的流都可以工作得很好，但是Stream.iterate返回的结果不行。
+3. 流操作的工作量应该具有较大的规模。如果总工作负载不是很大，那么搭建并行计算时所付出的代价就没有什么意义。
+4. 流操作不应该被阻塞。并行流使用fork-join池来操作流的各个部分，如果多个流操作被阻塞，那么池可能就无法做任何事情了。
+
+> 不要修改在执行某项流操作后会将元素返回到流中的集合（即使这种修改是线程安全的）。记住，流并不会收集它们的数据，数据总是在单独的集合中。如果修改了这样的集合，那么流操作的结果就是未定义的。比如下面的错误代码：
+>
+> ```java
+> Stream<String> words = wordList.stream();
+> words.forEach(s -> if(s.length() < 12) wordList.remove(s));
+> ```
+
+# Java IO
+

@@ -25,6 +25,7 @@ public class Common {
 
     public static void printThreadInfo(Thread t, String msg) {
         System.out.println("[INFO] I'm thread[ " + t.getName() + "], id[ " 
-            + t.getId() + " ], state[ " + t.getState() + " ];" + msg);
+            + t.getId() + " ], state[ " + t.getState() + " ], priority[ "
+            + t.getPriority() + "]; Say: " + msg);
     }
 }

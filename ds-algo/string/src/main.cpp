@@ -1,7 +1,7 @@
-#include "graph/graph.hpp"
+#include "string/string.hpp"
 
 int main() {
     cout<<"[BEGIN] testing..."<<endl;
-    graphTest();
+    StringMatchTest();
     cout<<"[END] testing..."<<endl;
 }

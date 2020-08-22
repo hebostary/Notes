@@ -5,14 +5,21 @@ import com.hebostary.corejava.collection.EnumSetMapTest;
 import com.hebostary.corejava.collection.MapTest;
 import com.hebostary.corejava.innerClass.InnerClass;
 import com.hebostary.corejava.innerClass.StaticInnerClass;
+import com.hebostary.corejava.io.FileIO;
 import com.hebostary.corejava.lambda.*;
 import com.hebostary.corejava.reflect.*;
 import com.hebostary.corejava.stackTrace.StackTrace;
+import com.hebostary.corejava.stream.CollectingStream;
+import com.hebostary.corejava.stream.CreatingStream;
+import com.hebostary.corejava.stream.ParallelStream;
 import com.hebostary.corejava.proxy.*;
 import com.hebostary.corejava.exception.*;
 import com.hebostary.corejava.generic.GenericMethod;
 import com.hebostary.corejava.generic.PairTest;
 import com.hebostary.corejava.concurrence.*;
+import com.hebostary.corejava.concurrence.bank.BankTest;
+import com.hebostary.corejava.concurrence.future.FutureTest;
+import com.hebostary.corejava.concurrence.threadPool.ThreadPool;
 
 public class CoreJavaTest
 {
@@ -63,6 +70,17 @@ public class CoreJavaTest
         //BitSetTest.Test();
 
         //14.并发测试
-        ThreadInterrupt.Test();
+        //ThreadInterrupt.Test();
+        //BankTest.Test();
+        //FutureTest.Test();
+        //ThreadPool.Test();
+
+        //15.流测试
+        //CreatingStream.Test();
+        //CollectingStream.Test();
+        //ParallelStream.Test();
+
+        //16.测试IO
+        FileIO.Test();
     }
 }
