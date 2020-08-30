@@ -1,5 +1,7 @@
 #include "common.hpp"
 
+const int GUID_LEN = 16;
+
 static clock_t beginRunTime = clock();
 
 void recordRunTime(bool finish) {
@@ -22,4 +24,25 @@ vector<int> createRandomVec(int size, int max) {
     }
 
     return vec;
+}
+
+string createUUID()
+{
+    char buf[GUID_LEN] = { 0 };
+
+    uuid_t uu;   
+    uuid_generate( uu );   
+
+    int32_t index = 0;
+    for (int32_t i = 0; i < 16; i++)
+    {
+        int32_t len = i < 15 ? 
+            sprintf(buf + index, "%02X-", uu[i]) : 
+            sprintf(buf + index, "%02X", uu[i]);
+        if(len < 0 )
+            return std::move(std::string(""));
+        index += len;
+    }
+
+    return std::move(std::string(buf));
 }
