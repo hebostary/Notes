@@ -4,6 +4,9 @@
 #include <iostream>
 #include <time.h>
 #include <vector>
+#include <string.h>
+#include <queue>
+#include <uuid/uuid.h>
 
 using namespace std;
 
@@ -31,5 +34,10 @@ void printVec(vector<T> &vec) {
     }
     cout<<"]"<<endl;
 }
+
+/*
+* 生成UUID字符串
+*/
+string createUUID();
 
 #endif

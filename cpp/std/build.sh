@@ -6,6 +6,13 @@ buildpath="$basepath/build"
 
 param1=$1
 
+rpm -qa |grep libuuid-devel
+if [ $? -ne 0 ];then
+  yum install e2fsprogs-devel -y
+  yum install uuid-devel -y
+  yum install libuuid-devel -y
+fi
+
 # ./build.sh    --clean, make and run
 # ./build.sh run   --just run
 # ./build.sh clean   --just clean build directory
