@@ -1,4 +1,6 @@
 #include "string.hpp"
+#include <string.h>
+#include "../common/common.hpp"
 
 int BFMatch(const string str, const string parten)
 {
@@ -77,11 +79,78 @@ int RKMatch(const string str, const string parten)
     return index;
 }
 
+int KMPMatch(const string str, const string parten)
+{
+    cout<<"[KMPMatch] finding "<< parten << " in " << str <<endl;
+    int index = -1;
+    const char* sChar = str.c_str();
+    const int sLen = str.size();
+    const char* pChar = parten.c_str();
+    const int pLen = parten.size();
+
+    vector<int> next = getNexts(pChar);
+    int pIndex = 0; //表示在模式串中的索引（下标）
+    for (int sIndex = 0; sIndex < sLen; sIndex++)
+    {
+        while (pIndex > 0 && sChar[sIndex] != pChar[pIndex])
+        {
+            //遇到了坏字符，模式串中索引0 -> pIndex-1的子串就是当前的好前缀
+            //k = next[pIndex-1] 表示当前好前缀子串的前缀和后缀的最大公共子串长度为 k
+            //因此直接从模式串索引等于 k 的地方开始继续比较
+            pIndex = next[pIndex-1];
+            cout << "To comparie str["<< sIndex<<"] and parten["<<pIndex<<"]"<<endl;
+        }
+
+        //字符相等，在模式串中的匹配比较位置向后移动 1 位，0 -> pIndex这个子串在母串中匹配成功
+        if(sChar[sIndex] == pChar[pIndex]) ++pIndex;
+        
+        //在母串中找到匹配模式串
+        /*
+        a b a d d w r //母串,匹配成功时sIndex = 4
+            a d d     //模式串。匹配成功时sIndex = 3
+        */
+        if(pIndex == pLen) {
+            index = sIndex - pIndex + 1;
+            break;
+        }
+    }
+    
+    cout<<"[KMPMatch] found index "<< index <<endl;
+    return index;
+}
+
+vector<int> getNexts(const char* pChar)
+{
+    int len = strlen(pChar);
+    vector<int> next(len);
+    if(len < 1) return next;
+    
+    //这里一定要注意对next[0]的处理，
+    //最好直接设置next[0] = 0，然后在后面的循环中跳过对next[0]的处理
+    next[0] = 0;
+    for(int pIndex = 1; pIndex < len; pIndex++)
+    {
+        //now是 0 -> pIndex-1这个子串的前后缀最大公共子串的长度
+        int now = next[pIndex-1];
+        while (now != 0 && pChar[now] != pChar[pIndex])
+        {
+            now = next[now - 1];
+        }
+        next[pIndex] = pChar[now] != pChar[pIndex] ? 0 : now+1;
+    }
+
+    printVec(next);
+    return next;
+}
+
 void StringMatchTest()
 {
     cout<<"***********[Begin] StringMatchTest**********"<<endl;
-    //                                |matched here                                      
-    BFMatch("asdhublasdbasfbkbghsabdgsaaabbccbgbasjgdajgldsl", "aabbcc");
-    RKMatch("asdhublasdbasfbkbghsabdgsaaabbccbgbasjgdajgldsl", "aabbcc");
+    //                                |matched here         
+    string str("dfgsdfdsfgsabcabdabcabdddabcabcdfgdsf");
+    string parten("abcabdddabcabc");                        
+    BFMatch(str, parten);
+    RKMatch(str, parten);
+    KMPMatch(str, parten);
     cout<<"***********[End] StringMatchTest**********"<<endl;
 }

@@ -65,5 +65,11 @@ void TestStringClass()
     s2 = s3;
     cout<<"s2: "<<s2<<endl;
 
+    int len = 10;
+    char* cstr1 = new char[len]();
+    for (size_t i = 0; i < len; i++) cstr1[i] = 'a';
+    cout << " string(cstr1): " << string(cstr1) << endl;
+
+
     cout<<"***********[End] TestStringClass**********"<<endl;
 }

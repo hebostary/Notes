@@ -23,7 +23,7 @@ vector<int> createRandomVec(int size, int max);
 */
 template<class T>
 void printVec(vector<T> &vec) {
-    return;
+    //return;
     cout<<"Print Vector: [";
     for (auto ite = vec.begin(); ite != vec.end(); ++ite)
     {

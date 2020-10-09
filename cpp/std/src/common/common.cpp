@@ -46,3 +46,10 @@ string createUUID()
 
     return std::move(std::string(buf));
 }
+
+void printIntArray(int a[])
+{
+    size_t size = sizeof(a);//始终都是8，指针的长度，数组作为参数传递时，
+    //编译器自动将a调整为指向int的指针类型
+    cout << __FUNCTION__ << " array size: " << size << endl;
+}

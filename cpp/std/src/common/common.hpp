@@ -40,4 +40,6 @@ void printVec(vector<T> &vec) {
 */
 string createUUID();
 
+void printIntArray(int a[]);
+
 #endif
