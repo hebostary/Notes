@@ -1,6 +1,14 @@
+# C++学习资料
+
+[Cpp references 中文版](https://zh.cppreference.com/w/cpp)
+
+[C++语言参考手册](https://zh.cppreference.com/w/cpp/language)
+
+[GeeksForGeeks C++专题](https://www.geeksforgeeks.org/virtual-functions-and-runtime-polymorphism-in-c-set-1-introduction/)
+
 # C++语言基础
 
-## C++代码结构和布局
+## 代码结构和布局
 
 ### Header（头文件）的防卫式声明
 
@@ -24,6 +32,391 @@ class Complex
 > String.cpp:(.text+0x0): multiple definition of `String::~String()'
 > CMakeFiles/demo.dir/main.cpp.o:main.cpp:(.text+0x0): first defined here
 > ```
+
+## 基础语法专题
+
+### 数据类型及常见用法
+
+#### 常见类型极值定义
+
+
+
+#### 常见类型转换
+
+### 数组
+
+关于C++数组的一些总结：
+
+1. 栈上分配数组长度必须是常量或者常量表达式，堆上可以分配动态数组。
+2. 局部数组不会自动初始化，而全局数组会被自动初始化为元素默认值。
+3. 理解这篇文章：[C/C++中数组与指针的关系探究](https://www.cnblogs.com/zhiheng/p/6683334.html)
+
+下面给出一些常规使用案例：
+
+```c++
+#include "Array.hpp"
+
+const int LEN = 3;
+int g_a[LEN]; //全局数组元素会被初始化为默认值
+
+void TestArray()
+{
+    cout<<"***********[Begin] "<<__FUNCTION__<<"**********"<<endl;
+    //1.数组的长度只能是常量或者是常量表达式
+    int a1[LEN]; //局部数组元素不会自动初始化
+    int a2[3] = { 30 }; //首元素被初始化为指定值，其余元素初始化为默认值
+    int a3[3] = { 11, 22, 33};
+    //int a4[n] = { 3 }; //variable "a4" may not be initializedC/C++(145)
+    cout<<__FUNCTION__<<" a1[2]="<<a1[2]<<endl;//a1[2]=4197413
+    cout<<__FUNCTION__<<" a2[0]="<< a2[0] <<", a2[2]="<<a2[2]<<endl;// a2[0]=30, a2[2]=0
+    cout<<__FUNCTION__<<" a3[2]="<<a3[2]<<endl;//33
+    cout<<__FUNCTION__<<" g_a[2]="<<g_a[2]<<endl;//g_a[2]=0
+
+    //2. 探索数组指针
+    //对数组名取地址不会发生指针转换，得到的就是数组地址，
+    //也可以叫做数组指针，这个指针的步长是所有元素的长度和，这里是12
+    cout << __FUNCTION__ << " &a3: " << &a3 << endl;//0x7ffe8bd1c500
+    cout << __FUNCTION__ << " *a3: " << *a3 << endl;//0x7ffe8bd1c500
+    cout << __FUNCTION__ << " (*a3)+1: " << (*a3)+1 << endl;//12，单纯的取值加法运算
+    cout << __FUNCTION__ << " *(a3+1): " << *(a3+1) << endl;//22，等价于a3[1]
+    //&a3[0]：&的优先级不是最高的，所以&的直接作用对象是 a3[0] 这个子表达式，
+    //此时a3转换为指针（int指针）后进行运算，得到数组的第一个元素，&作用于这个元素后取得其地址，
+    //得到的最终结果指向数组首元素的指针。尽管这里的地址和上面的地址相同，但是它们有本质的区别
+    //所谓数组的下标本质是指针运算
+    cout << __FUNCTION__ << " &a3[0]: " << &a3[0] << endl;//0x7ffe8bd1c500
+    //a3[1]等价于int指针加1，得到数组的第二个元素
+    cout << __FUNCTION__ << " &a3[1]: " << &a3[1] << endl;//0x7ffe8bd1c504
+    //发生了指针转换
+    cout << __FUNCTION__ << " (&a3)[0]: " << (&a3)[0] << endl;//0x7ffe8bd1c500
+    //这里实际上是在数组指针上进行运算，指针+1即移动12个字节
+    //注意，这里已经发生了内存越界访问，有很大的安全隐患
+    cout << __FUNCTION__ << " (&a3)[1]: " << (&a3)[1] << endl;//0x7ffe8bd1c50c
+
+    //没有发生转换，所以得到的是数组的大小
+    cout << __FUNCTION__ << " size of a3: " << sizeof(a3) <<endl;//12
+    //a3被转换为指针，所以并不是数组a3与0相加，而是转换后得到的指针在参与运算
+    cout << __FUNCTION__ << " size of a3+0: " << sizeof(a3+0) <<endl;//8
+    TestArrayAsParam(a3);
+
+    //3.动态数组
+    int n = 10;
+    int *pia1 = new int[n]; //每个元素都没有初始化
+    int *pia2 = new int[n]();  // 每个元素初始化为默认值，这里是0
+    //如果元素是class，始终都会调用默认构造函数进行初始化
+    string *psa1 = new string[n];//调用每个元素的默认构造函数
+    string *psa2 = new string[n]();//调用每个元素的默认构造函数
+
+    //4。二维数组
+    int value1[9][9];//未初始化
+    int value2[9][9] = {{1,1},{2}}; //value2[0][0,1]和value2[1][0]的值初始化，其他初始化为0
+
+    int m = 10;
+    const int n1 = 10;
+    int (*value3)[n1] = new int[m][n1];//n1必须是常量表达式，未初始化
+    int** value4 = new int* [m];//未初始化
+
+    cout<<"***********[End] "<<__FUNCTION__<<"**********"<<endl;
+}
+
+void TestArrayAsParam(int a[])
+{
+    //sizeof的值始终是8，数组作为参数时，编译器自动转换为指针，此处为指向int的指针
+    cout << __FUNCTION__ << " size of array param: " << sizeof(a) <<endl;
+    cout << __FUNCTION__ << " address of array param: " << a <<endl;//0x7ffe2f82d570
+    cout << __FUNCTION__ << " (a+2)= " << a+2 << endl;//0x7ffe2f82d578，步长是int型size，即4个字节
+    cout << __FUNCTION__ << " *(a+2)= " << *(a+2) << endl;//33
+    cout << __FUNCTION__ << " a[2]= " << a[2] << endl;//33
+}
+```
+
+### 字符串
+
+```c++
+string s = string("asd"); //crash?
+string s = string("asd\0"); //OK
+```
+
+
+
+### 引用（Reference）
+
+#### 引用和指针的区别
+
+C++引用是变量的别名，它代表了一个变量背后的对象，它类似于指针（实际上也是基于指针实现），但是有自己的一些特点：
+
+1. 引用必须初始化，仅仅声明一个引用是不被允许的。指针在定义时可以不初始化。
+2. 引用初始化后不能重新代表其它对象，即强制一一对应关系。指针可以在定义后的任意地方重新赋值，指向新的对象。
+3. 对象和其引用的大小相同，地址也相同。指针和其指向的对象各自占用不同的内存空间。
+
+![image-20200902212618830](https://hunk-pic-store.oss-cn-beijing.aliyuncs.com/img/image-20200902212618830.png)
+
+#### 引用的常见用途
+
+引用通常不用于声明变量，而是常用于参数类型和返回类型的描述。以下两个函数声明被视为签名相同（same signature），所以不能同时存在。
+
+```c++
+      |   signature           |
+double imag(const double& im) { ... }
+double imag(const double  im) { ... } //ambiguity
+//
+```
+
+注意，参数列表后面的 **const** 也是函数签名的一部分，因此下个两种函数声明是可以同时存在的：
+
+```c++
+double imag(const double& im) const { ... }
+double imag(const double& im) { ... } //ambiguity
+```
+
+### const类型限定符
+
+关于`const`的详细说明参考：[const类型限定符](https://zh.cppreference.com/w/c/language/const)
+
+编译器可以把声明带`const` 限定类型的对象放到只读内存中，而且若程序决不取该 const 对象的地址，则可能完全不存储它。`const` 语义仅应用到左值表达式；只要在不要求左值的语境中使用 const 左值表达式，就会丢失其 `const` 限定符（注意不丢失 `volatile` 限定符，若它存在）。
+
+下面列出const类型限定符的常见用途。
+
+**声明常量**
+
+```c++
+const int n = 1; // const 类型对象
+n = 2; // 错误： n 的类型为 const 限定
+ 
+int x = 2; // 无限定类型对下
+const int* p = &x;
+*p = 3; // 错误：左值 *p 的类型为 const 限定
+```
+
+需要注意的是，const修饰指针的时候的位置：
+
+```c++
+char *const cp;  //到char的const指针，pc不能指向别的字符串，但可以修改其指向的字符串的内容
+char const *pc1; //到const char的指针，pc2的内容不可以改变，但pc2可以指向别的字符串
+```
+
+const在`*`右边时，离指针变量名更近，所以修饰的是指针本身；const在`*`左边时，离变量类型更近，所以修饰的是指针指向的对象不可更改，但是指针本身可以指向其它的对象。
+
+指向非 const 类型的指针能隐式转换成指向同一或兼容类型的 const 限定版本的指针，并且能用转型表达式进行逆向转换：
+
+```c++
+int* p = 0;
+const int* cp = p; // OK ：添加限定符（ int 到 const int ）
+p = cp; // 错误：舍弃限定符（ const int 到 int ）
+p = (int*)cp; // OK ：转型
+```
+
+任何修改有 const 限定类型的对象的尝试导致未定义行为：
+
+```c++
+const int n = 1; // const 限定类型对象
+int* p = (int*)&n;
+*p = 2; // 未定义行为
+```
+
+**修饰函数传入参数**
+
+将函数传入参数声明为const，以指明使用这种参数仅仅是为了效率的原因，而不是想让调用函数能够修改对象的值。所以，通常修饰指针参数和引用参数，函数将不修改由这个参数所指向的对象。
+
+```c++
+ void Fun(const A *in); //修饰指针型传入参数
+ void Fun(const A &in); //修饰引用型传入参数
+```
+
+**修饰函数返回值**
+
+const修饰函数返回值可以阻止用户修改返回值。
+
+**修饰类的成员函数**
+
+将const关键字放在成员函数的参数列表后面就是修饰成员函数。
+
+![image-20200910093423956](https://hunk-pic-store.oss-cn-beijing.aliyuncs.com/img/image-20200910093423956.png)
+
+1. const对象只能访问const成员函数，而非const对象可以访问任意的成员函数，包括const成员函数。
+2. const对象的成员是不能修改的，而通过指针维护的对象却是可以修改的。
+3. const成员函数不可以修改对象的数据，不管对象是否具有const性质。编译时以是否修改成员数据为依据进行检查。
+
+### static关键字
+
+#### 面向过程的static
+
+**静态全局变量**：
+
+1. 内存：在全局数据区分配内存空间。
+2. 初始化：未经初始化的静态全局变量会被程序自动初始化为0（自动变量的值时随机的，除非它被显示初始化）。
+3. 作用域：静态全局变量在声明它的整个文件都是可见的，但在文件之外不可见。
+
+**静态局部变量**：
+
+1. 内存：在全局数据区分配内存空间。
+2. 初始化：静态局部变量在程序执行到该对象的声明处被首次初始化，即以后的函数调用不再进行初始化。静态局部变量一般在声明出初始化，如果没有显式初始化，会被程序自动初始化为0.
+3. 作用域：它始终驻留在全局数据区，直到程序运行结束。但是其作用域为局部作用域，当定义它的函数或语句结束时，其作用域随之结束。
+
+**静态函数**的特点：
+
+1. 静态函数不能被其它文件所用，可以用于限制函数的作用域。
+2. 其它文件中可以定义相同名字的函数，不会发生命名冲突。
+
+#### 面向对象的static（类中的static关键字）
+
+**静态数据成员**：
+
+1. 非静态成员数据，每个类对象都有一份拷贝。静态成员数据属于类本身，不属于特定的类对象，所有类对象共享同一份数据。所以，在没有产生类对象时其作用域就可见。
+2. 静态数据成员存储在全局数据区。静态数据成员定义时要分配内存空间，所以不能在类声明中定义。
+3. 静态数据成员主要用在各个对象都有相同的某项属性的时候。比如所有的银行账户共享相同的利率。
+
+既然都是可以共享的数据，使用静态数据成员相对于全局变量有两个优势：
+
+1. 静态数据成员没有进入程序的全局命名空间，因此降低了命名冲突的可能性。
+2. 可以实现信息隐藏，静态成员数据可以是`private`成员，而全局变量不能。
+
+所以，如果明确了数据只需要在某个类的所有对象之间共享，尽量设计成类的静态数据成员而不是全局变量。
+
+**静态成员函数**：
+
+静态成员函数，为类的全部服务而不是为某一个类的具体对象服务。**因为它不与任何的类对象相联系，所以不具有`this`指针**。
+
+1. 出现在类体外的函数定义不能指定static关键字。
+2. 静态成员之间可以相互访问：包括静态成员函数访问静态数据成员和访问静态成员函数。
+3. 非静态成员函数可以任意地访问静态成员函数和静态数据成员。
+4. 因为没有this指针，静态成员函数不能访问非静态成员函数和非静态数据成员。
+
+### extern关键字
+
+`extern`提供以不同程序语言编写的模块间的链接。比如`extern "C"`使得以C程序语言编写的函数进行链接，以及在C++程序中定义能从C模块调用的函数成为可能，从而实现了C++与C及其它语言（符合C语言的编译和连接规约的任何语言，比如汇编语言）的混合编程。
+
+```c++
+extern "C" {
+    int open(const char *pathname, int flags); // C 函数声明
+}
+ 
+int main()
+{
+    int fd = open("test.txt", 0); // 从 C++ 程序调用 C 函数
+}
+ 
+// 此 C++ 函数能从 C 代码调用
+extern "C" void handler(int) {
+    std::cout << "Callback invoked\n"; // 它能使用 C++
+}
+```
+
+`extern "C"` 使得在 C++ 程序中包含（include）含有 C 库函数的声明的头文件成为可能，但如果与 C 程序共用相同的头文件，必须以适当的`#ifdef`隐藏 `extern "C"`（其在 C 中不被允许），通常为`__cplusplus`。
+
+```c++
+#ifdef __cplusplus
+extern "C" int foo(int, int); // C++ 编译器所见
+#else
+int foo(int, int);            // C 编译器所见
+#endif
+```
+
+如果有多个这样的函数声明需要被处理，可以写成：
+
+```c++
+#ifdef __cplusplus
+extern "C" {
+#endif
+    
+int foo1(int, int); 
+int foo2(int, int); 
+    
+#ifdef __cplusplus
+}
+#endif
+```
+
+#### extern "C"的惯用用法
+
+1. 在C++中引用C语言中的函数和变量时：（1）包含C语言头文件（cExample.h）时需进行以下处理：
+
+   ```c++
+   extern "C" {
+   #include "cExample.h"
+   }
+   ```
+
+   （2）在C语言的头文件中，对其外部函数只能指定为`extern`类型（C语言中不支持`extern "C"`声明，在.c文件中包含了`extern "C"`时会出现编译语法错误，所以这个声明一般写在C++源文件中）。
+
+   下面给出C++中引用C函数案例的3个源文件：
+
+   ```c
+   // c语言头文件：cExample.h
+   #ifndef C_EXAMPLE_H
+   #define C_EXAMPLE_H
+   
+   extern int add(int x,int y);
+   
+   #endif
+   ```
+
+   ```c
+   //c语言实现文件：cExample.c
+   #include "cExample.h"
+   
+   int add( int x, int y ) {
+       return x + y;
+   }
+   ```
+
+   ```c++
+   //C++实现文件，调用add函数
+   #ifdef __cplusplus
+   extern "C" {
+   #endif
+       
+   #include "cExample.h"
+       
+   #ifdef __cplusplus
+   }
+   #endif
+   
+   int main() {
+       add(2, 3);
+       return 0;
+   }
+   ```
+
+2. 在C语言中引用C++中的函数和变量时：（1）C++的头文件需要添加`extern "C"`声明，告诉编译器将其编译成C风格的函数；（2）在C语言中不能直接引用声明了`extern "C"`的C++头文件，应该仅在C文件中将C++定义的`extern "C"`函数声明为`extern`类型。
+
+   下面给出C语言调用C++函数案例的3个源文件：
+
+   ```c++
+   // C++头文件 cppExample.h
+   #ifndef CPP_EXAMPLE_H
+   #define CPP_EXAMPLE_H
+   
+   extern "C" int add( int x, int y );
+   
+   #endif
+   ```
+
+   ```c++
+   // C++实现文件 cppExample.cpp
+   #include "cppExample.h"
+   
+   int add( int x, int y ) {
+   	return x + y;
+   }
+   ```
+
+   ```c
+   // C实现文件 cFile.c
+   // 加上这行会编译出错：#include "cExample.h"
+   
+   extern int add( int x, int y );
+   
+   int main( int argc, char* argv[] ) {
+   	add( 2, 3 );
+   	return 0;
+   }
+   ```
+
+#### 参考
+
+[C和C++的互相调用](http://zjf30366.blog.163.com/blog/static/41116458201042425110860/)
+
+[语言链接](https://zh.cppreference.com/w/cpp/language/language_linkage)
 
 ## Class设计基础
 
@@ -98,8 +491,6 @@ inline double real(const Complex& x)
 ```
 
 ### 传递值和传递引用
-
-#### 引用的本质
 
 无论是参数传递还是返回值传递，**传递者都无需知道接收者是以引用形式接收**，因此直接传递值就可以了，比如Complex类中\_\_doapl函数中返回*ths是OK的，以及c2 += c1的运算也是OK的。
 
@@ -328,7 +719,7 @@ inline String& String::operator = (const String& str)
 
 ![image-20200823203642663](https://hunk-pic-store.oss-cn-beijing.aliyuncs.com/img/image-20200823203642663.png)
 
-## C++对象内存管理
+## 对象内存管理
 
 ### 对象生命周期
 
@@ -354,7 +745,15 @@ int main
 3. 全局对象（global objects）：c3就是全局对象，其生命在整个程序结束后才结束，因此也可以将其看作一种静态对象。
 4. 堆对象（heap objects）：p所指的就是堆对象，其生命在它被delete之后结束。如果没有恰当的执行delete，在作用域结束后，指针p的生命周期结束了，但是它指向的堆对象仍然存在，占用的资源不能被正确释放，导致内存泄漏。
 
-### new/delete操作符
+### new/delete/malloc/free运算符
+
+`new`和`malloc`都用于申请堆上的动态内存，`delete`和`free`用于释放内存。malloc与free是C++/C 语言的标准库函数，new/delete 是C++的运算符。
+
+`malloc`分配时的大小是人为计算的，只能分配指定大小的堆内存空间，返回类型是`void*`，使用时需要类型转换，而`new`在分配时，编译器能够根据对象类型自动计算出大小，返回类型是指向对象类型的指针。如下图所示，`new`的底层操作实际上可以分为3步：
+
+1. 通过调用operator new函数分配一块合适，原始的，未命名的内存空间，返回类型也是`void *`，而且可以通过重载operator new来自定义内存分配策略，甚至不做内存分配，甚至分配到非内存设备上，而`malloc`函数做不到。
+2. 调用`static_cast`将`void *`转换成目标对象类型。
+3. 调用构造函数构造对象，`new`将调用合适的构造函数实现，而`malloc`不能；对应的，释放对象资源时，`delete`将调用析构函数，而`free`不能。
 
 ![image-20200823220834552](https://hunk-pic-store.oss-cn-beijing.aliyuncs.com/img/image-20200823220834552.png)
 
@@ -364,7 +763,7 @@ int main
 
 ![image-20200823220905752](https://hunk-pic-store.oss-cn-beijing.aliyuncs.com/img/image-20200823220905752.png)
 
-**delete**可以作**new**的逆向操作，先调用析构函数（一般是释放构造函数中为成员数据申请的堆内存），最后释放对象对象本身占用的堆内存。
+**delete**可以看作**new**的逆向操作，先调用析构函数（一般是释放构造函数中为成员数据申请的堆内存），最后释放对象对象本身占用的堆内存。
 
 ### 堆对象内存布局
 
@@ -416,7 +815,7 @@ int main
 
 ![image-20200824203959609](https://hunk-pic-store.oss-cn-beijing.aliyuncs.com/img/20200825091632.png)
 
-### 操作符重载的威力
+### 再谈操作符重载
 
 #### 关于std::cout
 
@@ -436,7 +835,15 @@ int main
 
 ![image-20200829185405862](https://hunk-pic-store.oss-cn-beijing.aliyuncs.com/img/image-20200829185405862.png)
 
+#### 关于重载new和delete操作符
 
+![image-20200910093158810](https://hunk-pic-store.oss-cn-beijing.aliyuncs.com/img/image-20200910093158810.png)
+
+### 常量成员函数和常量对象
+
+![image-20200910093518468](https://hunk-pic-store.oss-cn-beijing.aliyuncs.com/img/image-20200910093518468.png)
+
+![image-20200910093423956](https://hunk-pic-store.oss-cn-beijing.aliyuncs.com/img/image-20200910093423956.png)
 
 ### 类模板
 
@@ -656,7 +1063,22 @@ public:
 
 #### 继承关系下的构造和析构
 
-![image-20200825090526833](https://hunk-pic-store.oss-cn-beijing.aliyuncs.com/img/20200825091640.png)
+```c++
+class Base { ... };
+class Derived : public Base { ... };
+```
+
+**构造由内而外**：Derived的构造函数首先调用Base的默认构造函数，然后才执行自己，等价于：
+
+```c++
+Derived::Derived(...) : Base() { ... };
+```
+
+**析构由外而内**：Derived的析构函数首先执行自己，再调用Base的析构函数，等价于：
+
+```c++
+Derived::~Derived(...) { ... ~Base() };
+```
 
 > 基类的析构函数必须是虚函数。
 
@@ -709,7 +1131,149 @@ Derived::~Derived(...) { ... ~Component(), ~Base() };
 
 
 
+## C++ 对象模型
 
+### 关于虚函数
+
+关于虚函数的具体行为和约束，建议直接参考：[virtual函数说明符](https://zh.cppreference.com/w/cpp/language/virtual)
+
+#### 虚析构函数
+
+虽然析构函数是不继承的，但若基类声明其析构函数为 `virtual`，则派生的析构函数始终覆盖它。**这使得可以通过指向基类的指针 delete 动态分配的多态类型对象。**
+
+```c++
+class Base {
+ public:
+    virtual ~Base() { /* 释放 Base 的资源 */ }
+};
+ 
+class Derived : public Base {
+    ~Derived() { /* 释放 Derived 的资源 */ }
+};
+ 
+int main()
+{
+    Base* b = new Derived;
+    delete b; // 进行对 Base::~Base() 的虚函数调用
+              // 由于它是虚函数，故它调用的是 Derived::~Derived()，
+              // 这就能释放派生类的资源，然后遵循通常的析构顺序
+              // 调用 Base::~Base()
+}
+```
+
+此外，若类是*多态的*（声明或继承了至少一个虚函数），且其析构函数非虚，则删除它是*未定义行为*，无论不调用派生的析构函数时是否会导致资源泄漏。一条有用的方针是，任何基类的析构函数必须为[公开且虚，或受保护且非虚](https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#discussion-make-base-class-destructors-public-and-virtual-or-protected-and-nonvirtual)。
+
+### 关于vptr和vtbl
+
+`虚函数表`（vtbl，也叫虚表）和`虚表指针`（vptr）是C++实现多态的核心设计。
+
+虚函数表是一个函数指针的查找表，用于在运行时动态地将虚函数绑定到对象，即动态绑定行为。它不打算由程序直接使用，因此没有访问它的标准化方法。每个定义了虚函数的类（包括继承虚基类的类）都有自己的虚函数表，这个表由编译器在编译时添加。
+
+在实例化派生类对象时，先实例化基类，将基类的虚表入口地址赋值给基类的虚表指针，当基类构造函数执行完时，再将派生类的虚表入口地址赋值给基类的虚表指针（派生类和基类此时共享一个虚表指针，并没有各自都生成一个），再执行父类的构造函数。
+
+>  对于纯虚函数，虚函数表里存储的是NULL指针。
+
+虚表指针（vptr）是编译器为虚基类添加的一个隐藏指针，这个指针指向特定类的虚函数表。所有派生类都会继承这个虚表指针，因此每个带虚函数的类对象都会存储这个指针。通过类对象调用虚函数都会根据这个虚表指针来解析具体调用的函数。
+
+虚函数表中有序放置了父类和子类中的所有虚函数，并且相同虚函数在类继承链中的每一个虚函数表中的偏移量都是一致的。所以确定的虚函数对应virtual table中一个固定位置n，n是一个在编译时期就确定的常量，所以，使用vptr加上对应的n，就可以得到对应的函数入口地址。C++采用的这种绝对地址+偏移量的方法调用虚函数，查找速度快执行效率高，时间复杂度为O(1)，这里概括一下虚函数的寻址过程：
+
+1. 获取类型名和函数名
+2. 从符号表中获得当前虚函数的偏移量
+3. 利用偏移量得到虚函数的访问地址，并调用虚函数。
+
+如下图所示，某个特定类的所有对象共享该类的同一个虚表，但是每个类对象都会存储自己的虚表指针。
+
+![See the source image](https://hunk-pic-store.oss-cn-beijing.aliyuncs.com/img/48e48915cadcd)
+
+来看一段代码：
+
+```c++
+#include<iostream.h>
+
+class Base  
+ {  
+ public:  
+    virtual void function1() {cout<<"Base :: function1()\n";};  
+    virtual void function2() {cout<<"Base :: function2()\n";};  
+    virtual ~Base(){};
+};  
+   
+class D1: public Base  
+{  
+public:  
+   ~D1(){};
+   virtual void function1() { cout<<"D1 :: function1()\n";};
+};  
+  
+class D2: public Base  
+{  
+public:  
+   ~D2(){};
+   virtual void function2() { cout<< "D2 :: function2\n";};  
+};  
+```
+
+Base，D1，D2这几个类的虚表结构如下：
+
+![虚表指针1](https://hunk-pic-store.oss-cn-beijing.aliyuncs.com/img/VirtualTable.JPG)
+
+简单测试这些类：
+
+```c++
+int main()
+{
+  D1 *d = new D1;;
+  Base *b = d; 
+
+  b->function1();
+  b->function2();
+
+  delete (b);
+  
+  return (0);
+}
+
+/* 输出
+D1 :: function1()
+Base :: function2()
+*/
+```
+
+在main函数里，指针b被分配给D1类的虚表指针，现在开始指向D1的虚函数表。然后调用function1()，使它的虚表指针直接调用虚函数表的function1()，这样反过来调用D1的方法，即function1()，因为D1这个类有它自己的function1()定义。
+
+当指针b调用function2()时，它的虚表指针指向D1的虚函数表，而后者又指向基类Base的虚函数表里的function2()，因为D1类没有自己的function2())定义。
+
+最后调用指针删除b，它的虚表指针是指向D1的虚函数表，调用它自己的类的析构函数即D1类的析构函数,然后调用基类的析构函数。当派生类对象被删除时，它会继续删除嵌入的基类对象，所以会调用基类的析构函数。这就是为什么我们必须总是使基类的析构函数为虚函数。
+
+简而言之，动态绑定发生在调用不同派生类对象的虚函数时。最后，再贴一张侯捷老师课件的图片：
+
+![image-20200910084600384](https://hunk-pic-store.oss-cn-beijing.aliyuncs.com/img/image-20200910084600384.png)
+
+### 关于动态绑定
+
+动态绑定是C++多态现象的底层行为，本知识是一回事，都是建立在虚函数表和虚表指针的基础上。
+
+![image-20200910090951805](https://hunk-pic-store.oss-cn-beijing.aliyuncs.com/img/image-20200910090951805.png)
+
+上图里的a只是一个普通的变量，不是指针或者引用类型，所以通过a调用vfunc1时还是调用的A这个类定义的vfunc1而不是B定义的vfunc1，属于`静态绑定`。
+
+![image-20200910091021449](https://hunk-pic-store.oss-cn-beijing.aliyuncs.com/img/image-20200910091021449.png)
+
+这里的pa是一个虚基类的指针，但是指向了一个派生类对象，通过pa调用vfunc1时实际上调用了派生类的vfunc1，这就是`动态绑定`，动态绑定发生在运行时。
+
+可以总结多态或者动态绑定的3个条件：
+
+1. 要有继承，即一定是基类和派生类之间的行为。
+2. 要有虚函数重写，即派生类要重新定义基类中的虚函数。
+3. 向上转型，即用基类指针或引用去指向派生类对象，用普通变量不行，反过来不行。
+
+### 参考文章
+
+[C++对象模型](http://www.360doc.com/content/15/0909/19/7377734_498070757.shtml)
+
+[How Virtual Table and _vptr works](https://www.go4expert.com/articles/virtual-table-vptr-t16544/)
+
+[Virtual Functions and Runtime Polymorphism in C++ | Set 1 (Introduction)](https://www.geeksforgeeks.org/virtual-functions-and-runtime-polymorphism-in-c-set-1-introduction/)
 
 # C++ 泛型编程
 
@@ -831,7 +1395,7 @@ END...
 2. 用于函数参数类型，就是函数参数类型包（function parameter types pack）。
 3. 用于函数参数，就是函数参数包（function parameter pack）。
 
-在上面的例子中，myPrint递归调用到最后，98.5作为firstArg时，后面的参数包args已经为空，等价于调用myPrint（），因此需要额外提供一个没有参数的版本，否则编译器会检测到这种错误。
+在上面的例子中，myPrint递归调用到最后，98.5作为firstArg时，后面的参数包args已经为空，等价于调用myPrint()，因此需要额外提供一个没有参数的版本，否则编译器会检测到这种错误。
 
 # C++ STL
 
@@ -849,22 +1413,90 @@ cout<< __cplusplus <<endl; //201103 即C++11
 
 ### auto关键字
 
+`auto`关键字可以让编译器帮助我们做类型推导，`auto`根据`=`右边的初始值推导出变量的类型，所以要求变量必须初始化。
+
 ```c++
 list<string> lst;
 ...
 list<string>::iterator ite;
 ite = lst.begin();
-```
 
-auto关键字可以让编译器帮助我们做类型推导：
-
-```c++
 auto ite = lst.begin();
-
-//错误的写法
-auto ite;
+auto ite; //错误的写法
 ite = lst.begin();
 ```
+
+### decltype说明符
+
+`decltype` 和 `auto` 的功能一样，都用来在编译时期进行自动类型推导。`decltype`用于检查实体的声明类型，或表达式的类型和值类别。区别在于，`decltype`的类型推导并不是像`auto`一样是从变量声明的初始化表达式获得变量的类型，而是总是**以一个普通表达式作为参数**，返回该表达式的类型，而且`decltype`并不会对表达式进行求值。因此，`auto` 要求变量必须初始化，而 `decltype` 不要求。这很容易理解，`auto` 是根据变量的初始值来推导出变量类型的，如果不初始化，变量的类型也就无法推导了。
+
+#### decltype推导规则
+
+`decltype`的基本语法：
+
+```c++
+decltype ( exp )
+```
+
+它的基本推导规则：
+
+1. 如果实参exp是一个没有带括号的标记符表达式或者类成员访问表达式，那么`decltype（exp）`就是exp所命名的实体的类型。此外，如果exp是一个被重载的函数，则会导致编译错误。
+2. 否则 ，假设exp的类型是T：
+   1. 如果exp的值类别为亡值，那么`decltype（exp）`为T&&。
+   2. 如果exp的值类别为左值，那么`decltype（exp）`为T&。
+   3. 如果exp的值类别为纯右值，则`decltype（exp）`为T。
+
+标记符指的是除去关键字、字面量等编译器需要使用的标记之外的程序员自己定义的标记，而单个标记符对应的表达式即为标记符表达式。例如：
+
+```c++
+int arr[4];
+```
+
+arr为一个标记表达式，而arr[3]+0则不是。
+
+注意，如果对象的名字带有括号，则它被当做通常的左值表达式，从而 `decltype(exp)` 和 `decltype((exp))` 通常是不同的类型。
+
+#### decltype用法
+
+在难以或不可能以标准写法进行声明的类型时，`decltype` 很有用，例如 lambda 相关类型或依赖于模板形参的类型。
+
+`decltype`的基本用法如下：
+
+```c++
+int i = 4;
+decltype(i) a; //推导结果为int。a的类型为int。
+decltype((i))b=i;//b推导为int&，必须为其初始化，否则编译错误
+```
+
+推导更为复杂的lambda表达式类型：
+
+```c++
+auto f = [](int a, int b) -> int
+{
+    return a * b;
+};
+
+decltype(f) g = f; // lambda 的类型是独有且无名的
+i = f(2, 2);
+j = g(3, 3);
+
+std::cout << "i = " << i << ", " //i = 4
+    << "j = " << j << '\n'; //j = 9
+```
+
+在泛型编程中，`decltype`经常和`auto`结合使用，用于追踪函数的返回值类型：
+
+```c++
+template <typename _Tx, typename _Ty>
+auto multiply(_Tx x, _Ty y)->decltype(_Tx*_Ty)
+{
+    return x*y;
+}
+```
+
+编译时类型推导的出现正是为了泛型编程，在非泛型编程中，我们的类型都是确定的，根本不需要再进行推导。因此，这也是`decltype`关键字最主要的应用场景。
+
+参考：[C++11特性：decltype关键字](https://www.cnblogs.com/QG-whz/p/4952980.html)
 
 ### ranged-based for
 

@@ -337,6 +337,61 @@ int binarysearch_last_euqal_or_small(int *a, int n, int key)
 
 ![二叉树遍历](https://static001.geekbang.org/resource/image/ab/16/ab103822e75b5b15c615b68560cb2416.jpg)
 
+**中序遍历（递归实现）**：
+
+```c++
+class Solution {
+public:
+    vector<int> inorderTraversal(TreeNode* root) {
+        vector<int> res;
+        inorderTraversalInner(res, root);
+        return res;
+    }
+
+    void inorderTraversalInner(vector<int>& res, TreeNode* node) {
+        if(node == nullptr) return;
+        inorderTraversalInner(res, node->left);
+        res.push_back(node->val);
+        inorderTraversalInner(res, node->right);
+    }
+};
+```
+
+**中序遍历（迭代实现）**：
+
+```c++
+class Solution {
+public:
+    vector<int> inorderTraversal(TreeNode* root) {
+        vector<int> res;
+        stack<TreeNode*> stack;
+        TreeNode* currNode = root;
+        while(currNode || stack.size()) {
+            //从当前结点出发，每次都先将所有左孩子压入栈中
+            /* 6, 4, 3这几个结点先被压入栈中，最左边的结点3被访问后，从栈中弹出结点4，
+            结点4访问后，因为其还有右孩子，所以继续处理其右子树，逻辑和上面一样
+            每个结点只会进栈出栈一次
+                    6
+                  /   \
+                4       8
+              /  \     / \
+            3     5   7   9
+            */
+            while(currNode) {
+                stack.push(currNode);
+                currNode = currNode->left;
+            }
+            //currNode已经指向null，可以处理栈中的元素了
+            currNode = stack.top(); stack.pop();
+            res.push_back(currNode->val);
+            //继续处理其右子树
+            currNode = currNode->right;
+        }
+        return res;
+    }
+};
+```
+
 ### 1.3.2. 二叉查找树(Binary Search Tree)
 
 二叉查找树要求：在树中的任意一个节点，其左子树中的每个节点的值，都要小于这个节点的值，而右子树节点的值都大于这个节点的值。因此，二叉查找树有个很重要的特点：中序遍历二叉查找树，可以输出有序的数据序列，时间复杂度是 O(n)，非常高效。
@@ -432,6 +487,37 @@ private:
 ![二叉查找树性能](https://static001.geekbang.org/resource/image/e3/d9/e3d9b2977d350526d2156f01960383d9.jpg)
 
 - 对于一颗完全二叉树，不管操作是插入、删除还是查找，查找元素的时间复杂度和有序数组的二分查找是类似的，也就是O(logn)，也就是取决于树的高度。遗憾的是，普通的二叉查找树的性能是很不稳定的，十分依赖于元素的插入删除顺序，很容易退化到链表的时间复杂度O(n)。因此，在实际应用中基本上不会使用这种普通的二叉查找树，而是使用后面介绍的平衡二叉查找树，比如AVL平衡树和红黑树等。
+
+#### 1.3.2.5 验证二叉查找树（Leetcode 98）
+
+利用二叉查找树中序遍历结果结果递增的特点来验证：
+
+```c++
+class Solution {
+public:
+//思路：用迭代的方式左中序遍历，依次遍历到的元素值应该始终是递增的
+    bool isValidBST(TreeNode* root) {
+        int minValue = INT_MIN;
+        int nodeNum = 0;
+        stack<TreeNode*> stack;
+        TreeNode* p = root;
+        while(p || stack.size()) {
+            while(p) {
+                stack.push(p);
+                p = p->left;
+            }
+            //处理栈中的顶点元素，这个顶点元素的左孩子一定是空的，或者已经被访问过
+            p = stack.top(); stack.pop();
+            if(nodeNum++ > 0 && p->val <= minValue) return false;
+            minValue = p->val;
+            //将当前结点的右子树压入栈中
+            p = p->right;
+        }
+
+        return true;
+    }
+};
+```
 
 ### 1.3.3. 平衡二叉树
 
