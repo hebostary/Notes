@@ -3,9 +3,9 @@
 const int LEN = 3;
 int g_a[LEN]; //全局数组元素会被初始化为默认值
 
-void TestArray()
+void TestCStyleArray()
 {
-    cout<<"***********[Begin] "<<__FUNCTION__<<"**********"<<endl;
+    EnterFunc(__FUNCTION__);
     //1.数组的长度只能是常量或者是常量表达式
     int a1[LEN]; //局部数组元素不会自动初始化
     int a2[3] = { 30 }; //首元素被初始化为指定值，其余元素初始化为默认值
@@ -40,7 +40,7 @@ void TestArray()
     cout << __FUNCTION__ << " size of a3: " << sizeof(a3) <<endl;//12
     //a3被转换为指针，所以并不是数组a3与0相加，而是转换后得到的指针在参与运算
     cout << __FUNCTION__ << " size of a3+0: " << sizeof(a3+0) <<endl;//8
-    TestArrayAsParam(a3);
+    TestCStyleArrayAsParam(a3);
 
     //3.动态数组
     int n = 10;
@@ -59,10 +59,10 @@ void TestArray()
     int (*value3)[n1] = new int[m][n1];//n1必须是常量表达式，未初始化
     int** value4 = new int* [m];//未初始化
 
-    cout<<"***********[End] "<<__FUNCTION__<<"**********"<<endl;
+    ExitFunc(__FUNCTION__);
 }
 
-void TestArrayAsParam(int a[])
+void TestCStyleArrayAsParam(int a[])
 {
     //sizeof的值始终是8，数组作为参数时，编译器自动转换为指针，此处为指向int的指针
     cout << __FUNCTION__ << " size of array param: " << sizeof(a) <<endl;

@@ -4,11 +4,28 @@
 #include <iostream>
 #include <time.h>
 #include <vector>
+#include <map>
+#include <set>
 #include <string.h>
 #include <queue>
+#include <array>
+#include <algorithm>
+#include <sstream>
+#include <fstream>
+#include <memory>
+#include <new>
+#include <utility>
+
+#if defined(_WIN64)
+
+#else
 #include <uuid/uuid.h>
+#endif
 
 using namespace std;
+
+void EnterFunc(string msg);
+void ExitFunc(string msg);
 
 /*
 * function: 记录函数的运行时间，需要在函数运行前和结束时调用两次，
@@ -40,6 +57,17 @@ void printVec(vector<T> &vec) {
 */
 string createUUID();
 
-void printIntArray(int a[]);
+template<typename _RandomAccessIterator>
+void printContainer(string title, _RandomAccessIterator begin, _RandomAccessIterator end)
+{
+    auto ite = begin;
+    cout << title << ": [";
+    while (ite != end)
+    {
+        cout << *ite;
+        if( ++ite != end ) cout << ", ";
+    }
+    cout << "]\n";
+}
 
 #endif

@@ -4,6 +4,16 @@ const int GUID_LEN = 16;
 
 static clock_t beginRunTime = clock();
 
+
+void EnterFunc(string msg)
+{
+    cout<<"|-------------------[BEGIN] "<<msg<<" ---------------------|"<<endl;
+}
+void ExitFunc(string msg)
+{
+    cout<<"|-------------------[END] "<<msg<<" -----------------------|"<<endl;
+}
+
 void recordRunTime(bool finish) {
     clock_t currentTime = clock();
     if (!finish) {
@@ -26,6 +36,12 @@ vector<int> createRandomVec(int size, int max) {
     return vec;
 }
 
+#if defined(_WIN64)
+string createUUID()
+{
+    return "AAAA0000BBBBBAAA";
+}
+#else
 string createUUID()
 {
     char buf[GUID_LEN] = { 0 };
@@ -46,10 +62,4 @@ string createUUID()
 
     return std::move(std::string(buf));
 }
-
-void printIntArray(int a[])
-{
-    size_t size = sizeof(a);//始终都是8，指针的长度，数组作为参数传递时，
-    //编译器自动将a调整为指向int的指针类型
-    cout << __FUNCTION__ << " array size: " << size << endl;
-}
+#endif

@@ -7,20 +7,24 @@ void myPrint()
 
 void TestTemplate()
 {
-    cout<<"\n***********[Begin] TestTemplate**********"<<endl;
+    EnterFunc(__FUNCTION__);
+
     cout<<__cplusplus<<endl;
     TestMemberTemplate();
 
     myPrint("Hunk", 100, 98.5);
-    cout<<"***********[End] TestTemplate**********\n"<<endl;
+
+    ExitFunc(__FUNCTION__);
 }
 
 void TestMemberTemplate()
 {
-    cout<<"\n***********[Begin] TestMemberTemplate**********"<<endl;
+    EnterFunc(__FUNCTION__);
+
     Pair<Derived1, Derived2> p;
     Pair<Base1, Base2> p2(p);
     cout << p.first.getName()<<endl;
     cout << p2.first.getName()<<endl;
-    cout<<"***********[End] TestMemberTemplate**********\n"<<endl;
+
+    ExitFunc(__FUNCTION__);
 }

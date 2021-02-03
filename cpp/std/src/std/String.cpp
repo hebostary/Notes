@@ -22,6 +22,9 @@ inline String::String(const String& str)
     strcpy(m_data, str.m_data);
 }
 
+//赋值运算符通常组合了析构函数和构造函数的操作
+//  类似析构函数，赋值操作会销毁左侧运算对象
+//  类似拷贝构造函数，赋值操作会从右侧运算对象拷贝数据
 inline String& String::operator=(const String& str)
 {
     //检测自我赋值
@@ -54,7 +57,7 @@ ostream& operator<<(ostream& os, const String& str)
 
 void TestStringClass()
 {
-    cout<<"***********[Begin] TestStringClass**********"<<endl;
+    EnterFunc(__FUNCTION__);
     String s1("Hello hunk");
     cout<<"s1: "<<s1<<endl;
 
@@ -67,9 +70,9 @@ void TestStringClass()
 
     int len = 10;
     char* cstr1 = new char[len]();
-    for (size_t i = 0; i < len; i++) cstr1[i] = 'a';
+    for (int i = 0; i < len; i++) cstr1[i] = 'a';
     cout << " string(cstr1): " << string(cstr1) << endl;
 
 
-    cout<<"***********[End] TestStringClass**********"<<endl;
+    ExitFunc(__FUNCTION__);
 }

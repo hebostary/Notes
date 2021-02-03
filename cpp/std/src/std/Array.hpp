@@ -5,8 +5,10 @@
 
 using namespace std;
 
-void TestArray();
-void TestArrayAsParam(int a[]);
+
+// 测试C风格数组
+void TestCStyleArray();
+void TestCStyleArrayAsParam(int a[]);
 
 
 #endif

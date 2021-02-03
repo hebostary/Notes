@@ -19,7 +19,8 @@ string DerivedTask::serialize()
 
 void TestDerivedTask()
 {
-    cout<<"***********[Begin] TestDerivedTask**********"<<endl;
+    EnterFunc(__FUNCTION__);
+
     DerivedTask task1;
     task1.printTask();
 
@@ -28,5 +29,6 @@ void TestDerivedTask()
     cout << "task2Str: " << task2Str << endl;
     int total = 10 + task2;
     cout << "task2Int: " << total << endl;
-    cout<<"***********[End] TestDerivedTask**********"<<endl;
+
+    ExitFunc(__FUNCTION__);
 }
