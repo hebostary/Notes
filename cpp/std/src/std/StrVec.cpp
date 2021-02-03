@@ -1,5 +1,8 @@
 #include "StrVec.hpp"
 
+//类的静态成员类内声明，类外定义和初始化
+allocator<string> StrVec::alloc;
+
 StrVec::StrVec(const StrVec& sv)
 {
     auto newdata = alloc_n_copy(sv.begin(), sv.end());
@@ -78,7 +81,7 @@ void StrVec::reallocate()
 
     //更新指针
     elements = newdata;
-    first_free = elem;
+    first_free = dest;
     cap = elements + newcapacity;
 }
 

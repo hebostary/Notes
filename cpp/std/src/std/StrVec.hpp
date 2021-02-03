@@ -21,7 +21,10 @@ public:
     string* end() const { return first_free; }
 
 private:
-    static allocator<string> alloc; //分配元素
+    //****需要注意的是：类的声明并不会分配内存空间，因此，类的静态成员需要类内声明，类外定义。
+    //并且注意定义尽量不要出现在头文件中，以免造成重复定义。
+    static allocator<string> alloc;//分配元素
+
     //添加元素的函数使用
     void chk_n_alloc() 
         { if ( size() == capacity() ) reallocate(); }
