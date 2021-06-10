@@ -49,6 +49,9 @@ String::~String()
 }
 
 //重载输出操作符
+//1. 通常。输出运算符应该主要负责打印对象的内容而非控制格式，
+//输出运算符不应该打印换行符
+//2. 输入输出运算符必须是非成员函数
 ostream& operator<<(ostream& os, const String& str)
 {
     os << str.get_c_str();

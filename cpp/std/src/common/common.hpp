@@ -24,6 +24,9 @@
 
 using namespace std;
 
+#define ENTER_FUNC EnterFunc(__FUNCTION__);
+#define EIXT_FUNC ExitFunc(__FUNCTION__);
+
 void EnterFunc(string msg);
 void ExitFunc(string msg);
 

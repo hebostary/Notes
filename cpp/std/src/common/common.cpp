@@ -7,11 +7,11 @@ static clock_t beginRunTime = clock();
 
 void EnterFunc(string msg)
 {
-    cout<<"|-------------------[BEGIN] "<<msg<<" ---------------------|"<<endl;
+    cout<<"\n|-------------------[BEGIN] "<<msg<<" ---------------------|"<<endl;
 }
 void ExitFunc(string msg)
 {
-    cout<<"|-------------------[END] "<<msg<<" -----------------------|"<<endl;
+    cout<<"\n|-------------------[END] "<<msg<<" -----------------------|\n"<<endl;
 }
 
 void recordRunTime(bool finish) {

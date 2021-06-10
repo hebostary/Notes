@@ -8,6 +8,7 @@
 #include "std/IOLibrary.hpp"
 #include "std/MemoryManagement.hpp"
 #include "std/StrVec.hpp"
+#include "std/FunctionObject.hpp"
 
 int main() {
     cout<<"[BEGIN] testing..."<<endl;
@@ -34,6 +35,9 @@ int main() {
 
     //测试简化版的vector实现
     TestStrVec();
+
+    //测试可调用对象和function
+    TestFuncitonObject();
 
     cout<<"[END] testing..."<<endl;
 }
