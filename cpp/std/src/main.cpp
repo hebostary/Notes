@@ -19,8 +19,6 @@ int main() {
 
     //TestDerivedTask();
 
-    //TestTemplate();
-
     //测试标准库容器
     //TestContainers();
 
@@ -34,10 +32,12 @@ int main() {
     //TestMemoryManagement();
 
     //测试简化版的vector实现
-    TestStrVec();
+    //TestStrVec();
 
     //测试可调用对象和function
-    TestFuncitonObject();
+    //TestFuncitonObject();
+
+    TestTemplate();
 
     cout<<"[END] testing..."<<endl;
 }

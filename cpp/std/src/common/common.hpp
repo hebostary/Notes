@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <time.h>
+#include <list>
 #include <vector>
 #include <map>
 #include <set>
