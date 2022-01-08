@@ -9,6 +9,7 @@ void EnterFunc(string msg)
 {
     cout<<"\n|-------------------[BEGIN] "<<msg<<" ---------------------|"<<endl;
 }
+
 void ExitFunc(string msg)
 {
     cout<<"\n|-------------------[END] "<<msg<<" -----------------------|\n"<<endl;

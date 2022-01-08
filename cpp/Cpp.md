@@ -1,10 +1,20 @@
 # 一、C++学习资料
 
+## C++语言
+
 [Cpp references 中文版](https://zh.cppreference.com/w/cpp)
 
 [C++语言参考手册](https://zh.cppreference.com/w/cpp/language)
 
 [GeeksForGeeks C++专题](https://www.geeksforgeeks.org/virtual-functions-and-runtime-polymorphism-in-c-set-1-introduction/)
+
+[hacking C++ ***](https://hackingcpp.com/)
+
+## CMake
+
+[Learn CMake's Scripting Language in 15 Minutes](https://preshing.com/20170522/learn-cmakes-scripting-language-in-15-minutes/)
+
+[Introduction to CMake by Example](http://derekmolloy.ie/hello-world-introductions-to-cmake/)
 
 # 二、C++语言基础
 
@@ -2076,6 +2086,242 @@ TODO：无序容器哈希桶内元素如何保存？再哈希（rehash）的细�
 泛型算法本身不会执行容器的操作，它们只会运行于迭代器之上，执行迭代器的操作，这意味着算法永远不会改变底层容器的大小。算法可能改变容器中保存的元素的值，也可能在容器内移动元素，但永远不会直接添加或删除元素。
 
 # 四、C++ 模板与泛型编程
+
+## 模板定义
+
+### 函数模板
+
+### 类模板
+
+类模板是用来生产类的蓝图。与函数模板的不同之处在于，编译器不能为类模板推断模板参数类型，使用类模板时，我们必须在模板名后的尖括号里提供显式模板实参列表，它们被绑定到模板参数，编译器使用这些模板实参来实例化出特定的类。
+
+类模板Blob：
+
+```c++
+template <typename T> class Blob {
+public:
+    typedef T value_type;
+    typedef typename vector<T>::size_type size_type;
+
+    //构造函数
+    Blob() : data(make_shared<vector<value_type>>()) { }
+    Blob(initializer_list<T> il) : data(make_shared<vector<value_type>>(il)) { }
+
+    size_type size() { return data->size(); }
+    bool empty() { return data->empty(); }
+
+    //添加和删除元素
+    void push_back(const value_type &t) { data->push_back(t); }
+    void push_back(value_type &&t) { data->push_back(std::move(t)); }
+    void pop_back();
+    
+    //元素访问
+    T& front();
+    T& back();
+    T& operator[](size_type i);
+
+private:
+    shared_ptr<vector<T>> data;
+    //如果data[i]不合法，抛出一个异常
+    void check(size_type i, const string &msg) const;
+};
+```
+
+我们可以在类模板内部或者外部为其定义成员函数，并且定义在类模板内部的成员函数被隐式声明为内联函数，比如上面的`push_back`函数。
+
+类模板的每个实例都有其自己版本的成员函数，因此类模板的成员函数具有和类模板相同的模板参数，所以定义在类模板外部的成员函数必须以`template`开始，后接类模板参数列表，比如下面的`check`等函数。
+
+```c++
+template <typename T>
+void Blob<T>::check(size_type i, const string &msg ) const {
+    if ( i >= data->size() ) {
+        throw out_of_range(msg);
+    }
+}
+
+template <typename T>
+void Blob<T>::pop_back()
+{
+    check(0, "pop_back on empty Blob");
+    data->pop_back();
+}
+
+template <typename T>
+T& Blob<T>::front() {
+    check(0, "front on empty Blob");
+    return data->front();
+}
+
+template <typename T>
+T& Blob<T>::back() {
+    check(0, "back on empty Blob");
+    return data->back();
+}
+
+template <typename T>
+T& Blob<T>::operator[](size_type i) {
+    check(i, "index out of range.");
+    return *data[i];
+}
+```
+
+两条重要原则：
+
+1. 当我们在类模板外部定义其成员函数时，我们并不在类的作用域中，直到遇到类名才表示进入类的作用域。
+2. 在类模板的的作用域内时，我们可以直接使用模板名而不必指定模板实参。
+
+下面使用类模板Blob：
+
+```c++
+Blob<string> b1 = { "hunk", "jack" };
+```
+
+当编译器从Blob模板实例化出一个类时，它会重写Blob模板，将模板参数T的每个实例替换成给定的模板实参，这里是string。对于指定的每种模板实参，编译器都生成不同的并且独立的类，Blob<string>与任何其他Blob类型都没有关联，也不会对任何其他Blob类型的成员有特殊访问权限。
+
+> 类模板的名字并不是一个类型名。
+>
+> 默认情况下，一个类模板的成员函数只有当程序用到它时才进行实例化。比如上面实例化的Blob<string>，仅仅用到了其中一个序列构造函数，其余的成员函数没有被使用，也就不会被实例化。这个特性使得即使某种类型不能完全符合模板操作的要求，我们仍然可以使用该类型实例化类，该类型只要满足需要使用的模板操作的要求即可。
+
+**类模板和友元**
+
+当一个类包含一个友元声明时，类与友元各自是否是模板是相互无关的。如果一个类模板包含一个非模板友元，则友元被授权可以访问类模板的所有实例。如果友元自身是模板，类可以授权给所有友元模板实例，也可以只授权给特定实例。
+
+类模板与另一个（类或函数）模板间友好关系的最常见形式是建立对应实例及其友元间的友好关系，这样友好关系就被限定在用相同类型实例化的Blob与BlobPtr，以及相等运算符之间，比如：
+
+```c++
+//前置声明，在Blob中声明友元所有需要的
+template <typename> class BlobPtr;
+template <typename> class Blob; //运算符==中的参数所需要
+template <typename T>
+	bool operator==(const Blob<T>&, const Blob<T>&);
+
+template <typename T> class Blob {
+    friend class BlobPtr<T>;
+    friend bool operator==<T>
+        (const Blob<T>&, const Blob<T>&);
+    //....
+}
+```
+
+### 模板参数
+
+**使用类的类型成员**
+
+我们用作用域运算符`::`来访问static成员和类型成员：
+
+1. 在非模板代码中，编译器掌握类的定义。因此，它知道通过作用域运算符访问的名字是类型还是static成员。比如：string::size_type，编译器有string的定义，因此知道size_type是一个类型。
+
+2. 在模板代码中，当编译器遇到类似T::mem时，它不知道mem是一个类型成员还是static数据成员，直至实例化时才知道。但是，为了处理模板，编译器必须知道名字是否表示一个类型。比如：
+
+   ```c++
+   T::size_type * p;
+   ```
+
+   编译器需要知道我们是在定义一个名为p的变量，还是将一个名为size_type的 static 数据成员与名为p的变量相乘。
+
+   默认情况下，C++语言假定通过作用域运算符访问的是名字不是类型。因此，为了使用一个模板类型参数的类型成员，必须通过`typename`关键字显式告诉编译器该名字是一个类型（这里不能和`class`混用）：
+
+   ```c++
+   template <typename T>
+   typename T::value_type top(const T& c) {
+       if (!c.empty())
+           return c.back();
+       else
+           return typename T::value_type();//没有元素时生成一个值初始化的元素返回给调用者
+   }
+   ```
+
+**默认模板实参**
+
+和普通函数一样，我们也可以提供默认模板实参：
+
+```c++
+template <typename T, typename F = less<T>>
+int compare(const T &v1, const T &v2, F f = F()) {
+    if(f(v1, v2)) return -1;
+    if(f(v2, v1)) return 1;
+    return 0;
+}
+```
+
+我们为模板添加了第二个类型参数F，F表示可调用对象的类型，并定义了一个新的函数参数f，绑定到一个可调用对象上，该可调用对象的返回类型必须能转换为bool值。
+
+默认模板实参指出compare将使用标准库的less函数对象类，它是使用与compare一样的类型参数实例化的。默认函数实参指出f将是类型F的一个默认初始化的对象。
+
+**默认模板实参与类模板**
+
+无论何时使用一个类模板，我们都必须在模板名之后接上尖括号：尖括号指出类必须从一个模板实例化而来。特别地，如果一个类模板为其所有模板参数都提供了默认实参，且我们希望使用这些默认实参，就必须在模板名后跟一个空尖括号对：
+
+```c++
+template <class T= int> class Numbers {
+public:
+    Numbers(T v = 0): val(v) { }
+    //...
+private:
+    T val;
+}
+Numbers<long double> lots_of_precision;
+Numbers<> average_precision; //空<>表示我们希望使用默认参数类型int
+```
+
+### 成员模板
+
+无论是普通类还是类模板，都可以包含自身是模板的成员函数，这种成员被称为成员模板。成员模板不能是虚函数。
+
+对于类模板，类和成员模板各自有自己的，独立的模板参数，比如：
+
+```c++
+template <typename T> class Blob {
+    template <typename It> Blob(It b, It e);
+    //...
+}
+```
+
+我们为Blob类定义一个构造函数，它接受两个迭代器，表示要拷贝元素的范围。由于我们希望支持不同类型序列的迭代器，因此将该构造函数定义为模板函数。
+
+当我们在类模板外定义一个成员模板时，必须按照顺序为类模板和成员模板提供模板参数列表：
+
+```c++
+template <typename T>
+template <typename It>
+	Blob<T>::Blob(It b, It e):
+		data(std::make_shared<std::vector<T>>(b, e)) { }
+```
+
+为了实例化一个类模板的成员模板，我们必须同时提供类和函数模板的实参：
+
+```c++
+int ia[] = {0, 1, 2};
+vector<long> vi = {0, 1, 2};
+list<const char*> w = {"hunk", "jack", "biob"};
+Blob<int> a1(begin(ia), end(ia));
+//实例化Blob<long>及其接受两个vector<long>::iterator参数的构造函数
+Blob<long> a2(vi.begin(), vi.end());
+//实例化Blob<string>及其接受两个list<const char*>::iterator参数的构造函数
+Blob<string> a3(w.begin(), w.end());
+```
+
+### 控制实例化
+
+当模板被使用时才会进行实例化这一特性意味着，相同的实例可能出现在多个对象文件中。当两个或多个独立编译的源文件使用了相同的模板，并提供了相同的模板参数时，每个文件中就都会有该模板的一个实例，这可能会带来大量的额外开销。
+
+在新标准中，我们可以通过`extern`关键字声明显式实例化，以此来避免这种开销：
+
+```c++
+extern template class Blob<string>; //实例化声明
+extern template int compare(const int&, const int&);  //实例化声明
+```
+
+当编译器遇到`extern`模板声明时，它不会在本文件中生成实例化代码。`extern`声明表示承诺在程序的其它位置有该实例化的一个非extern声明。对于一个给定的实例化版本，可以有多个extern声明，但必须只有一个定义：
+
+```c++
+template class Blob<string>; //实例化定义
+template int compare(const int&, const int&);  //实例化定义
+```
+
+当编译器遇到一个实例化定义时，它为其生成代码。当然，最后我们必须将这些源文件编译后的对象文件链接到一起。
+
+> 一个类模板的实例化定义会实例化该模板的所有成员，包括内联的成员函数。因为，当编译器遇到一个实例化定义时，它不了解程序使用哪些成员函数。因此，在一个类模板的实例化定义中，所有类型必须能用于模板的所有成员函数。
 
 ## 模板特化和偏特化
 

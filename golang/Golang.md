@@ -209,8 +209,8 @@ $ git clone https://github.com/golang/lint.git lint
 $ go install golang.org/x/lint/golint
 ```
 
-## 1.3. 依赖管理
-### 1.3.1. govendor
+## 1.3 govendor
+
 * 安装
 ```shell
 $ go get -u github.com/kardianos/govendor
@@ -232,7 +232,250 @@ $ govendor remove github.com/gorilla/mux
 $ govendor list
 ```
 
+## 1.4 Modules
+
+[关于Go Modules，看这一篇文章就够了](https://zhuanlan.zhihu.com/p/105556877)
+
+### Modules demo
+
+tiedotcli这个项目依赖于本地的两个package，分别是common目录下的cmd和dbmgmt两个package，其中dbmgmt这个package又依赖于一个github上的开源项目，我们初始的代码结构如下：
+
+```bash
+/work/code/github $ tree gowork
+gowork
+└── src
+    ├── common
+    │   ├── cmd
+    │   │   └── cmd.go
+    │   └── dbmgmt
+    │       └── dbmgmt.go
+    └── tiedotcli
+        └── tiedotcli.go
+```
+
+各个源文件的包名和依赖包名如下：
+
+```go
+//cmd.go
+package cmd
+
+...
+```
+
+```go
+//dbmgmt.go
+package dbmgmt
+
+import (
+	...
+	"github.com/HouzuoGuo/tiedot/db"
+)
+...
+```
+
+```go
+//tiedotcli.go
+package main
+
+import (
+	"common/cmd"
+	"common/dbmgmt"
+	...
+)
+
+func main() {
+    ...
+}
+```
+
+#### 方法1. 分别build各个本地module
+
+先在common/cmd下面执行`go mod init common/cmd`或者`go mod init`，然后会自动生成go.mod文件。
+
+```bash
+/work/code/github/gowork/src/common/cmd $ go mod init
+/work/code/github/gowork/src/common/cmd $ ls
+cmd.go go.mod
+```
+
+然后在common/dbmgmt下面执行执行`go mod init common/dbmgmt`或者`go mod init`：
+
+```bash
+/work/code/github/gowork/src/common/dbmgmt $ go mod init
+go: creating new go.mod: module common/dbmgmt
+/work/code/github/gowork/src/common/dbmgmt $ ls
+dbmgmt.go go.mod
+/work/code/github/gowork/src/common/dbmgmt $ cat go.mod
+module common/dbmgmt
+
+go 1.14
+```
+
+因为dbmgmt依赖了github上的tiedot这个项目，所以继续执行`go build`来构建这个本地module：
+
+```bash
+/work/code/github/gowork/src/common/dbmgmt $ go build
+go: finding module for package github.com/HouzuoGuo/tiedot/db
+go: found github.com/HouzuoGuo/tiedot/db in github.com/HouzuoGuo/tiedot v0.0.0-20200330175510-6fb216206052
+/work/code/github/gowork/src/common/dbmgmt $ cat go.mod
+module common/dbmgmt
+
+go 1.14
+
+require github.com/HouzuoGuo/tiedot v0.0.0-20200330175510-6fb216206052
+```
+
+我们发现build过程中依赖项目被自动找到并下载到了本地，go.mod文件也被自动更新了。
+
+最后在我们的tiedotcli项目下面执行`go mod init`：
+
+```bash
+/work/code/github/gowork/src/tiedotcli $ go mod init tiedotcli
+go: creating new go.mod: module tiedotcli
+/work/code/github/gowork/src/tiedotcli $ cat go.mod
+module tiedotcli
+
+go 1.14
+```
+
+OK，现在我们来build一下tiedotcli，发现如下错误：
+
+```bash
+/work/code/github/gowork/src/tiedotcli $ go build
+tiedotcli.go:4:2: package common/cmd is not in GOROOT (/Library/Golang/1.14.2_1/libexec/src/common/cmd)
+tiedotcli.go:5:2: package common/dbmgmt is not in GOROOT (/Library/Golang/1.14.2_1/libexec/src/common/dbmgmt)
+```
+
+因为在启用go modules后，build的时候go不再基于$GOPATH来查找第三方package，在$GOROOT下查找无果后就会报错。所以，需要修改tiedotcli的go.mod文件来指明这些本地package的路径：
+
+```bash
+module tiedotcli
+
+go 1.14
+
+require (
+	//后面的版本格式是固定的
+	common/cmd v0.0.0
+	common/dbmgmt v0.0.0
+)
+
+replace (
+	//后面的value也可以使用绝对路径
+	common/cmd => ../common/cmd
+	common/dbmgmt => ../common/dbmgmt
+)
+```
+
+现在，我们就可以成功build并install tiedotcli了：
+
+```bash
+/work/code/github/gowork/src/tiedotcli $ go build
+/work/code/github/gowork/src/tiedotcli $ ls
+go.mod       go.sum       tiedotcli    tiedotcli.go
+/work/code/github/gowork/src/tiedotcli $ go install
+```
+
+最后，再来看一下现在的项目代码结构，所有的go modules信息以及依赖项都被自动放在了$GOPATH/pkg/mod目录下，执行`go install`后二进制也还是会被自动放置到$GOPATH/bin下面：
+
+```bash
+/work/code/github $ tree gowork
+gowork
+├── bin
+│   └── tiedotcli
+├── pkg
+│   ├── mod
+│   │   ├── cache
+│   │   │   ├── download
+│   │   │   │   ├── github.com
+│   │   │   │   │   └── !houzuo!guo
+│   │   │   │   │       └── tiedot
+│   │   │   │   │           └── @v
+│   │   │   │   │               ├── list
+│   │   │   │   │               ├── list.lock
+│   │   │   │   │               ├── v0.0.0-20200330175510-6fb216206052.info
+│   │   │   │   │               ├── v0.0.0-20200330175510-6fb216206052.lock
+│   │   │   │   │               ├── v0.0.0-20200330175510-6fb216206052.mod
+│   │   │   │   │               ├── v0.0.0-20200330175510-6fb216206052.zip
+│   │   │   │   │               └── v0.0.0-20200330175510-6fb216206052.ziphash
+│   │   │   │   └── sumdb
+│   │   │   │       └── sum.golang.org
+│   │   │   │           ├── lookup
+│   │   │   │           │   └── github.com
+│   │   │   │           │       └── !houzuo!guo
+│   │   │   │           │           └── tiedot@v0.0.0-20200330175510-6fb216206052
+│   │   │   │           └── tile
+...
+│   │   │   └── lock
+│   │   └── github.com
+│   │       └── !houzuo!guo
+│   │           └── tiedot@v0.0.0-20200330175510-6fb216206052
+...
+│   │               ├── db
+│   │               │   ├── col.go
+│   │               │   ├── db.go
+│   │               │   ├── db_test.go
+│   │               │   ├── doc.go
+│   │               │   ├── doc_test.go
+│   │               │   ├── idx_test.go
+│   │               │   ├── query.go
+│   │               │   └── query_test.go
+...
+│   └── sumdb
+│       └── sum.golang.org
+│           └── latest
+└── src
+    ├── common
+    │   ├── cmd
+    │   │   ├── cmd.go
+    │   │   └── go.mod
+    │   └── dbmgmt
+    │       ├── dbmgmt.go
+    │       ├── go.mod
+    │       └── go.sum
+    └── tiedotcli
+        ├── go.mod
+        ├── go.sum
+        ├── tiedotcli
+        └── tiedotcli.go
+```
+
+查看tiedocli项目的依赖关系：
+
+```bash
+/work/code/github/gowork/src/tiedotcli $ go list -m all
+tiedotcli
+common/cmd v0.0.0 => ../common/cmd
+common/dbmgmt v0.0.0 => ../common/dbmgmt
+github.com/HouzuoGuo/tiedot v0.0.0-20200330175510-6fb216206052
+```
+
+#### 方法2. 直接build tiedotcli
+
+这一次，我们还是先在common/cmd和common/dbmgmt下面执行`go mod init`，但是不再在common/dbmgmt下面执行`go build`，而是直接开始build tiedotcli，也是可以build成功的，只是common/dbmgmt的依赖项目tiedot被当做间接依赖，然后被添加到tiedocli的go.mod文件中，build后的整个目录结构和前面是一致的:
+
+```bash
+module tiedotcli
+
+go 1.14
+
+require (
+	//后面的版本格式是固定的
+	common/cmd v0.0.0
+	common/dbmgmt v0.0.0
+	github.com/HouzuoGuo/tiedot v0.0.0-20200330175510-6fb216206052 // indirect
+)
+
+replace (
+	//后面的value也可以使用绝对路径
+	common/cmd => ../common/cmd
+	common/dbmgmt => ../common/dbmgmt
+)
+```
+
+我们可以感受到，go modules并不是要完全干掉GOPATH，GOPATH仍然可以用于配置我们项目的本地路径。go modules提供了更方便的方法来管理第三方package和本地package，尤其是加入了对依赖包的版本控制，这是最为重要的一点。
+
 # 2. Framework
+
 ## 2.1. Web
 * [mux](https://github.com/gorilla/mux) //http router
 

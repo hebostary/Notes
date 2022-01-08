@@ -2,9 +2,13 @@
 #define TEMPLATE_H_
 
 #include "../common/common.hpp"
+#include <memory>
+#include <type_traits>
 
 void TestTemplate();
-void TestMemberTemplate();
+void testFunctionTemplate();
+void testClassTemplate();
+void testMemberTemplate();
 
 /*
     函数模板
@@ -61,10 +65,101 @@ T1 myfind(T1 begin, T1 end, T2 value)
     return begin;
 }
 
+//在模板中使用尾置返回类型
+//编译器遇到函数的参数列表之前，beg都是不存在的
+//为了定义此函数，必须使用尾置返回类型
+template<typename It>
+auto fcn1(It beg, It end) -> decltype(*beg)
+{
+    //处理序列
+    return *beg;//解引用运算符符返回一个左值，
+    //因此decltype推断的类型为beg表示元素的类型的引用
+}
 
+//使用类型转换的标准库模板类
+//remove_reference是一个类型转换模板，用以获得元素类型
+//它包含一个模板参数和一个名为type的public类型成员
+//remove_reference<string&>::type就是string
+template<typename It>
+auto fcn2(It beg, It end) -> 
+    typename remove_reference<decltype(*beg)>::type
+{
+    //处理序列
+    return *beg;//直接返回序列首元素的拷贝
+}
 
 /*
     类模板
+*/
+template <typename T>
+class Blob {
+public:
+    typedef T value_type;
+    typedef typename vector<T>::size_type size_type;
+
+    //构造函数
+    Blob() : data(make_shared<vector<value_type>>()) { }
+    Blob(initializer_list<T> il) : data(make_shared<vector<value_type>>(il)) { }
+
+    size_type size() { return data->size(); }
+    bool empty() { return data->empty(); }
+
+    //添加和删除元素
+    void push_back(const value_type &t) { data->push_back(t); }
+    void push_back(value_type &&t) { data->push_back(std::move(t)); }
+    void pop_back();
+    
+    //元素访问
+    T& front();
+    T& back();
+    T& operator[](size_type i);
+
+private:
+    shared_ptr<vector<T>> data;
+    //如果data[i]不合法，抛出一个异常
+    void check(size_type i, const string &msg) const;
+
+};
+
+template <typename T>
+void Blob<T>::check(size_type i, const string &msg ) const
+{
+    if ( i >= data->size() )
+    {
+        throw out_of_range(msg);
+    }
+}
+
+template <typename T>
+void Blob<T>::pop_back()
+{
+    check(0, "pop_back on empty Blob");
+    data->pop_back();
+}
+
+template <typename T>
+T& Blob<T>::front()
+{
+    check(0, "front on empty Blob");
+    return data->front();
+}
+
+template <typename T>
+T& Blob<T>::back()
+{
+    check(0, "back on empty Blob");
+    return data->back();
+}
+
+template <typename T>
+T& Blob<T>::operator[](size_type i)
+{
+    check(i, "index out of range.");
+    return *data[i];
+}
+
+/*
+    类模板： 成员模板
 */
 class Base1 {
 public:
