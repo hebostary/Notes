@@ -5,9 +5,7 @@ Java并不只是一个编程语言，而是一个完整的平台，有一个庞�
 ## Java与C++的一些比较
 
 * **面向对象**：Java与C++的主要不同点在于多重继承，在Java中，取而代之的是更简单的接口概念。
-
 * **健壮性**：Java和C++最大的不同在于java采用的指针模型可以消除重写内存和损坏数据的可能性。
-
 * **安全性**：沙箱运行环境。
 * **可移植性**：与C/C++不同，Java规范中没有“依赖具体实现”的地方。基本数据类型的大小以及有关运算都做了明确的说明。比如，Java的int永远是32位的整数，而C/C++中可能是16位或者32位的整数，也可能是编译器提供商指定的其它大小，只是做了一些类型大小约束：short int <= int <= long int。
 * 跨平台性：一次编译，到处运行。
@@ -129,16 +127,16 @@ java -jar pkg/CoreJavaTest.jar
 
 Java是一种强类型语言，意味着必须为每一个变量声明一种类型。在Java中，一共有8种基本类型：
 
-|  type   | size (bytes) |                      value range                       | comments        |
+|  type  | size (bytes) |                      value range                      | comments        |
 | :-----: | :----------: | :----------------------------------------------------: | --------------- |
-|   int   |      4       |     -2 147 483 648 ~ 2 147 483 647 (正好超过20亿)      |                 |
-|  short  |      2       |                    -32 768 ~ 32 767                    |                 |
-|  long   |      8       | -9 223 372 036 854 775 808 ~ 9 223 372 036 854 775 807 |                 |
-|  byte   |      1       |                       -128 ~ 127                       |                 |
-|  float  |      4       |      大约(-+)3.402 823 47E+38F（有效位为6 ~ 7位）      |                 |
-| double  |      8       | 大约(-+)1.797 693 134 862 315 70E+308（有效位为15位）  |                 |
-|  char   |      2       |                        比如'A'                         | 使用Unicode编码 |
-| boolean |      4       |                     true \| false                      |                 |
+|   int   |      4      |     -2 147 483 648 ~ 2 147 483 647 (正好超过20亿)     |                 |
+|  short  |      2      |                    -32 768 ~ 32 767                    |                 |
+|  long  |      8      | -9 223 372 036 854 775 808 ~ 9 223 372 036 854 775 807 |                 |
+|  byte  |      1      |                       -128 ~ 127                       |                 |
+|  float  |      4      |      大约(-+)3.402 823 47E+38F（有效位为6 ~ 7位）      |                 |
+| double |      8      | 大约(-+)1.797 693 134 862 315 70E+308（有效位为15位） |                 |
+|  char  |      2      |                        比如'A'                        | 使用Unicode编码 |
+| boolean |      4      |                      true\| false                      |                 |
 
 关于整型的说明：
 
@@ -169,9 +167,7 @@ Java是一种强类型语言，意味着必须为每一个变量声明一种类�
 在Java中：
 
 * 变量名对大小写敏感。
-
 * 不区分变量的声明和定义。
-
 * 声明一个变量后，必须用赋值语句对变量进行显示初始化，千万不要使用未初始化的变量，否则编译器会报错：
 
 ```java
@@ -225,15 +221,15 @@ int nx = (int)Math.round(x); //nx = 10, Math.round返回结果为long类型，�
 
 Java的逻辑运算符和C++基本相同：
 
-|                    运算符                    |      运算意义      | 说明                                  |
-| :------------------------------------------: | :----------------: | ------------------------------------- |
-|                      &&                      |   逻辑”与“运算符   |                                       |
-|                     \|\|                     |   逻辑“或”运算符   |                                       |
-|                      ！                      |   逻辑“非”运算符   |                                       |
-|                 <. >, <=, >=                 |     比较运算符     |                                       |
-|                     ? :                      |     三元运算符     | condition ? expression1 : expression2 |
-| &（"and"）  \|（"or"） ^（"xor"） ~（"not"） |      位运算符      |                                       |
-|                 >>, <<, >>>>                 | 位模式左移或者右移 | >>>>运算符会用0填充高位，>>不会       |
+|                   运算符                   |      运算意义      | 说明                                  |
+| :----------------------------------------: | :----------------: | ------------------------------------- |
+|                     &&                     |  逻辑”与“运算符  |                                       |
+|                    \|\|                    |  逻辑“或”运算符  |                                       |
+|                     ！                     |  逻辑“非”运算符  |                                       |
+|                <. >, <=, >=                |     比较运算符     |                                       |
+|                    ? :                    |     三元运算符     | condition ? expression1 : expression2 |
+| &（"and"）\|（"or"） ^（"xor"） ~（"not"） |      位运算符      |                                       |
+|                >>, <<, >>>>                | 位模式左移或者右移 | >>>>运算符会用0填充高位，>>不会       |
 
 * 移位运算符的右操作数要完成模32的运算（除非做操作数为long类型，做模64运算），即1 << 35等价于1 << 3等价于8。
 
@@ -305,7 +301,7 @@ if  (str != null && str.length() != 0)
 
 ### 码点与代码单元
 
->  码点（code point）是指与一个编码表中的某个字符对应的代码值。在Unicode标准中，码点采用十六进制书写，并加上前缀U+，例如U+0041就是拉丁字母A的码点。
+> 码点（code point）是指与一个编码表中的某个字符对应的代码值。在Unicode标准中，码点采用十六进制书写，并加上前缀U+，例如U+0041就是拉丁字母A的码点。
 >
 > Unicode的码点可以分成17个代码级别（code plane），第一个代码级别称为*基本的多语言级别*，码点从U+0000到U+FFFF，其中包括经典的Unicode代码；其余的16个级别码点从U+10000到U+10FFFF，其中包括一些辅助字符。
 >
@@ -343,8 +339,6 @@ System.out.println(compString); //Stringbuilder
 ## 联机文档
 
 [Java SE 11 API Documentation](https://docs.oracle.com/en/java/javase/11/docs/api/index.html)
-
-
 
 ## 输入输出
 
@@ -458,8 +452,6 @@ Arrays.sort(arr1);
 System.out.println(Arrays.toString(arr1)); //[10, 20, 30, 50, 400]
 ```
 
-
-
 > int[] a = new int[100]; // Java  等同于 int* a = new int[100]; //C++（堆分配） 而不同于 int a[100]; //C++（栈分配）。
 >
 > Java中的[]运算符被预定义为检查数组边界，而且没有指针运算，即不能通过a加1得到数组的下一个元素。
@@ -532,8 +524,6 @@ double** balances = new double*[10]; //C++
 //当需要不规则数组时，只能按前面地例子单独地创建行数组
 ```
 
-
-
 # 面向对象OOP
 
 ## 对象与类
@@ -550,7 +540,7 @@ double** balances = new double*[10]; //C++
 Data birthday = new Date();
 ```
 
->  构造器与类中的其它方法有一个重要的不同：构造器总是伴随着new操作符的执行被调用，而不能对一个已经存在的对象调用构造器来达到重新设置实例域（对象私有数据）的目的。
+> 构造器与类中的其它方法有一个重要的不同：构造器总是伴随着new操作符的执行被调用，而不能对一个已经存在的对象调用构造器来达到重新设置实例域（对象私有数据）的目的。
 
 通常，希望构造的对象可以多次使用，因此，需要将对象存放在一个*对象变量*中，比如上面的birthday。需要注意的是，一个对象变量并没有实际包含一个对象，而仅仅引用一个对象。我们可以显示地将对象变量设置为null，表示这个对象变量目前没有引用任何对象。
 
@@ -558,15 +548,12 @@ Data birthday = new Date();
 birthday = null;
 ```
 
->* 在Java中，任何对象变量的值都是对存储在另外一个地方的一个对象的引用。new操作符的返回值也是一个引用。
->
->* 可以将Java的对象变量看作是C++的对象指针，而不是C++的引用，因为C++中没有空引用（必须初始化），并且引用不能被赋值。
->
->* 局部变量不会自动地初始化为null，而必须通过调用new或者将它们设置为null进行初始化。
->
->* 所有Java对象都存储在堆中。当一个对象包含另一个对象变量时，这个变量依然包含着指向另一个堆对象的指针。
->* 在Java中使用一个没有初始化的指针，运行系统将会产生一个运行时错误，而不是像C++那样生成一个随机的结果，从而可能导致内存溢出。
->* C++通过拷贝构造器和复制操作符来实现对象的自动拷贝，而Java必须使用clone方法获得对象的完整拷贝。
+> * 在Java中，任何对象变量的值都是对存储在另外一个地方的一个对象的引用。new操作符的返回值也是一个引用。
+> * 可以将Java的对象变量看作是C++的对象指针，而不是C++的引用，因为C++中没有空引用（必须初始化），并且引用不能被赋值。
+> * 局部变量不会自动地初始化为null，而必须通过调用new或者将它们设置为null进行初始化。
+> * 所有Java对象都存储在堆中。当一个对象包含另一个对象变量时，这个变量依然包含着指向另一个堆对象的指针。
+> * 在Java中使用一个没有初始化的指针，运行系统将会产生一个运行时错误，而不是像C++那样生成一个随机的结果，从而可能导致内存溢出。
+> * C++通过拷贝构造器和复制操作符来实现对象的自动拷贝，而Java必须使用clone方法获得对象的完整拷贝。
 
 ### 用户自定义类
 
@@ -591,7 +578,7 @@ class Employee
     //可以用public标记实例域，即允许程序的任何方法对其进行读取和修改，完全破坏了封装。
     //因此，强烈建议将实例域标记成private
     private String name;
-    
+  
     //构造器
     public Employee(String n)
     {
@@ -601,7 +588,7 @@ class Employee
 }
 ```
 
->当编译这段源代码的时候，编译器将在目录下创建两个类文件：EmployeeTest.class 和 Employee.class。将程序中包含main方法的类名提供给字节码解释器，以便启动这个程序。
+> 当编译这段源代码的时候，编译器将在目录下创建两个类文件：EmployeeTest.class 和 Employee.class。将程序中包含main方法的类名提供给字节码解释器，以便启动这个程序。
 
 在Java中，所有的方法都必须在类的内部定义，但并不表示它们是内联方法。是否将某个方法设置为内联方法是Java虚拟机的任务。即时编译器会监视调用那些简洁，经常被调用，没有被重载以及可优化的方法。
 
@@ -635,7 +622,7 @@ public void reaiseSalary(double byPercent)
 class Employee
 {
     private Date hireDay;
-    
+  
     //...
     public Date getHireDay()
     {
@@ -660,7 +647,7 @@ d.setTime(d.getTime() - (long)tenYearsInMs);
 class Employee
 {
     private Date hireDay;
-    
+  
     //...
     public Date getHireDay()
     {
@@ -706,7 +693,7 @@ class Employee
     //每一个雇员对象都有一个自己的id域，但这个类的所有实例将共享一个nextId域。
     private static int nextId = 1;
     private int id;
-    
+  
     public void setId()
     {
         id = nextId;
@@ -862,7 +849,7 @@ public class Employee {
 }
 ```
 
->  采用这种方式使用this关键字非常有用，这样对公共的构造器代码部分只编写一次即可。
+> 采用这种方式使用this关键字非常有用，这样对公共的构造器代码部分只编写一次即可。
 
 #### 初始化数据域
 
@@ -1031,9 +1018,7 @@ public class Employee {
 ## 类设计技巧
 
 1. 一定要保证数据私有。这是最重要的，绝对不要破坏封装性。
-
 2. 一定要对数据初始化，而不是依赖于系统的默认值。
-
 3. 不要在类中使用过多的基本类型，比如用Address类替换一个Customer类中以下的实例域：
 
    ```java
@@ -1042,13 +1027,9 @@ public class Employee {
    private String state;
    private int zip;
    ```
-
 4. 不是所有的域都需要独立的域访问器和域更改器。
-
 5. 将职责过多的类进行分解。
-
 6. 类名和方法名要能体现它们的职责。
-
 7. 优先使用不可变的类。
 
 ## 继承
@@ -1099,13 +1080,13 @@ public class Manager extends Employee {
 请注意， 尽管在foreach循环中将 e 声明为 Employee 类型，但实际上 e 既可以引用 Employee 类型的对象，也可以引用 Manager 类型的对象。当 e 引用 Employee 对象时， e.getSalary( ) 调用的是 Employee 类中的 getSalary 方法；当e 引用 Manager 对象时，e.getSalary( ) 调用的是 Manager 类中的 getSalary 方法。虚拟机知道
 e 实际引用的对象类型，因此能够正确地调用相应的方法。
 
-> 关键字this有两个用途：1.引用隐式参数；2.调用该类的其它构造器。类似地，super关键字也有两个用途：1.调用超类的方法；2.调用超类的构造器。在调用构造器的时候， 这两个关键字的使用方式很相似。调用构造器的语句只能作为另一个构造器的第一条语句出现。 构造参数既可以传递给本类 （ this) 的其他构造器， 也可以传递给超类（super ) 的构造器。  
+> 关键字this有两个用途：1.引用隐式参数；2.调用该类的其它构造器。类似地，super关键字也有两个用途：1.调用超类的方法；2.调用超类的构造器。在调用构造器的时候， 这两个关键字的使用方式很相似。调用构造器的语句只能作为另一个构造器的第一条语句出现。 构造参数既可以传递给本类 （ this) 的其他构造器， 也可以传递给超类（super ) 的构造器。
 
 ### 继承层次
 
 继承并不仅限于一个层次，而是可以任意派生。在继承层次中， 从某个特定的类到其祖先的路径被称为该类的继承链 ( inheritance chain) 。
 
-> 和C++不同，Java 不支持多继承。  
+> 和C++不同，Java 不支持多继承。
 
 ### 多态
 
@@ -1146,11 +1127,11 @@ staff[0] = new Employee(...); //编译器竟然允许这个赋值操作
 
 **需要强调的是：staff[0]和managers[0]引用的是同一个对象**。所以，最后的赋值操作把一个普通的雇员归入经理的行列了。这可能导致严重的错误，比如调用manages[0].setBonus(1000);的时候，将会导致调用一个不存在的实例域，进而扰乱相邻存储空间的内容。
 
->为了确保不发生这类错误，所有数组都要牢记创建它们的元素类型，并负责监督仅将类型兼容的引用存储到数组中。例如， 使用 new managers[10] 创建的数组是一个经理数组。如果试图存储一个 Employee 类型的引用就会引发 ArrayStoreException 异常。  
+> 为了确保不发生这类错误，所有数组都要牢记创建它们的元素类型，并负责监督仅将类型兼容的引用存储到数组中。例如， 使用 new managers[10] 创建的数组是一个经理数组。如果试图存储一个 Employee 类型的引用就会引发 ArrayStoreException 异常。
 
 ### 阻止继承：final类和方法
 
-有时候，可能希望阻止人们利用某个类定义子类。不允许扩展的类被称为 final 类。如果在定义类的时候使用了 final 修饰符就表明这个类是 final 类。 例如， 假设希望阻止人们定义Executive类的子类，就可以在定义这个类的时候使用 final 修饰符声明。声明格式如下所示：  
+有时候，可能希望阻止人们利用某个类定义子类。不允许扩展的类被称为 final 类。如果在定义类的时候使用了 final 修饰符就表明这个类是 final 类。 例如， 假设希望阻止人们定义Executive类的子类，就可以在定义这个类的时候使用 final 修饰符声明。声明格式如下所示：
 
 ```java
 public final class Executive extends Manager
@@ -1161,13 +1142,13 @@ public final class Executive extends Manager
 
 > 类中的特定方法也可以被声明为final。如果这样做，子类就不能覆盖这个方法（final类中的所有方法自动地成为final方法）。实际上，域也可以被声明为final，对于final域来说，构造对象之后就不允许改变它们的值了。不过，如果将一个类声明为final，只有其中的方法自动地成为final，而不包括域。
 
-将方法或类声明为final的主要目的是：确保它们不会在子类中改变语义。比如标准库的String类就是final类，这意味着不允许任何人定义String的子类，换言之，如果有一个 String 的引用， 它引用的一定是一个 String 对象， 而不可能是其他类的对象。  
+将方法或类声明为final的主要目的是：确保它们不会在子类中改变语义。比如标准库的String类就是final类，这意味着不允许任何人定义String的子类，换言之，如果有一个 String 的引用， 它引用的一定是一个 String 对象， 而不可能是其他类的对象。
 
 ### 强制类型转换
 
-在 Java 中，每个对象变量都属于一个类型。类型描述了这个变量所引用的以及能够引用的对象类型。例如， staff[i] 引用一个 Employee 对象（因此它还可以引用 Manager对象。)  
+在 Java 中，每个对象变量都属于一个类型。类型描述了这个变量所引用的以及能够引用的对象类型。例如， staff[i] 引用一个 Employee 对象（因此它还可以引用 Manager对象。)
 
-将一个值存人变量时， 编译器将检查是否允许该操作。将一个子-类的引用赋给一个超类变量， 编译器是允许的。但将一个超类的引用赋给一个子类变量， 必须进行类型转换， 这样才能够通过运行时的检査。  
+将一个值存人变量时， 编译器将检查是否允许该操作。将一个子-类的引用赋给一个超类变量， 编译器是允许的。但将一个超类的引用赋给一个子类变量， 必须进行类型转换， 这样才能够通过运行时的检査。
 
 进行类型转换的唯一原因是：在暂时忽视对象的实际类型之后， 使用对象的全部功能。 比如，我们需要将数组中引用经理的元素复原成 Manager 类， 以便能够访问新增加的所有变量 。
 
@@ -1185,7 +1166,7 @@ Manager boss = (Manager) staff[0]; //OK
 Manager boss = (Manager) staff[1]; //Error
 ```
 
-运行这个程序时， Java 运行时系统将报告这个错误， 并产生一个 ClassCastException异常。 如果没有捕获这个异常，那么程序就会终止。因此，应该养成这样一个良好的程序设计习惯： 在进行类型转换之前，先查看一下是否能够成功地转换。这个过程简单地使用instanceof 操作符就可以实现。 例如：  
+运行这个程序时， Java 运行时系统将报告这个错误， 并产生一个 ClassCastException异常。 如果没有捕获这个异常，那么程序就会终止。因此，应该养成这样一个良好的程序设计习惯： 在进行类型转换之前，先查看一下是否能够成功地转换。这个过程简单地使用instanceof 操作符就可以实现。 例如：
 
 ```java
 if (staff[1] instanceof Manager)
@@ -1195,9 +1176,9 @@ if (staff[1] instanceof Manager)
 }
 ```
 
->  实际上，通过类型转换调整对象的类型并不是一种好的做法。在我们列举的示例中，大多数情况并不需要将 Employee 对象转换成 Manager 对象， 两个类的对象都能够正确地调用getSalary 方法，这是因为实现多态性的动态绑定机制能够自动地找到相应的方法。只有在使用 Manager 中特有的方法时才需要进行类型转换， 例如， setBonus 方法。如果鉴于某种原因，发现需要通过 Employee 对象调用 setBonus 方法， 那么就应该检查一下超类的设计是否合理。重新设计一下超类，并添加 setBonus方法才是正确的选择。请记住，只要没有捕获*ClassCastException*异常，程序就会终止执行。 在一般情况下，应该尽量少用类型转换和*instanceof*运算符。  
+> 实际上，通过类型转换调整对象的类型并不是一种好的做法。在我们列举的示例中，大多数情况并不需要将 Employee 对象转换成 Manager 对象， 两个类的对象都能够正确地调用getSalary 方法，这是因为实现多态性的动态绑定机制能够自动地找到相应的方法。只有在使用 Manager 中特有的方法时才需要进行类型转换， 例如， setBonus 方法。如果鉴于某种原因，发现需要通过 Employee 对象调用 setBonus 方法， 那么就应该检查一下超类的设计是否合理。重新设计一下超类，并添加 setBonus方法才是正确的选择。请记住，只要没有捕获*ClassCastException*异常，程序就会终止执行。 在一般情况下，应该尽量少用类型转换和*instanceof*运算符。
 >
-> Java的类型转换处理过程类似于C++的dynamic_cast操作，它们之间只有一点重要的区别： 当类型转换失败时， Java 不会生成一个 null 对象，而是抛出一个异常。  
+> Java的类型转换处理过程类似于C++的dynamic_cast操作，它们之间只有一点重要的区别： 当类型转换失败时， Java 不会生成一个 null 对象，而是抛出一个异常。
 >
 > ```c++
 > Manager* boos = dynamic_cast<Manager*>(staff[1]);
@@ -1218,9 +1199,9 @@ public abstract class Person
     {
         this.name = name;
     }
-    
+  
     public abstract String getDescription();
-    
+  
     public String getName()
     {
         return name;
@@ -1228,16 +1209,16 @@ public abstract class Person
 }
 ```
 
-为了提高程序的清晰度， **包含一个或多个抽象方法的类本身必须被声明为抽象的**。  除了抽象方法之外，抽象类还可以包含具体数据和具体方法。例如， Person 类还保存着姓名和一个返回姓名的具体方法。  
+为了提高程序的清晰度， **包含一个或多个抽象方法的类本身必须被声明为抽象的**。  除了抽象方法之外，抽象类还可以包含具体数据和具体方法。例如， Person 类还保存着姓名和一个返回姓名的具体方法。
 
 下面总结一下抽象类的一些特点：
 
 * 抽象方法充当着占位的角色， 它们的具体实现在子类中。扩展抽象类可以有两种选择：
   * 一种是在抽象类中定义部分抽象类方法或不定义抽象类方法，这样就必须将子类也标记为抽象类；
-  * 另一种是定义全部的抽象方法，这样一来，子类就不是抽象的了。  
-* 类即使不含抽象方法，也可以将类声明为抽象类。  
+  * 另一种是定义全部的抽象方法，这样一来，子类就不是抽象的了。
+* 类即使不含抽象方法，也可以将类声明为抽象类。
 * 抽象类不能被实例化。也就是说，如果将一个类声明为 *abstract*, 就不能创建这个类的对象。
-* 可以定义一个抽象类的对象变量， 但是它只能引用非抽象子类的对象。  
+* 可以定义一个抽象类的对象变量， 但是它只能引用非抽象子类的对象。
 
 ```java
 Person[] people = new Person[2];
@@ -1259,7 +1240,7 @@ for (Person p : people)
 
 但是有些时候，我们希望超类中的某些方法允许被子类访问，或允许子类的方法访问超类的某个域。这就需要一种介于public和private之间的访问控制，即声明受保护的（protected）方法或域。
 
-例如， 如果将超类 Employee中的 hireDay 声明为*protected*, 而不是私有的，Manager中的方法就可以直接地访问它。  不过， Manager 类中的方法只能够访问 Manager 对象中的 hireDay 域， 而不能访问其他Employee 对象中的这个域。 这种限制有助于避免滥用受保护机制，使得子类只能获得访问受保护域的权利。  
+例如， 如果将超类 Employee中的 hireDay 声明为*protected*, 而不是私有的，Manager中的方法就可以直接地访问它。  不过， Manager 类中的方法只能够访问 Manager 对象中的 hireDay 域， 而不能访问其他Employee 对象中的这个域。 这种限制有助于避免滥用受保护机制，使得子类只能获得访问受保护域的权利。
 
 受保护的方法更具有实际意义。 如果需要限制某个方法的使用， 就可以将它声明为protected。这表明子类（可能很熟悉祖先类）得到信任， 可以正确地使用这个方法， 而其他类则不行。  这种方法最好的示例就是Object类中的clone方法。
 
@@ -1327,21 +1308,21 @@ public class Employee
 	{
         // 2.检测this与otherObject是否引用同一个对象，实际上这是一个优化
         if (this == otherObject) return true;
-        
+    
         // 3.检测otherObject是否为null
         if (otherObject == null) return false;
-        
+    
         // 4.1 比较this与otherObject是否属于同一个类。如果equals的语义在每个子类中都有改变，
         // 就使用getClass检测，也就是上面的相等语义1的处理.
         if (getClass() != otherObject.getClass()) return false;
-        
+    
         // or 4.2 如果所有子类都有统一的相等语义，就使用instanceof检测
         // 也就是上面的相等语义2的处理：
         if(!(otherObject instanceof Employee)) return false;
-        
+    
         // 5.将otherObject转换为相应的类类型变量：
         Employee other = (Employee) otherObject;
-        
+    
         // 6.如果在子类中重新定义equals，就要在其中包含调用super.equals(other)。
         // 并对所有需要比较的域进行比较，基本类型域使用==比较，对象域使用equals比较：
         return Objects.equals(name, other.name)
@@ -1349,8 +1330,6 @@ public class Employee
     }
 }
 ```
-
-
 
 ### hashCode方法
 
@@ -1378,7 +1357,7 @@ public int hashCode()
 }
 ```
 
-equals和hashCode的定义必须一致：如果x.equals(y)返回true，那么x.hashCode()就必须域y.hashCode()具有相同的值。例如， 如果用定义的 Employee.equals 比较雇员的 ID， 那么 hashCode 方法就需要散列 ID，而不是雇员的姓名或存储址。  
+equals和hashCode的定义必须一致：如果x.equals(y)返回true，那么x.hashCode()就必须域y.hashCode()具有相同的值。例如， 如果用定义的 Employee.equals 比较雇员的 ID， 那么 hashCode 方法就需要散列 ID，而不是雇员的姓名或存储址。
 
 > 如果存在数组类型的域，那么可以使用静态的Arrays.hashCode方法计算一个散列码，这个散列码由数组元素的散列码组成。
 
@@ -1472,7 +1451,7 @@ public class ArrayListTest {
 
 ## 对象包装器与自动装箱
 
-有时， 需要将 int 这样的基本类型转换为对象。 所有的基本类型都有一个与之对应的类。例如，Integer 类对应基本类型 int。通常，这些类称为包装器 （ wrapper )。 这些对象包装器类拥有很明显的名字：Integer、Long、Float、Double、Short、Byte、Character 、 Void 和 Boolean (前6 个类派生于公共的超类 Number)。**对象包装器类是不可变的，即一旦构造了包装器，就不允许更改包装在其中的值。**同时， 对象包装器类还是 final , 因此不能定义它们的子类。 
+有时， 需要将 int 这样的基本类型转换为对象。 所有的基本类型都有一个与之对应的类。例如，Integer 类对应基本类型 int。通常，这些类称为包装器 （ wrapper )。 这些对象包装器类拥有很明显的名字：Integer、Long、Float、Double、Short、Byte、Character 、 Void 和 Boolean (前6 个类派生于公共的超类 Number)。**对象包装器类是不可变的，即一旦构造了包装器，就不允许更改包装在其中的值。**同时， 对象包装器类还是 final , 因此不能定义它们的子类。
 
  比如，ArrayList尖括号中的类型参数不允许是基本类型：
 
@@ -1481,7 +1460,7 @@ public class ArrayListTest {
 ArrayList<Integer> list = new ArrayList<>();
 ```
 
-> 由于每个值分别包装在对象中，所以ArrayList<Integer>的效率远低于int[]数组。因此，应该用它构造小型集合，依次获得操作的方便性，同时对执行性能没有太多的要求。
+> 由于每个值分别包装在对象中，所以ArrayList `<Integer>`的效率远低于int[]数组。因此，应该用它构造小型集合，依次获得操作的方便性，同时对执行性能没有太多的要求。
 
 ### 自动装箱autoboxing
 
@@ -1494,7 +1473,7 @@ ArrayList<Integer> list = new ArrayList<>();
 list.add(3);
 ```
 
-> 自动装箱规范要求boolean、byte、char <= 127，介于-128 ~ 127之间的 short 和int 被包装到固定的对象中。  
+> 自动装箱规范要求boolean、byte、char <= 127，介于-128 ~ 127之间的 short 和int 被包装到固定的对象中。
 >
 > ```java
 > Integer a = 127;
@@ -1507,7 +1486,7 @@ list.add(3);
 
 ### 自动拆箱
 
-相反地，当将一个 Integer 对象赋给一个 int 值时， 将会自动地拆箱。  
+相反地，当将一个 Integer 对象赋给一个 int 值时， 将会自动地拆箱。
 
 ```java
 //编译器将下面地语句翻译成：
@@ -1515,7 +1494,7 @@ list.add(3);
 int n = list.get(i);
 ```
 
-甚至在算术表达式中也能够自动地装箱和拆箱。例如，可以将自增操作符应用于一个包装器引用：  
+甚至在算术表达式中也能够自动地装箱和拆箱。例如，可以将自增操作符应用于一个包装器引用：
 
 ```java
 Integer n = 3;
@@ -1545,7 +1524,7 @@ public PrintStream printf(String format, Object ... args) {
 这里的省略号...是Java代码的一部分，它表明这个方法可以接收任意数量的对象（除format参数之外）。
 
 实际上，printf 方法接收两个参数，一个是格式字符串， 另一个是 Object []数组， 其中保存着所有的参数（如果调用者提供的是整型数组或者其他基本类型的值， 自动装箱功能将把它们转换成对象 )。现在将扫描 format字符串， 并将第 i 个格式说明符与 args[i] 的值匹配起来。
-换句话说，对于 printf 的实现者来说，Object… 参数类型与 Object[ ] 完全一样。 
+换句话说，对于 printf 的实现者来说，Object… 参数类型与 Object[ ] 完全一样。
 
 用户自定义变参函数 :
 
@@ -1574,7 +1553,7 @@ public enum Size { SMALL, MEDIUM, LARGE };
 ```
 
 因此， 在比较两个枚举类型的值时， 永远不需要调用 equals, 而直接使用“ = =” 就可以了。
-如果需要的话， 可以在枚举类型中添加一些构造器、 方法和域。 当然， 构造器只是在构造枚举常量的时候被调用。  
+如果需要的话， 可以在枚举类型中添加一些构造器、 方法和域。 当然， 构造器只是在构造枚举常量的时候被调用。
 
 ```java
 enum Size
@@ -1593,7 +1572,7 @@ enum Size
 }
 ```
 
-所有的枚举类型都是 *Enum* 类的子类，它们继承了这个类的许多方法：  
+所有的枚举类型都是 *Enum* 类的子类，它们继承了这个类的许多方法：
 
 ```java
 public class EnumTest {
@@ -1610,7 +1589,7 @@ public class EnumTest {
        //自动调用size.toString()，返回枚举常量名
        System.out.println("size=" + size);//size=SMALL
        System.out.println("abbreviation=" + size.getAbbreviation());//S
-       
+   
        //每个枚举类型都有一个静态的values方法，返回一个包含全部枚举值的数组
        Size[] values = Size.values();
        System.out.println(Arrays.toString(values));//[SMALL, MEDIUM, LARGE]
@@ -1675,20 +1654,20 @@ System.out.println(class4.getName());//int
 System.out.println(class5.getName());
 ```
 
->Class类实际上是一个泛型类：Manager.class的类型是Class<Manager>。
+> Class类实际上是一个泛型类：Manager.class的类型是Class `<Manager>`。
 
 ### 利用反射分析类
 
 在 java.lang.reflect 包中有三个类 Field、 Method 和 Constructor 分别用于描述类的域、 方法和构造器的详细信息：
 
-1.  **名称**：这三个类都有一个叫做 getName 的方法， 用来返回域，方法或构造器的名称。 
-2. **域的Class对象**：Field类有一个 getType 方法， 用来返回描述域所属类型的 Class 对象。 
+1. **名称**：这三个类都有一个叫做 getName 的方法， 用来返回域，方法或构造器的名称。
+2. **域的Class对象**：Field类有一个 getType 方法， 用来返回描述域所属类型的 Class 对象。
 3. **返回值及参数类型**：Method 和 Constructor 类有能够报告参数类型的getParameterTypes方法， Method 类还有一个可以报告返回类型的getReturnType方法。
 4. **访问修饰符**：这 三个类还有一个叫做 getModifiers 的方法， 它将返回一个整型数值， 用不同的位开关描述 public 和 static 这样的修饰符使用状况。另外， 还可以用 java.lang.refleCt 包中的 Modifier类的静态方法分析getModifiers 返回的整型数值。 例如， 可以使用 Modifier 类中的 isPublic、 isPrivate 或 isFinal判断方法或构造器是否是 public、 private 或 final。 我们需要做的全部工作就是调用 Modifier类的相应方法， 并对返回的整型数值进行分析， 另外，还可以利用 Modifier.toString方法将修饰符打印出来。
 
 Class类中的 getFields、 getMethods 和 getConstructors 方 法 将 分 别 返 回 类 提 供 的public 域、 方法和构造器数组， 其中包括超类的公有成员。
 
-Class 类种的 getDeclareFields、getDeclareMethods 和 getDeclaredConstructors 方法将分别返回类中声明的全部域、 方法和构造器， 其中包括私有和受保护成员，但不包括超类的成员。  
+Class 类种的 getDeclareFields、getDeclareMethods 和 getDeclaredConstructors 方法将分别返回类中声明的全部域、 方法和构造器， 其中包括私有和受保护成员，但不包括超类的成员。
 
 下面用例子说明这些类的基本用法：
 
@@ -1824,7 +1803,7 @@ public class com.hebostary.corejava.Manager extends com.hebostary.corejava.Emplo
 
 上一节中，我们只是利用反射分析了类的基本属性，基本与具体的类对象无关。利用反射机制还可以查看在编译时还不清楚的具体对象的数据域（值）。
 
- 查看对象域的关键方法是 Field类中的 get 方法。 如果 f 是一个 Field 类型的对象（例如，通过 getDeclaredFields 得到的对象)， obj 是某个包含 f 域的类的对象，f.get(obj) 将返回一个对象，其值为 obj 域的当前值。   
+ 查看对象域的关键方法是 Field类中的 get 方法。 如果 f 是一个 Field 类型的对象（例如，通过 getDeclaredFields 得到的对象)， obj 是某个包含 f 域的类的对象，f.get(obj) 将返回一个对象，其值为 obj 域的当前值。
 
 ```java
 Employee employee = new Employee("Grace", 10000);
@@ -1849,7 +1828,7 @@ try {
 }
 ```
 
-当然，可以获得就可以设置。 调用 f.set(obj ，value) 可以将 obj 对象的 f 域设置成新值。  
+当然，可以获得就可以设置。 调用 f.set(obj ，value) 可以将 obj 对象的 f 域设置成新值。
 
 ### 使用反射编写泛型数组代码
 
@@ -1896,22 +1875,17 @@ String n = (String) ml.invoke(harry);
 double s = (Double) m2.invoke(harry);
 ```
 
-> invoke 的参数和返回值必须是 Object 类型的。这就意味着必须进行多次的类型转换。这样做将会使编译器错过检查代码的机会。因此， 等到测试阶段才会发现这些错误， 找到并改正它们将会更加困难。不仅如此， 使用反射获得方法指针的代码要比仅仅直接调用方法明显慢一些。  
+> invoke 的参数和返回值必须是 Object 类型的。这就意味着必须进行多次的类型转换。这样做将会使编译器错过检查代码的机会。因此， 等到测试阶段才会发现这些错误， 找到并改正它们将会更加困难。不仅如此， 使用反射获得方法指针的代码要比仅仅直接调用方法明显慢一些。
 
 ## 继承的设计技巧
 
 下面总结一些对设计继承关系很有帮助的建议：
 
 1. **将公共操作和域放在超类**。
-
-2. **不要使用受保护的（protected）域**。protected 机制并不能够带来更好的封装保护， 其原因主要有两点：（1）子类集合是无限制的， 任何人都能够由某个类派生一个子类，并编写代码以直接访问 protected 的实例域， 从而破坏了封装性。（2）在 Java 中，在同一个包中的所有类都可以访问 proteced 域，而不管它是否为这个类的子类。  
-
-3. **使用继承实现“is-a”关系**。比如钟点工的信息包含姓名和雇佣日期，但是没有薪水。他们按小时计薪，并且不会因为拖延时间而获得加薪。 钟点工与雇员之间不属于“ is-a” 关系。钟点工不是特殊的雇员。 因此，直接从Employee派生出Contractor 类然后再增加一个 hourlyWage域并不是一个好的设计。因为这样一来， 每个钟点工对橡中都包含了薪水和计时工资这两个域。在实现打印支票或税单方法耐候， 会带来诞的麻烦， 并且与不采用继承，会多写很制戈码。  
-
+2. **不要使用受保护的（protected）域**。protected 机制并不能够带来更好的封装保护， 其原因主要有两点：（1）子类集合是无限制的， 任何人都能够由某个类派生一个子类，并编写代码以直接访问 protected 的实例域， 从而破坏了封装性。（2）在 Java 中，在同一个包中的所有类都可以访问 proteced 域，而不管它是否为这个类的子类。
+3. **使用继承实现“is-a”关系**。比如钟点工的信息包含姓名和雇佣日期，但是没有薪水。他们按小时计薪，并且不会因为拖延时间而获得加薪。 钟点工与雇员之间不属于“ is-a” 关系。钟点工不是特殊的雇员。 因此，直接从Employee派生出Contractor 类然后再增加一个 hourlyWage域并不是一个好的设计。因为这样一来， 每个钟点工对橡中都包含了薪水和计时工资这两个域。在实现打印支票或税单方法耐候， 会带来诞的麻烦， 并且与不采用继承，会多写很制戈码。
 4. **除非所有继承的方法都有意义，否则不要使用继承**。
-
 5. **在覆盖方法时，不要改变预期的行为**。
-
 6. **使用多态，而非类型信息**。比如下面的代码，都应该考虑多态性：
 
    ```java
@@ -1926,7 +1900,6 @@ double s = (Double) m2.invoke(harry);
    ```java
    x.action();
    ```
-
 7. **不要过多的使用反射**。反射是很脆弱的，意味着编译器很难帮助发现程序中的错误，只有运行时才能发现有些错误并导致异常。
 
 # 接口/lambda表达式/内部类
@@ -1960,22 +1933,20 @@ public class Employee implements Comparable<Employee>
     }
 ```
 
-**为什么不能在 Employee 类直接提供一个 compareTo 方法，而必须实现 Comparable 接口呢？**主要原因在于 Java 程序设计语言是一种强类型（ strongly typed）语言。在调用方法的时候， 编译器将会检查这个方法是否存在。在 sort 方法中可能存在下面这样的语句：  
+**为什么不能在 Employee 类直接提供一个 compareTo 方法，而必须实现 Comparable 接口呢？**主要原因在于 Java 程序设计语言是一种强类型（ strongly typed）语言。在调用方法的时候， 编译器将会检查这个方法是否存在。在 sort 方法中可能存在下面这样的语句：
 
 ```java
 if (a[i].compareTo(a[j]) > 0) { ... }
 ```
 
-为此， 编译器必须确认 a[i]—定有 compareTo 方法。 如果 a 是一个 Comparable 对象的数组， 就可以确保拥有compareTo 方法，因为每个实现 Comparable 接口的类都必须提供这个方法的定义。  
+为此， 编译器必须确认 a[i]—定有 compareTo 方法。 如果 a 是一个 Comparable 对象的数组， 就可以确保拥有compareTo 方法，因为每个实现 Comparable 接口的类都必须提供这个方法的定义。
 
 > 语言标 准 规 定： 对 于 任 意 的 x 和 y, 实现必须能够保证 sgn(x.compareTo(y)) = -sgn(y.compareTo(x))。（也就是说， 如 果 y.compareTo(x) 抛出一个异常， 那么 x.compareTo(y)也应该抛出一个异常。这里的“ sgn” 是一个数值的符号：如果n是负值，sgn(n)等于-1 ; 如果n是0, sgn(n)等于0; 如果n是正值，sgn(n)等于1。 简单地讲，如果调换compareTo 的参数，结 果的符号也应该调换。
 
 ### 接口的基本特性
 
-1. **接口中的所有方法自动地属于public**。因此，在接口中声明方法时，可以不提供关键字public。但是，在实现接口时， 必须把方法声明为public。否则， 编译器将认为这个方法的访问属性是包可见性， 即类的默认访问属性，之后编译器就会给出试图提供更严格的访问权限的警告信息。  
-
+1. **接口中的所有方法自动地属于public**。因此，在接口中声明方法时，可以不提供关键字public。但是，在实现接口时， 必须把方法声明为public。否则， 编译器将认为这个方法的访问属性是包可见性， 即类的默认访问属性，之后编译器就会给出试图提供更严格的访问权限的警告信息。
 2. **接口可以包含常量（将被自动设为public static final），但绝不能含有实例域**。提供实例域和方法实现的任务应该由实现接口的那个类来完成。Java SE 8以前，也不能在接口中实现方法，新版本允许在接口中增加静态方法。
-
 3. **接口不是类，因此不能用new运算符实例化一个接口对象。但是，我们可以声明接口的变量，接口变量必须引用实现了接口的类对象:**
 
    ```java
@@ -1988,32 +1959,29 @@ if (a[i].compareTo(a[j]) > 0) { ... }
    ```java
    if (anObject instanceof Comparable) { ... }
    ```
-
 4. **类似于类的继承关系，接口也可以被扩展**。即允许存在多条从具有较高通用性的接口到较高专用性的接口的链。
 
    ```java
    public interface Moveable{
        void move(double x, double y);
    }
-   
+
    public interface Powered extends Moveable {
        double milesPerGallon();
        double SPEED_LIMIT = 95; //a public static final constant
    }
    ```
-
 5. **每个类只能拥有一个超类，但却可以实现多个接口**，这就为定义类的行为提供了极大的灵活性。 这也是为什么不直接将接口设计为抽象类的原因：每个类只能扩展于一个类。
 
    ```java
    //如果某个类实现了这个Cloneable接口，Object类中的clone方法就可以创建类对象的一个拷贝。
    class Employee implements Cloneable, Comparable {...}
-   
+
    abstract class Comparable //why not
    {
        public abstract int compareTo(Object other);
    }
    ```
-
 6. 可以为接口方法提供一个默认实现，即**默认方法**，必须用default修饰符进行标记：
 
    ```java
@@ -2025,14 +1993,13 @@ if (a[i].compareTo(a[j]) > 0) { ... }
    这个例子不太实际，因为Comparable的每一个实现都要覆盖这个方法。但是，在有些场景下，接口为自己声明的方法提供默认实现，则允许具体类只实现接口中感兴趣的部分方法。
 
    默认方法的一个重要用法是**接口演化**。比如新版本为某个接口添加了新的方法，同时提供这个方法的默认实现，就可以保证实现该接口的现有类“源代码兼容”。
-
 7. **解决默认方法冲突。**如果先在一个接口中将一个方法定义为默认方法， 然后又在超类或另一个接口中定义了同样的方法（同名且参数类型相同），会发生什么情况？  规则很简单：（1）超类优先。接口的所有默认方法都会被忽略。（2）接口冲突，实现接口的类必须覆盖方法来解决冲突。
 
 ### 比较器接口Comparator
 
-我们可以用Arrays.sort方法对字符串数组进行排序，因为String类实现了Comparable<String>接口，而且String.compareTo方法可以按照字典序比较字符串。
+我们可以用Arrays.sort方法对字符串数组进行排序，因为String类实现了Comparable `<String>`接口，而且String.compareTo方法可以按照字典序比较字符串。
 
-现在假设我们希望根据长度对字符串进行排序，而不是字典序。我们无法修改String类的compareTo方法的实现，那如何才能做到呢？要处理这种情况，ArrayS.Sort 方法还有第二个版本， 有一个数组和一个比较器 ( comparator ) 作为参数， 比较器是实现了 Comparator 接口的类的实例。  
+现在假设我们希望根据长度对字符串进行排序，而不是字典序。我们无法修改String类的compareTo方法的实现，那如何才能做到呢？要处理这种情况，ArrayS.Sort 方法还有第二个版本， 有一个数组和一个比较器 ( comparator ) 作为参数， 比较器是实现了 Comparator 接口的类的实例。
 
 ```java
 public interface Comparator<T> {
@@ -2040,7 +2007,7 @@ public interface Comparator<T> {
 }
 ```
 
-要实现按长度比较字符串，可以如下定义一个实现Comparator<String>的类：
+要实现按长度比较字符串，可以如下定义一个实现Comparator `<String>`的类：
 
 ```java
 class lengthComparator implements Comparator<String> {
@@ -2092,13 +2059,13 @@ System.out.println(employee1);
 Employee copy = orignal.clone();//深拷贝，前提是Employee类实现了可以完成深拷贝的clone方法
 ```
 
-浅拷贝会有什么影响吗？ 这要看具体情况。如果原对象和浅克隆对象共享的子对象是不可变的， 那么这种共享就是安全的。如果子对象属于一个不可变的类， 如 String，就是这种情况。或者在对象的生命期中，子对象一直包含不变的常量，没有更改器方法会改变它，也没有方法会生成它的引用，这种情况下同样是安全的。  
+浅拷贝会有什么影响吗？ 这要看具体情况。如果原对象和浅克隆对象共享的子对象是不可变的， 那么这种共享就是安全的。如果子对象属于一个不可变的类， 如 String，就是这种情况。或者在对象的生命期中，子对象一直包含不变的常量，没有更改器方法会改变它，也没有方法会生成它的引用，这种情况下同样是安全的。
 
 遗憾的是，通常子对象都是可变的，必须重新定义 clone 方法来建立一个深拷贝， 同时克隆所有子对象。
 
 #### Cloneable接口
 
-Cloneable 接口的出现与接口的正常使用并没有关系。具体来说，它没有指定clone 方法，这个方法是从 Object 类继承的。这个接口只是作为一个标记，指示类设计者了解克隆过程，称为标记接口（tagging interface）。标记接口不包含任何方法，唯一作用就是允许在类型查询中使用instanceof。 
+Cloneable 接口的出现与接口的正常使用并没有关系。具体来说，它没有指定clone 方法，这个方法是从 Object 类继承的。这个接口只是作为一个标记，指示类设计者了解克隆过程，称为标记接口（tagging interface）。标记接口不包含任何方法，唯一作用就是允许在类型查询中使用instanceof。
 
 **Object 类中 clone 方法声明为 protected ,  重新定义clone方法时，需要指定public访问修饰符**。实际上，即使clone的默认实现能够满足要求，还是需要实现Cloneable接口，将clone重新定义为public，再调用super.clone()。类实现了clone方法就一定可以实现深拷贝吗？继续看下面的例子：
 
@@ -2108,7 +2075,7 @@ class Employee implements Cloneable {
     private String name;
     private double salary;
     private Date hireDay;
-    
+  
 	public Employee clone() throws CloneNotSupportedException {
         Employee cloned = (Employee) super.clone();
 
@@ -2185,14 +2152,14 @@ Lambda表达式提供了更简洁的传递代码块的方案。Lambda表达式�
 
 ### Lambda表达式的语法
 
-最简单的Lambda表达式写法：  
+最简单的Lambda表达式写法：
 
 ```java
 (String first, String second)
    -> first.length() - second.length()
 ```
 
-Java 是一种强类型语言， 所以我们还要指定参数的类型(String)，但是无需指定 lambda 表达式的返回类型。 lambda 表达式的返回类型总是会由上下文推导得出。 比如上面的表达式可以在需要 int类型结果的上下文中使用。  
+Java 是一种强类型语言， 所以我们还要指定参数的类型(String)，但是无需指定 lambda 表达式的返回类型。 lambda 表达式的返回类型总是会由上下文推导得出。 比如上面的表达式可以在需要 int类型结果的上下文中使用。
 
  如果表达式需要完成更复杂的工作，可以如下编写代码：
 
@@ -2211,7 +2178,7 @@ Java 是一种强类型语言， 所以我们还要指定参数的类型(String)
 () -> {for (inti = 100;i >= 0;i ) System.out.println(i);}
 ```
 
-如果可以推导出一个 lambda 表达式的参数类型，则可以忽略其类型。例如：  
+如果可以推导出一个 lambda 表达式的参数类型，则可以忽略其类型。例如：
 
 ```java
 //在这里，编译器可以推导出first和 second 必然是字符串，因为这个lambda表达式将赋给一个字符串比较器。
@@ -2230,15 +2197,15 @@ ActionListener listener =  (event) ->
     System.out.println("The time is " + new Date());
 ```
 
-> 如果一个 lambda 表达式只在某些分支返回一个值， 而在另外一些分支不返回值，这是不合法的。 例如，（int x)-> { if (x >= 0) return 1; } 就不合法。  
+> 如果一个 lambda 表达式只在某些分支返回一个值， 而在另外一些分支不返回值，这是不合法的。 例如，（int x)-> { if (x >= 0) return 1; } 就不合法。
 
 ### 函数式接口
 
 Java中已经有很多封装代码块的接口， 如 ActionListener 或Comparator。lambda 表达式与这些接口是兼容的。对于只有一个抽象方法的接口，需要这种接口的对象时，就可以提供一个lambda表达式，这种接口称为**函数式接口**。
 
-> 为什么函数式接口必须有一个抽象方法，不是接口中的所有方法都是抽象的吗？ 实际上， 接口完全有可能重新声明 Object 类的方法， 如 toString 或 clone，这些声明有可能会让方法不再是抽象的。 
+> 为什么函数式接口必须有一个抽象方法，不是接口中的所有方法都是抽象的吗？ 实际上， 接口完全有可能重新声明 Object 类的方法， 如 toString 或 clone，这些声明有可能会让方法不再是抽象的。
 
-最好把 lambda 表达式看作是一个函数， 而不是一个对象， 另外要接受 lambda 表达式可以传递到函数式接口。 
+最好把 lambda 表达式看作是一个函数， 而不是一个对象， 另外要接受 lambda 表达式可以传递到函数式接口。
 
 ```java
 Arrays.sort(planets, (first, second) -> first.length() - second.length());
@@ -2269,7 +2236,7 @@ javax.swing.Timer.Timer(int delay, ActionListener listener)
 java.lang.Thread.Thread(Runnable target)
 ```
 
-实际上，在 Java 中， 对 lambda 表达式所能做的也只是能转换为函数式接口。  
+实际上，在 Java 中， 对 lambda 表达式所能做的也只是能转换为函数式接口。
 
 ### 方法引用
 
@@ -2282,7 +2249,7 @@ Timer t = new Timer(1000, Systei.out::println);//直接把println方法传递到
 Arrays.sort(strings，String::conpareToIgnoreCase)
 ```
 
-表达式 System.out::println 是一个方法引用（method reference )，它等价于 lambda 表达式x -> System.out.println(x)。  
+表达式 System.out::println 是一个方法引用（method reference )，它等价于 lambda 表达式x -> System.out.println(x)。
 
 注意，要用::操作符分隔方法名与对象或类名，主要有下面3种情况：
 
@@ -2294,7 +2261,7 @@ Arrays.sort(strings，String::conpareToIgnoreCase)
 
 对于第3种情况，第1个参数会成为方法的目标。String::conpareToIgnoreCase等同于(x, y) -> x.conpareToIgnoreCase(y)。
 
->  **类似于lambda表达式，方法引用不能独立存在，总是会转换为函数式接口的实例。**
+> **类似于lambda表达式，方法引用不能独立存在，总是会转换为函数式接口的实例。**
 
 ### 构造器引用
 
@@ -2318,7 +2285,7 @@ private static void repeatPrint(int delay, String text) {
 }
 ```
 
-我们在lmabda表达式中打印了text和delay两个变量，而这两个变量是repeatPrint的方法参数，并不是在lambda表达式中定义的。lambda 表达式的代码可能会在repeatPrint调用返回很久以后才运行， 而那时这些参数变量已经不存在了。 如何保留 text和delay变量呢？  
+我们在lmabda表达式中打印了text和delay两个变量，而这两个变量是repeatPrint的方法参数，并不是在lambda表达式中定义的。lambda 表达式的代码可能会在repeatPrint调用返回很久以后才运行， 而那时这些参数变量已经不存在了。 如何保留 text和delay变量呢？
 
 继续理解lambda表达式的3个组成部分：
 
@@ -2336,7 +2303,7 @@ private static void repeatPrint(int delay, String text) {
 
 实际上，这里有一条规则：lambda表达式中捕获的变量必须实际上是最终变量（effectively final）。实际上的最终变量是指，这个变量初始化之后就不会再为它赋新值。
 
-lambda 表达式的体与嵌套块有相同的作用域。因此，在 lambda 表达式中声明与一个局部变量同名的参数或局部变量是不合法的。  
+lambda 表达式的体与嵌套块有相同的作用域。因此，在 lambda 表达式中声明与一个局部变量同名的参数或局部变量是不合法的。
 
 在一个lambda表达式中使用*this*关键字时，是指创建这个lambda表达式的方法的this参数。在下面的代码中，this.toString()将会调用Application对象的toString方法，而不是ActionListener实例的方法。
 
@@ -2354,7 +2321,7 @@ public class Application() {
 ### 再谈Comparator
 
 Comparator 接口包含很多方便的静态方法来创建比较器。 这些方法可以用于 lambda 表达式或方法引用。
-静态 comparing 方法取一个“ 键提取器” 函数， 它将类型 T 映射为一个可比较的类型( 如 String )。 对要比较的对象应用这个函数， 然后对返回的键完成比较。 例如， 假设有一个Person 对象数组，可以如下按名字对这些对象排序：  
+静态 comparing 方法取一个“ 键提取器” 函数， 它将类型 T 映射为一个可比较的类型( 如 String )。 对要比较的对象应用这个函数， 然后对返回的键完成比较。 例如， 假设有一个Person 对象数组，可以如下按名字对这些对象排序：
 
 ```java
 Arrays.sort(people, Comparator.comparing(Person::getName));
@@ -2437,7 +2404,7 @@ class TalkingClock
         {
             //内部类中声明的所有静态域都必须是final
             private static final String message = "LocalTimerPrinter";
-    
+  
             public void actionPerformed (ActionEvent event) {
                 System.out.println("At the tone, the time is " + new Date());
                 //注意，这里的beep是start方法的参数变量，而start方法会提前退出，
@@ -2456,8 +2423,6 @@ class TalkingClock
     }
 }
 ```
-
-
 
 ### 匿名内部类
 
@@ -2591,7 +2556,7 @@ public class ProxyTest {
 
             //2.创建一个用于处理value对象的调用处理器
             InvocationHandler handler = new TraceHandler(value);
-            
+        
             //3.构造实现指定接口的代理类的一个新实例
             //代理对象属于在运行时定义的类（比如 $Proxy0）
             //这个类也实现了Comparable接口
@@ -2639,7 +2604,7 @@ class TraceHandler implements InvocationHandler
 
         //打印方法名字
         System.out.print("." + m.getName() + "(");
-    
+  
         //打印显式参数
         if (args != null)
         {
@@ -2695,26 +2660,24 @@ class TraceHandler implements InvocationHandler
 
 ## Java库中的具体集合
 
-| 集合类型        | 描述                                                         | 底层数据结构       |
-| --------------- | ------------------------------------------------------------ | ------------------ |
-| ArrayList       | 数组列表：一种可以动态增长和缩减的索引序列                   |                    |
+| 集合类型        | 描述                                                                                          | 底层数据结构       |
+| --------------- | --------------------------------------------------------------------------------------------- | ------------------ |
+| ArrayList       | 数组列表：一种可以动态增长和缩减的索引序列                                                    |                    |
 | LinkedList      | 链接列表：一种可以在任何位置进行高效地插人和删除操作的有序序列，也是实现了Deque接口的双端队列 | 链表               |
-| ArrayDeque      | 数组队列：一种用循环数组实现的双端队列                       |                    |
-| HashSet         | 散列集合：一种没有重复元素的无序集合                         | 链表数组（哈希桶） |
-| TreeSet         | 树集：—种有序集，元素插入后自动排序                          | 红黑树             |
-| EnumSet         | 枚举集合：一种包含枚举类型值的集                             |                    |
-| LinkedHashSet   | 链接散列集合：一种可以记住元素插人次序的散列集合             |                    |
-| PriorityQueue   | 优先队列：一种允许高效删除最小元素的集合                     | 堆                 |
-| HashMap         | 散列映射：一种存储键 / 值关联的数据结构                      |                    |
-| TreeMap         | 树映射：—种键值有序排列的映射表                              | 红黑树             |
-| EnumMap         | 枚举映射：一种键值属于枚举类型的映射表                       |                    |
-| LinkedHashMap   | 链接散列映射：一种可以记住键 / 值项添加次序的映射表          |                    |
-| WeakHashMap     | 弱(引用)散列映射：一种其值无用武之地后可以被垃圾回收器回收的映射表 |                    |
-| IdentityHashMap | 标识散列映射：一种用 == 而不是用 equals 比较键值（即比较内存地址而不是hashCode值）的映射表， |                    |
+| ArrayDeque      | 数组队列：一种用循环数组实现的双端队列                                                        |                    |
+| HashSet         | 散列集合：一种没有重复元素的无序集合                                                          | 链表数组（哈希桶） |
+| TreeSet         | 树集：—种有序集，元素插入后自动排序                                                          | 红黑树             |
+| EnumSet         | 枚举集合：一种包含枚举类型值的集                                                              |                    |
+| LinkedHashSet   | 链接散列集合：一种可以记住元素插人次序的散列集合                                              |                    |
+| PriorityQueue   | 优先队列：一种允许高效删除最小元素的集合                                                      | 堆                 |
+| HashMap         | 散列映射：一种存储键 / 值关联的数据结构                                                       |                    |
+| TreeMap         | 树映射：—种键值有序排列的映射表                                                              | 红黑树             |
+| EnumMap         | 枚举映射：一种键值属于枚举类型的映射表                                                        |                    |
+| LinkedHashMap   | 链接散列映射：一种可以记住键 / 值项添加次序的映射表                                           |                    |
+| WeakHashMap     | 弱(引用)散列映射：一种其值无用武之地后可以被垃圾回收器回收的映射表                            |                    |
+| IdentityHashMap | 标识散列映射：一种用 == 而不是用 equals 比较键值（即比较内存地址而不是hashCode值）的映射表，  |                    |
 
 ## 视图
-
-
 
 # Java SE8 流库
 
@@ -2725,8 +2688,6 @@ class TraceHandler implements InvocationHandler
 1. 流并不存储其元素。这些元素可能是存储在底层的集合中，或者是按需生成的。
 2. 流的操作不会修改其数据源。
 3. 流的操作是尽可能惰性执行的。这意味着直至需要其结果时，操作才会执行。
-
-
 
 流操作的典型流程可以总结为下面3个步骤：
 
@@ -2806,8 +2767,6 @@ try(Stream<String> lines = Files.lines(path, charset))
 }
 ```
 
-
-
 ## 流的转换
 
 本节介绍的流转换操作都是在原有流的元素基础上，通过过滤、排序等操作产生一个新的流。
@@ -2855,8 +2814,6 @@ Stream<String> words = Stream.of(strings);
 words = words.parallel();
 ```
 
-
-
 ### 流的调试
 
 stream.peek(func)：peek方法会产生另一个流，它的元素与原来流中的元素相同，但是在每次获取一个元素时，都会调用一个函数func。这对于调试非常有帮助。
@@ -2885,7 +2842,7 @@ Optional<String> startWithQ = words.filter(s -> s.startWith("Q")).findFirst();
 
 类似的操作还有anyMatch，findAny等，可以在具体使用时查看手册。
 
-这些方法返回的是一个类型Optional<T>的值，Optional<T>对象是一种包装器对象，它要么在其中包装了类型T的对象，要么没有包装任何对象，表示没有任何值（流为空）。
+这些方法返回的是一个类型Optional `<T>`的值，Optional `<T>`对象是一种包装器对象，它要么在其中包装了类型T的对象，要么没有包装任何对象，表示没有任何值（流为空）。
 
 ## Optional类型
 
@@ -3038,7 +2995,7 @@ private static void reduce()
 
 ## 基本类型流
 
-前面介绍的各种流操作中，大多是将整数收集到Stream<Integer>中。实际上，将每个整数都包装到包装器对象中是很低效的。流库中有专门的类型IntStream，LongStream，DoubleStream，用来直接存储基本类型值，而无需使用包装器：
+前面介绍的各种流操作中，大多是将整数收集到Stream `<Integer>`中。实际上，将每个整数都包装到包装器对象中是很低效的。流库中有专门的类型IntStream，LongStream，DoubleStream，用来直接存储基本类型值，而无需使用包装器：
 
 1. IntStream可以用来存储short，char，byte和boolean。
 2. DoubleStream可以用来存储double。
@@ -3102,4 +3059,3 @@ public class ParallelStream {
 > ```
 
 # Java IO
-

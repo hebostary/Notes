@@ -10,11 +10,23 @@
 
 [hacking C++ ***](https://hackingcpp.com/)
 
-## CMake
+[C++ Template 进阶指南](https://github.com/wuye9036/CppTemplateTutorial)
+
+## C++ Style
+
+[C++ Tips of the Week - Google](https://abseil.io/tips/) or [C++ Tip of The Week - Github](https://github.com/QuantlabFinancial/cpp_tip_of_the_week/blob/master/README.md#)
+
+## C++ Compiler
+
+### CMake
 
 [Learn CMake's Scripting Language in 15 Minutes](https://preshing.com/20170522/learn-cmakes-scripting-language-in-15-minutes/)
 
 [Introduction to CMake by Example](http://derekmolloy.ie/hello-world-introductions-to-cmake/)
+
+### Clang
+
+[Clang Compiler User’s Manual](https://clang.llvm.org/docs/UsersManual.html)
 
 # 二、C++语言基础
 

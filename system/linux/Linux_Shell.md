@@ -18,6 +18,8 @@
 
 getopts
 
+find $(TOP) -name rpmbuild | xargs rm -rf;
+
 # 常用代码段
 
 ## 软件版本比较
