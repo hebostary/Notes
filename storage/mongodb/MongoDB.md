@@ -31,7 +31,7 @@ The above fields have the following data types:
 
 ### Document Limitations
 
-The maximum BSON document size is 16 MB. To store documents larger than the maximum size, MongoDB provides the GridFS API.
+The maximum BSON document size is 16 MB. To store documents larger than the maximum size, MongoDB provides the `GridFS` API.
 
 #### Document字段顺序
 
@@ -47,6 +47,10 @@ Unlike JavaScript objects, the fields in a BSON document are ordered：
 在创建一个collection的时候，MongoDB默认会在`_id`字段上创建一个唯一的索引。
 
 # CURD opearations
+
+关于MongoDB CURD的更多细节直接参考官网：[MongoDB CRUD Operations](https://www.mongodb.com/docs/rapid/crud/)
+
+关于SQL和MongoDB的概念以及操作的映射关系可以参考：[SQL to MongoDB Mapping Chart](https://www.mongodb.com/docs/rapid/reference/sql-comparison/)
 
 ## Insert operations
 
@@ -90,6 +94,12 @@ test> db.setting.find({key:"ALERTPOLICY"}).pretty()
 ```
 
 ## Delete operations
+
+MongoDB删除操作的基本语句：
+
+- db.inventory.deleteOne( { status: "D" } ) - 删除匹配到的第一个document，如果没有匹配到就不删除
+- db.inventory.deleteMany({ status : "A" }) - 删除匹配的所有document
+- db.inventory.deleteMany({})  - 删除collection里的所有document
 
 ## Query operations
 
@@ -168,9 +178,58 @@ test> db.setting.find({key:"ALERTPOLICY"}).pretty()
 ]
 ```
 
-## Write Concern
+## Bulk Operations
 
-Write Concern描述了MongoDB对独立mongod、副本集（replica sets）或分片集群（shared clusters）进行写操作时请求的确认级别。在分片集群中，mongos实例将Write Concern传递给分片。
+Bulk operations用于执行大量的操作，比如`BulkWrite`可以同时执行批量的不同类型的写操作。这种类型的批量操作不是对数据库的每个操作都进行调用，而是通过对数据库的一次调用来执行多个操作。
+
+```go
+models := []mongo.WriteModel{
+  mongo.NewInsertOneModel().SetDocument(Book{Title: "Middlemarch", Author: "George Eliot", Length: 904}),
+  mongo.NewInsertOneModel().SetDocument(Book{Title: "Pale Fire", Author: "Vladimir Nabokov", Length: 246}),
+  mongo.NewReplaceOneModel().SetFilter(bson.D{{"title", "My Brilliant Friend"}}).
+    SetReplacement(Book{Title: "Atonement", Author: "Ian McEwan", Length: 351}),
+  mongo.NewUpdateManyModel().SetFilter(bson.D{{"length", bson.D{{"$lt", 200}}}}).
+    SetUpdate(bson.D{{"$inc", bson.D{{"length", 10}}}}),
+  mongo.NewDeleteManyModel().SetFilter(bson.D{{"author", bson.D{{"$regex", "Jam"}}}}),
+}
+//默认地，SetOrdered(true)：按定义顺序执行这些操作，发生错误时停止整个BulkWrite
+//设置这些写操作是无序的，发生错误不会停止整个BulkWrite，其余写操作继续执行
+opts := options.BulkWrite().SetOrdered(false)
+
+results, err := coll.BulkWrite(context.TODO(), models, opts)
+if err != nil {
+   panic(err)
+}
+
+fmt.Printf("Number of documents inserted: %d\n", results.InsertedCount)
+fmt.Printf("Number of documents replaced or updated: %d\n", results.ModifiedCount)
+fmt.Printf("Number of documents deleted: %d\n", results.DeletedCount)
+```
+
+## Compound Operations
+
+[Compound Operations](https://www.mongodb.com/docs/drivers/go/current/fundamentals/crud/compound-operations/#std-label-golang-find-and-delete)将读和写操作合并为一个原子操作。如果分别执行读和写操作，尽管单独的读操作和写操作都是原子操作，但是其他人可能会在这两个操作之间修改document，导致非预期的修改结果。MongoDB通过在Compound Operations期间对正在修改的的document设置写锁来防止这种情况。
+
+MongoDB支持的Compound Operations：
+
+1. `FindOneAndDelete()`：查找与指定查询筛选器匹配的第一个document并将其删除。
+2. `FindOneAndUpdate()`：查找与指定查询过滤器匹配的第一个文档，并根据参数传入的更新文档对其进行更新。
+3. `FindOneAndReplace()`：查找与指定查询筛选器匹配的第一个文档，并用参数传入的替换文档替换它。
+
+## Write/Read Concern and Read Preference
+
+MongoDB允许我们在下面不同对象级别里设置Write Concern, Read Concern和 Read Preference这三种option:
+
+- Client level, which sets the *default for all operation executions* unless overridden
+- Session level
+- Transaction level
+- Database level
+- Collection level
+- Query level
+
+### Write Concern
+
+`Write Concern`描述了MongoDB对独立mongod、副本集（replica sets）或分片集群（shared clusters）进行写操作时请求的确认级别。在分片集群中，mongos实例将Write Concern传递给分片。
 
 了解了存储引擎的工作原理后，我们知道MongoDB的写操作在极端情况下仍然可能会丢失。对于安全性要求极高的数据，可以使用Write Concrn来保证写入的数据得到更高级别的承诺。
 
@@ -192,9 +251,49 @@ Write Concern的基本格式：
 1. ​	即使所需的Write Concern最终会成功，Wtimeout也会导致写操作在指定的限制之后返回错误。当这些写操作返回时，MongoDB不会撤销在Write Concern超过wtimeout时间限制之前执行的成功数据修改。
 2. 如果未指定wtimeout选项，且写操作级别无法实现，则写操作将无限期阻塞。指定wtimeout值为0相当于不带wtimeout选项的Write Concern。
 
-
+```go
+uri := "mongodb://<hostname>:<port>"
+wc := writeconcern.W(2)
+opts := options.Client().ApplyURI(uri).SetWriteConcern(writeconcern.New(wc))
+client, err := mongo.Connect(context.TODO(), opts)
+```
 
 更多细节建议直接参考[Write Concern](https://www.mongodb.com/docs/manual/reference/write-concern/)
+
+### Read Concern
+
+[Read Concern](https://www.mongodb.com/docs/rapid/reference/read-concern/)选项允许我们明确客户端从查询返回哪些数据。MongoDB支持的Read Concern级别：
+
+1. [ "available"](https://www.mongodb.com/docs/rapid/reference/read-concern-available/#mongodb-readconcern-readconcern.-available-)： 查询从实例返回数据，但不保证数据已写入大多数复制集成员（即读到的数据可能会被rollback）。**"available" read concern不可用于因果一致的会话和事务**。
+   1. 对于分片集群（sharded cluster），“available”为分区提供了更大的容忍度，因为它不需要等待来确保一致性保证。即“available”不联系分片的主服务器，也不联系配置服务器更新元数据。这意味着：如果分片正在进行块迁移，使用“available” read concern的查询可能会返回孤立文档（[orphaned documents](https://www.mongodb.com/docs/rapid/reference/glossary/#std-term-orphaned-document)）。
+   2. 对于未分片的collection(包括独立部署或复制集部署中的collection)，“local”和“available”的行为相同。
+2. ["local"](https://www.mongodb.com/docs/rapid/reference/read-concern-local/#mongodb-readconcern-readconcern.-local-)：默认的Read Conern级别，这意味着客户端返回实例的最新数据，但不保证数据已被写入大多数副本集成员（即读到的数据可能会被rollback）。"local"和"available"非常类似，区别在于**“local”级别可用于有或没有因果一致的会话和事务**。
+3. ["majority"](https://www.mongodb.com/docs/rapid/reference/read-concern-majority/#mongodb-readconcern-readconcern.-majority-)：查询返回实例最近的数据，这些数据被确认已写入副本集中的大多数成员。**“majority”可用于有或没有因果一致的会话和事务**。
+   1. 为了实现“majority”，复制集成员从多数提交点的数据的内存视图返回数据。因此，“majority”在性能成本上与其他read concern相当。
+   2. 为了使用"majority"，复制集必须使用`WiredTiger`存储引擎。
+   3. 对于多文档事务（[multi-document transactions](https://www.mongodb.com/docs/rapid/core/transactions/)），"majority"仅在事务以"majority" write concern提交时提供保证。否则"majority" read concern无法保证事务中读取的数据。
+4. ["linearizable"](https://www.mongodb.com/docs/rapid/reference/read-concern-linearizable/#mongodb-readconcern-readconcern.-linearizable-)：该查询返回的数据反映了所有成功的写操作，这些写操作在读操作开始之前以多数票的形式发出并得到确认。
+5. ["snapshot"](https://www.mongodb.com/docs/rapid/reference/read-concern-snapshot/#mongodb-readconcern-readconcern.-snapshot-)：该查询返回mongod实例中数据在特定时间点的完整副本。仅可用于多文档事务中的操作。
+
+```go
+// majority
+rc := readconcern.Majority()
+opts := options.Collection().SetReadConcern(rc)
+database := client.Database("myDB")
+coll := database.Collection("myCollection", opts)
+```
+
+
+
+### Read Preference
+
+Read Preference选项指定MongoDB客户端如何将读操作路由到副本集的成员。默认情况下，应用程序将其读操作定向到复制集中的主成员（Primary Member）。
+
+
+
+# Data Models
+
+
 
 # Storage
 
@@ -252,7 +351,7 @@ WiredTiger日志在checkpoint之间持久化所有数据修改。如果MongoDB�
 
 从MongoDB 3.4开始，默认的WiredTiger内部缓存大小是两者中较大的:
 
-1. 50% (RAM - 1 GB)，或者
+1. 50%  x (RAM - 1 GB)，或者
 2. 256 MB。
 
 比如，系统有4GB的RAM，那么WiredTiger内部缓存大小就是50% x (4GB -1GB) = 1.5GB。如果计算出来小于256MB，那就是256MB。

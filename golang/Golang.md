@@ -1,5 +1,3 @@
-
-
 # 0. 语言基础
 
 ## 数据类型
@@ -129,18 +127,25 @@ func changeSlice(s *[]int) {
 }
 ```
 
+更多细节参考：
+
+* [Golang Slice详解](https://www.jianshu.com/p/843aa553b461)
+* [Golang切片与函数参数“陷阱”](https://www.jianshu.com/p/7439e7ae3c4c)
+
 ### map
 
+Golang的map基于哈希表实现，并采用开放寻址法中的线性探测法来处理哈希冲突。
 
+更多细节参考：
 
-
-
-
+[深入解析Golang的map设计](https://zhuanlan.zhihu.com/p/273666774)
 
 # 1. 项目工程
 
 ## 1.1. 项目结构
+
 golang工程典型目录结构
+
 ```shell
 -- go_project     // go_project为GOPATH目录
   -- bin
@@ -167,8 +172,10 @@ golang工程典型目录结构
 ```
 
 ## 1.2. 插件管理
+
 在VS Code里配置golang开发环境的时候，因为“墙”的存在，经常会遇到下载插件失败的问题，可以参考[VS Code配置Go语言开发环境](https://www.liwenzhou.com/posts/Go/00_go_in_vscode/?tdsourcetag=s_pcqq_aiomsg)配置国内的GOPROXY，比手动安装插件方便很多。
 VS Code关于golang的settings：
+
 ```shell
 {
 "go.buildOnSave": "workspace",
@@ -195,6 +202,7 @@ VS Code关于golang的settings：
 ```
 
 ### 1.2.1. 备选：手动安装go插件
+
 ```shell
 $ echo $GOPATH
 /home/workspace/Notes/golang
@@ -212,10 +220,13 @@ $ go install golang.org/x/lint/golint
 ## 1.3 govendor
 
 * 安装
+
 ```shell
 $ go get -u github.com/kardianos/govendor
 ```
+
 * 基础用法
+
 ```shell
 $ cd $GOPATH/src
 #初始化vendor目录
@@ -290,7 +301,7 @@ func main() {
 
 #### 方法1. 分别build各个本地module
 
-先在common/cmd下面执行`go mod init common/cmd`或者`go mod init`，然后会自动生成go.mod文件。
+先在common/cmd下面执行 `go mod init common/cmd`或者 `go mod init`，然后会自动生成go.mod文件。
 
 ```bash
 /work/code/github/gowork/src/common/cmd $ go mod init
@@ -298,7 +309,7 @@ func main() {
 cmd.go go.mod
 ```
 
-然后在common/dbmgmt下面执行执行`go mod init common/dbmgmt`或者`go mod init`：
+然后在common/dbmgmt下面执行执行 `go mod init common/dbmgmt`或者 `go mod init`：
 
 ```bash
 /work/code/github/gowork/src/common/dbmgmt $ go mod init
@@ -311,7 +322,7 @@ module common/dbmgmt
 go 1.14
 ```
 
-因为dbmgmt依赖了github上的tiedot这个项目，所以继续执行`go build`来构建这个本地module：
+因为dbmgmt依赖了github上的tiedot这个项目，所以继续执行 `go build`来构建这个本地module：
 
 ```bash
 /work/code/github/gowork/src/common/dbmgmt $ go build
@@ -327,7 +338,7 @@ require github.com/HouzuoGuo/tiedot v0.0.0-20200330175510-6fb216206052
 
 我们发现build过程中依赖项目被自动找到并下载到了本地，go.mod文件也被自动更新了。
 
-最后在我们的tiedotcli项目下面执行`go mod init`：
+最后在我们的tiedotcli项目下面执行 `go mod init`：
 
 ```bash
 /work/code/github/gowork/src/tiedotcli $ go mod init tiedotcli
@@ -451,7 +462,7 @@ github.com/HouzuoGuo/tiedot v0.0.0-20200330175510-6fb216206052
 
 #### 方法2. 直接build tiedotcli
 
-这一次，我们还是先在common/cmd和common/dbmgmt下面执行`go mod init`，但是不再在common/dbmgmt下面执行`go build`，而是直接开始build tiedotcli，也是可以build成功的，只是common/dbmgmt的依赖项目tiedot被当做间接依赖，然后被添加到tiedocli的go.mod文件中，build后的整个目录结构和前面是一致的:
+这一次，我们还是先在common/cmd和common/dbmgmt下面执行 `go mod init`，但是不再在common/dbmgmt下面执行 `go build`，而是直接开始build tiedotcli，也是可以build成功的，只是common/dbmgmt的依赖项目tiedot被当做间接依赖，然后被添加到tiedocli的go.mod文件中，build后的整个目录结构和前面是一致的:
 
 ```bash
 module tiedotcli
@@ -474,20 +485,25 @@ replace (
 
 我们可以感受到，go modules并不是要完全干掉GOPATH，GOPATH仍然可以用于配置我们项目的本地路径。go modules提供了更方便的方法来管理第三方package和本地package，尤其是加入了对依赖包的版本控制，这是最为重要的一点。
 
+## 1.5 Go compiler
+
+```bash
+$ GODEBUG=installgoroot=all go install std
+$ 
+```
+
 # 2. Framework
 
 ## 2.1. Web
+
 * [mux](https://github.com/gorilla/mux) //http router
 
 ## 2.2. Plugins
+
 * [go-plugins-helpers](https://github.com/docker/go-plugins-helpers)
 
 # 3. References
 
-* 数据类型
-  * array&slice
-    * [Golang Slice详解](https://www.jianshu.com/p/843aa553b461)
-    * [Golang切片与函数参数“陷阱”](https://www.jianshu.com/p/7439e7ae3c4c)
 * 协程模型
   * [Golang源码探索(二) 协程的实现原理](https://www.cnblogs.com/zkweb/p/7815600.html)
   * [Go 语言调度（一）: 系统调度](https://www.jianshu.com/p/db0aea4d60ed)
@@ -500,6 +516,7 @@ replace (
   * [Go内存分配机制总结](https://www.jianshu.com/p/34984105175c)
   * [高性能 Go 服务的内存优化(译)](https://www.jianshu.com/p/63404461e520)
 * 并发编程
-    * [Handling 1 Million Requests per Minute with Go](http://marcio.io/2015/07/handling-1-million-requests-per-minute-with-golang/) 
-* Documentation
-    * http://legendtkl.com/categories/golang/
+  * [Handling 1 Million Requests per Minute with Go](http://marcio.io/2015/07/handling-1-million-requests-per-minute-with-golang/)
+* Documentation & Books
+  * http://legendtkl.com/categories/golang/
+  * [Go语言设计与实现](https://draveness.me/golang/)

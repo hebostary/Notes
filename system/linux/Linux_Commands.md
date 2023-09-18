@@ -88,8 +88,6 @@ strace: Process 26308 attached
 100.00    0.000707                   128           total
 ```
 
-
-
 # 软件包管理
 
 ## rpm包管理
@@ -227,6 +225,11 @@ $ mount /inst
 
 # 文件系统
 
+```bash
+# 查找一个挂载的文件系统
+$ findmnt -n -F /etc/fstab -o SOURCE,TARGET,FSTYPE,OPTIONS,FREQ,PASSNO /dev/mapper/system-vol
+```
+
 ### 软/硬链接
 
 ```bash
@@ -352,6 +355,30 @@ SHA256:PNoGmN0aj/RYUbRRnbnIZEH4w6sS/mG7iPAX3MUnS7E ansible@host1.cdc.domain.com
 ```bash
 [ansible@host1 ~]$ ssh host2
 ```
+
+# 密钥管理
+
+## OpenSSL
+
+用openssl命令启动一个TLS服务器：
+
+```bash
+$ openssl s_server -key /etc/pki/tls/certs/eca/private/key.pem -cert /etc/pki/tls/certs/eca/cert_chain.pem  -accept 8090 -cipher ALL
+```
+
+用openssl命令作为客户端访问TLS 服务器：
+
+```bash
+$ openssl s_client -connect <hostname|ip>:port
+$ openssl s_client -starttls smtp -connect <hostname|ip>:port
+
+# 用gdb调试openssl的源代码：
+# 	需要先安装一个调试包： openssl-debugsource-1.1.1k-7.el8_6.x86_64 
+$ gdb openssl
+(gdb) set args s_client -starttls smtp -connect nbpipeline-comn.engba.veritas.com:587
+```
+
+
 
 # 内核管理
 
