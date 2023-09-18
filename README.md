@@ -87,6 +87,12 @@
 * [并发框架Disruptor译文](https://ifeve.com/disruptor/)
 * [##LMAX Disruptor](http://lmax-exchange.github.io/disruptor/)
 
+## AI
+
+[sms-activate的详细使用教程](https://zhuanlan.zhihu.com/p/617620253) - 国外虚拟号码服务
+
+[ChatGPT学习导航](https://learningprompt.wiki/docs/chatgpt-learning-path)
+
 ## 国外名校课程集合 
 
 ### [四大计算机名校的培养方案](https://www.ituring.com.cn/article/508675)
