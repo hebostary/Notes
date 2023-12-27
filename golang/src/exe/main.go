@@ -12,7 +12,6 @@ import (
 	"std/function"
 	"std/goruntine"
 	"std/interfaces"
-	mapTest "std/map"
 	"std/method"
 	"std/mutex"
 	"std/reflection"
@@ -108,7 +107,7 @@ func main() {
 	case "slice":
 		slice.Test()
 	case "mapTest":
-		mapTest.Test()
+		Test()
 	case "function":
 		function.Test()
 	case "structTest":

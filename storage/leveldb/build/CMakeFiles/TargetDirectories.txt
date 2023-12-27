@@ -1,0 +1,3 @@
+/home/dev/workspace/github/Notes/storage/leveldb/build/CMakeFiles/rebuild_cache.dir
+/home/dev/workspace/github/Notes/storage/leveldb/build/CMakeFiles/demo.dir
+/home/dev/workspace/github/Notes/storage/leveldb/build/CMakeFiles/edit_cache.dir
