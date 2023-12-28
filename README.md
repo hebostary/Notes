@@ -93,6 +93,20 @@
 
 [ChatGPT学习导航](https://learningprompt.wiki/docs/chatgpt-learning-path)
 
+## 软件工程
+
+### UML
+
+[UML Quick Reference Card](http://deptinfo.unice.fr/twiki/pub/Linfo/CooL3/refUML.pdf)
+
+[The Unified Modeling Language](https://www.uml-diagrams.org)
+
+[万字多图 | UML 入门指南](https://juejin.cn/post/6917296002764374029)
+
+[Allen Holub’s UML Quick Reference](https://holub.com/uml/)
+
+
+
 ## 国外名校课程集合 
 
 ### [四大计算机名校的培养方案](https://www.ituring.com.cn/article/508675)

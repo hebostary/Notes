@@ -12,6 +12,8 @@
 
 [C++ Template 进阶指南](https://github.com/wuye9036/CppTemplateTutorial)
 
+[C++ Core Guidelines](https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md)
+
 ## C++ Style
 
 [C++ Tips of the Week - Google](https://abseil.io/tips/) or [C++ Tip of The Week - Github](https://github.com/QuantlabFinancial/cpp_tip_of_the_week/blob/master/README.md#)

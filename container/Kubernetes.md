@@ -41,7 +41,7 @@ cgroupDriver: systemd
 
 ```bash
 # 1. 用于添加更多节点到集群中。
-kubeadm join 10.188.146.150:6443 --token 69qzjw.yiflppti049t6tvj \
+kubeadm join 100.1.146.150:6443 --token 69qzjw.yiflppti049t6tvj \
         --discovery-token-ca-cert-hash sha256:21a5124fdfab915f1d4d8522b8fb129012e386c171c71bb579910b5b9fb80d4d
 
 # 2. 拷贝k8s配置到用户目录
@@ -288,13 +288,13 @@ $ kubectl describe pod nginx-deployment-66b6c48dd5-8hwtn
 Name:         nginx-deployment-66b6c48dd5-8hwtn
 Namespace:    default
 Priority:     0
-Node:         net146-host152/10.188.146.152
+Node:         net146-host152/100.1.146.152
 ...
 $ kubectl describe pod nginx-deployment-66b6c48dd5-sl75z
 Name:         nginx-deployment-66b6c48dd5-sl75z
 Namespace:    default
 Priority:     0
-Node:         net146-host151/10.188.146.151
+Node:         net146-host151/100.1.146.151
 ...
 Events:
   Type    Reason     Age        From               Message

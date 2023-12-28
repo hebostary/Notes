@@ -39,7 +39,9 @@ $ usermod -G root nexus 		    #修改用户加入root组
 
 # 服务管理
 
-## systemd-analyze
+## systemd
+
+### systemd-analyze
 
 `systemd-analyze`可用于确定系统启动性能统计数据，并从系统和服务管理器检索其他状态和跟踪信息。 
 
@@ -92,7 +94,7 @@ strace: Process 26308 attached
 
 ## rpm包管理
 
-### 基础操作
+**基础操作 **
 
 ```bash
 $ rpm2cpio <name>.rpm | cpio -div  #解压rpm
@@ -105,7 +107,7 @@ $ rpm -qpR <package.rpm>  #查看包是否依赖其它包
 $ rpm -e --test <package> #测试包是否被其它包依赖
 ```
 
-### 构建rpm包
+**构建rpm包**
 
 ## xz包
 
@@ -146,7 +148,7 @@ $ lsscsi
 
 ### sg3_utils
 
-#### rescan-scsi-bus.sh
+**rescan-scsi-bus.sh**
 
 ### loop device
 
@@ -160,7 +162,7 @@ $ mount -t ext2 -o loop ./myfs /mnt
 
 这个nvme程序是一个用户空间实用程序，为NVM-Express驱动器提供符合标准的工具。它是专门为Linux制作的，因为它依赖于主线内核驱动程序定义的`IOCTLS`。该实用程序具有用于规范中定义的所有admin和io命令以及用于显示控制器寄存器的子命令。
 
-#### nvme-discover - Discover NVMeoF subsystems
+**nvme-discover - Discover NVMeoF subsystems**
 
 Send one or more Get Log Page requests to a `NVMe-over-Fabrics` Discovery Controller.
 
@@ -171,7 +173,7 @@ The NVMe-over-Fabrics specification defines the concept of a `Discovery Controll
 $ nvme discover -t rdma -a 192.168.30.21
 ```
 
-#### nvme-connect - Connect to NVMeoF subsystem
+**nvme-connect - Connect to NVMeoF subsystem**
 
 Create a transport connection to a remote system (specified by --traddr and --trsvcid) and create a NVMe over Fabrics controller for the NVMe subsystem specified by the --nqn option.
 
@@ -180,9 +182,9 @@ Create a transport connection to a remote system (specified by --traddr and --tr
 $ nvme connect -t rdma -a 192.168.20.21 -s 4420 -n nqn.1992-05.com.wdc.afaapp:nvme.10 -i 1
 ```
 
-####  name-connect-all - Discover and Connect to NVMeoF subsystems
+**name-connect-all - Discover and Connect to NVMeoF subsystems**
 
-## LVM
+## 逻辑卷LVM
 
 ### Resize - 扩容
 
@@ -256,6 +258,24 @@ $ split  -b 200M /var/log/1.log  1.log.split # 将1.log切割成200MB的文件�
 $ split -d -b 200M httpd.log log # Split the file and name it with numbers
 ```
 
+## dd
+
+```bash
+# 创建指定大小的临时文件
+$ dd if=/dev/zero of=/msdp/cat/test_file bs=4M count=1024
+
+# 清空硬盘或者分区
+$ dd if=dev/zero of=/dev/sdb
+
+# 备份和还原整个硬盘
+$ dd if=/dev/sda1 of=/root/sda1.bak
+$ dd if=/dev/sda1.bak of=/root/sda1
+
+# 备份和还原硬盘分区表
+$ dd if=/dev/sda1 of=/root/sda1.mbr.bak bs=512 count=1
+$ dd if=/dev/sda1.mbr.bak of=/root/sda1
+```
+
 
 
 # 网络管理
@@ -301,8 +321,11 @@ $ nmap 110.18.146.124 -p 22 -sU   #扫描特定UDP端口
 
 ```bash
 # Older versions of tcpdump truncate packets to 68 or 96 bytes. If this is the case, use -s to capture full-sized packets:
-$ tcpdump -i <interface> -s 65535 -w <file>
+$ tcpdump -i <interface> -s 65535 -v -w <file>
 $ tcpdump -vv -A -T snmp -s 0 "(dst port 162) and (host <ip address>)" -w /tmp/tcpdump.1
+
+# Capture traffic from localhost to localhost
+$ tcpdump -i lo src host localhost and dst host localhost and src port 8449 or dst port 8449 -v -w /tmp/tcpdump.2
 ```
 
 ## nc
@@ -356,14 +379,14 @@ SHA256:PNoGmN0aj/RYUbRRnbnIZEH4w6sS/mG7iPAX3MUnS7E ansible@host1.cdc.domain.com
 [ansible@host1 ~]$ ssh host2
 ```
 
-# 密钥管理
+# 密钥安全
 
 ## OpenSSL
 
 用openssl命令启动一个TLS服务器：
 
 ```bash
-$ openssl s_server -key /etc/pki/tls/certs/eca/private/key.pem -cert /etc/pki/tls/certs/eca/cert_chain.pem  -accept 8090 -cipher ALL
+$ openssl s_server -key /etc/pki/tls/certs/eca/private/key.pem -cert /etc/pki/tls/certs/eca/cert_chain.pem -accept 8090 -cipher ALL
 ```
 
 用openssl命令作为客户端访问TLS 服务器：
@@ -375,16 +398,56 @@ $ openssl s_client -starttls smtp -connect <hostname|ip>:port
 # 用gdb调试openssl的源代码：
 # 	需要先安装一个调试包： openssl-debugsource-1.1.1k-7.el8_6.x86_64 
 $ gdb openssl
-(gdb) set args s_client -starttls smtp -connect nbpipeline-comn.engba.veritas.com:587
+(gdb) set args s_client -starttls smtp -connect <SMTPS server>:587
 ```
-
-
 
 # 内核管理
 
-## crash
+## crash - 调试vmcore
 
 ```bash
 $ crash /usr/lib/debug/lib/modules/4.18.0-372.32.1.el8_6.x86_64/vmlinux vmcore
+```
+
+# 主板管理
+
+## flashupdt - Intel
+
+如果是Intel的主板，可以用这个命令查询和修改主板上的一些信息，包括BIOS和Firmware：
+
+```bash
+# 显示BIOS和固件信息
+$ /usr/bin/flashupdt/flashupdt -i
+
+# 设置产品名称
+$ /usr/bin/flashupdt/flashupdt -set product Pn "Company Appliance XXX"
+
+# 设置产品制造商名字
+$ /usr/bin/flashupdt/flashupdt -set product Mn "Company"
+```
+
+## ipmitool
+
+```bash
+$ ipmitool --help
+
+$ ipmitool -I lanplus -H <IPMI host> -U <IPMI user> -P <password> power status
+$ ipmitool -I lanplus -H <IPMI host> -U <IPMI user> -P <password> power on
+$ ipmitool -I lanplus -H <IPMI host> -U <IPMI user> -P <password> power off
+
+# User manageent
+$ ipmitool user list 3
+$ ipmitool -I lanplus -H <IPMI host> -U <IPMI user> -P <password> user list 3
+$ ipmitool user set password `ipmitool user list 3|grep sysadmin | awk '{print $1}'` P@ssw0rd 20
+
+# Configure LAN Channels
+$ ipmitool lan print 1
+$ ipmitool -I lanplus -H <IPMI host> -U <IPMI user> -P <password> lan print
+$ ipmitool -I lanplus -H <IPMI host> -U <IPMI user> -P <password> lan print 1
+
+$ ipmitool -I lanplus -H <IPMI host> -U <IPMI user> -P <password> bmc reset cold
+
+# Print detailed sensor information
+$ ipmitool -I lanplus -H <IPMI host> -U <IPMI user> -P <password> sensor
 ```
 

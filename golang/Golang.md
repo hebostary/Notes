@@ -492,17 +492,489 @@ $ GODEBUG=installgoroot=all go install std
 $ 
 ```
 
-# 2. Framework
+# 性能分析和调试
 
-## 2.1. Web
+## pprof特征分析
+
+pprof工具用于对程序运行时重要指标或者特性的分析（Profiling），通过分析不仅可以查找到程序中的错误（内存泄漏、race冲突、协程泄漏），也能对程序进行优化。由于Go语言运行时的指标不对外暴露，因此有标准库`net/http/pprof`和`runtime/pprof`用于与外界交互。
+
+### pprof的使用方式
+
+在使用pprof进行特征分析时，分为两个步骤：收集样本和分析样本。
+
+收集样本有两种方式，最常见的是引用`net/http/pprof`包并在程序中开启http服务器，`net/http/pprof`包会在初始化init函数时注册路由：
+
+```go
+import (
+	"net/http"
+	_ "net/http/pprof"
+)
+func run_pprof_server() {
+	if err := http.ListenAndServe(":6060", nil); err != nil {
+		log.Fatal(err)
+	}
+}
+```
+
+对于这种收集方式，可以在程序运行过程中，通过调用http API去实时获取并进入交互模式分析特征数据，比如：
+
+```bash
+$ go tool pprof http://localhost:6060/debug/pprof/heap #堆内存数据
+$ go tool pprof http://localhost:6060/debug/pprof/profile?seconds=30 # 30秒的CPU数据
+```
+
+可以在浏览器端通过访问`http://<ip address>:6060/debug/pprof/`来查看所有支持的特征数据。
+
+
+
+也可以先将收集的特征数据保存在本地文件再执行`go tool pprof`命令分析：
+
+```bash
+$ curl -o heap.out http://localhost:6060/debug/pprof/heap
+$ go tool pprof heap.out
+```
+
+另一种收集样本的方式是直接在代码中需要分析的位置嵌入分析函数，比如下面的代码，在程序调用StartCPUProfile函数结束后，收集的CPU特征数据将会被保存在cpu.prof这个文件里，执行`go tool pprof cpu.prof`命令即可进入交互式分析模式。
+
+```go
+import (
+	"log"
+	"os"
+	"runtime/pprof"
+)
+
+func busyLoop() {
+	for i := 0; i < 1000000000; i++ {
+	}
+}
+
+func pprof_cpu() {
+	f, err := os.Create("cpu.prof")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer f.Close()
+
+	if err := pprof.StartCPUProfile(f); err != nil {
+		log.Fatal(err)
+	}
+	defer pprof.StopCPUProfile()
+	busyLoop()
+}
+```
+
+### pprof支持的特征数据类型
+
+1. /debug/pprof/heap - 堆内存分析
+2. /debug/pprof/goroutine - 协程栈分析，一是可以查看协程数量，查看协程是否泄漏；二是可以查看协程在执行哪些函数，判断当前协程是否健康。
+3. /debug/pprof/profile - CPU占用分析，uri后面可以加参数指定收集多长时间的数据，比如/debug/pprof/profile?seconds=20收集20秒的CPU占用数据。
+4. /debug/pprof/mutex - 用于mutex阻塞分析，可以查看锁争用导致的休眠时间。需要先在代码里调用`runtime.SetMutexProfileFraction(1)`开启锁追踪，默认没有开启。
+
+### 案例-用pprof分析堆内存
+
+比如下面的代码，我们创建几个goroutine去给全局变量申请内存：
+
+```go
+var gMap = make(map[string]string)
+var gSlice1 []byte
+var gSlice2 []byte
+var MiB = 1024 * 1024
+
+func run_pprof_server() {
+	if err := http.ListenAndServe(":6060", nil); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func new_map_in_heap() {
+	for i := 0; i < 999999; i++ {
+		gMap["KeyID"+fmt.Sprint(i)] = "value" + fmt.Sprint(i)
+	}
+	//让函数阻塞在这里不退出
+	<-make(chan int)
+
+	//避免分配的内存提前被回收
+	fmt.Println("Size of gMap:", len(gMap))
+}
+
+func new_slice_in_heap1() {
+	gSlice1 = make([]byte, 12*MiB)
+	new_slice_in_heap2()
+	fmt.Println("Size of gSlice1:", len(gSlice1))
+}
+
+func new_slice_in_heap2() {
+	gSlice2 = make([]byte, 24*MiB)
+	<-make(chan int)
+
+	fmt.Println("Size of gSlice2:", len(gSlice2))
+}
+
+func http_pprof_heap() {
+	go run_pprof_server()
+
+	go new_map_in_heap()
+
+	go new_slice_in_heap1()
+
+	<-make(chan int)
+}
+```
+
+当执行这段代码的时候，我们可以用`go tool pprof http://localhost:6060/debug/pprof/heap`命令进入分析堆内存的交互模式，默认进入的是`inuse_space`模式，用`top`指令可以看到程序目前分配的正在使用的堆内存的统计，默认按flat值排序，也可以用`top -cum`指定按cum排序：
+
+```bash
+go tool pprof http://localhost:6060/debug/pprof/heap
+Fetching profile over HTTP from http://localhost:8080/debug/pprof/heap
+Saved profile in /root/pprof/pprof.runtime.test.alloc_objects.alloc_space.inuse_objects.inuse_space.031.pb.gz
+File: runtime.test
+Type: inuse_space
+Time: Sep 21, 2023 at 8:43am (CST)
+Entering interactive mode (type "help" for commands, "o" for options)
+(pprof) top
+Showing nodes accounting for 98.13MB, 100% of 98.13MB total
+      flat  flat%   sum%        cum   cum%
+   61.63MB 62.80% 62.80%    62.13MB 63.31%  command-line-arguments.new_map_in_heap
+      24MB 24.46% 87.26%       24MB 24.46%  command-line-arguments.new_slice_in_heap2
+      12MB 12.23% 99.49%       36MB 36.69%  command-line-arguments.new_slice_in_heap1
+    0.50MB  0.51%   100%     0.50MB  0.51%  fmt.Sprint
+```
+
+其中，各个数据段的意义：
+
+1. `flat`列表示当前函数（最右边的函数）分配的堆内存，这一列相加得到的就是总的正在使用的堆内存：98.13MB。
+2. `flat%`表示flat占总字段的百分比，这一列相加之和为1。
+3. `sum%`表示本行以及上面的`flat%`之和，表示本行及之前的函数总共占用堆内存的百分比。
+4. `cum`列表示当前函数以及调用函数分配的堆内存。new_slice_in_heap1函数调用了new_slice_in_heap2函数，所以new_slice_in_heap1的cum就是自己的flat加上new_slice_in_heap2的cum。
+5. `cum%`表示cum字段占总字段的百分比，注意，这一列相加的和会超过1，因为计算百分比的分母仍然是所有flat之和，所有cum相加肯定大于所有flat之和。比如，对于new_map_in_heap函数，`cum%` = 62.13 MB / 98.13 MB = 63.31%。
+
+这些统计数据段在不同的采样数据中会不同的意义，但是都类似。
+
+用`list`命令可以列出指定函数内分配堆内存的具体位置和分配的内存大小：
+
+```bash
+(pprof) list command-line-arguments.new_map_in_heap
+Total: 98.13MB
+ROUTINE ======================== command-line-arguments.new_map_in_heap in /home/dev/workspace/github/Notes/golang/src/runtime/http_pprof_heap.go
+   61.63MB    62.13MB (flat, cum) 63.31% of Total
+         .          .     23:func new_map_in_heap() {
+         .          .     24:   fmt.Println("Entering new_map_in_heap")
+         .          .     25:   for i := 0; i < 999999; i++ {
+   61.63MB    62.13MB     26:           gMap["KeyID"+fmt.Sprint(i)] = "value" + fmt.Sprint(i)
+         .          .     27:   }
+         .          .     28:   //让函数阻塞在这里不退出
+         .          .     29:   <-make(chan int)
+         .          .     30:
+         .          .     31:   //避免分配的内存提前被回收
+(pprof) list command-line-arguments.new_slice_in_heap1
+Total: 98.13MB
+ROUTINE ======================== command-line-arguments.new_slice_in_heap1 in /home/dev/workspace/github/Notes/golang/src/runtime/http_pprof_heap.go
+      12MB       36MB (flat, cum) 36.69% of Total
+         .          .     36:func new_slice_in_heap1() {
+         .          .     37:   fmt.Println("Entering new_slice_in_heap1")
+      12MB       12MB     38:   gSlice1 = make([]byte, 12*MiB)
+         .       24MB     39:   new_slice_in_heap2()
+         .          .     40:   fmt.Println("Size of gSlice1:", len(gSlice1))
+         .          .     41:   fmt.Println("Exiting new_slice_in_heap1")
+         .          .     42:}
+         .          .     43:
+         .          .     44:func new_slice_in_heap2() {
+```
+
+用`tree`命令可以打印函数的调用链，得到函数调用的堆栈信息：
+
+```bash
+(pprof) tree
+Showing nodes accounting for 98.13MB, 100% of 98.13MB total
+----------------------------------------------------------+-------------
+      flat  flat%   sum%        cum   cum%   calls calls% + context              
+----------------------------------------------------------+-------------
+   61.63MB 62.80% 62.80%    62.13MB 63.31%                | command-line-arguments.new_map_in_heap
+                                            0.50MB   0.8% |   fmt.Sprint
+----------------------------------------------------------+-------------
+                                              24MB   100% |   command-line-arguments.new_slice_in_heap1
+      24MB 24.46% 87.26%       24MB 24.46%                | command-line-arguments.new_slice_in_heap2
+----------------------------------------------------------+-------------
+      12MB 12.23% 99.49%       36MB 36.69%                | command-line-arguments.new_slice_in_heap1
+                                              24MB 66.67% |   command-line-arguments.new_slice_in_heap2
+----------------------------------------------------------+-------------
+                                            0.50MB   100% |   command-line-arguments.new_map_in_heap
+    0.50MB  0.51%   100%     0.50MB  0.51%                | fmt.Sprint
+----------------------------------------------------------+-------------
+```
+
+在heap中，可以显示下面4种不同的统计类型：
+
+1. `alloc_objects`：表示已经被分配的对象的数量，这个类型没有考虑对象的释放情况。
+2. `alloc_space`：表示已经分配的内存大小，这个类型没有考虑对象的释放情况。
+3. `inuse_objects`：表示正在使用的对象的数量。
+4. `inuse_space`（默认类型）：表示正在使用的内存大小。
+
+在交互模式下输入对应指令就可以切换到对应的展示类型，切换后top指令里flat的意义也会随之变化：
+
+```bash
+(pprof) alloc_objects
+(pprof) top
+Showing nodes accounting for 2867253, 100% of 2867255 total
+Dropped 2 nodes (cum <= 14336)
+      flat  flat%   sum%        cum   cum%
+   1982504 69.14% 69.14%    2867253   100%  command-line-arguments.new_map_in_heap
+    884749 30.86%   100%     884749 30.86%  fmt.Sprint
+(pprof) alloc_space  
+(pprof) top
+Showing nodes accounting for 155.94MB, 100% of 155.94MB total
+      flat  flat%   sum%        cum   cum%
+  106.44MB 68.26% 68.26%   119.94MB 76.91%  command-line-arguments.new_map_in_heap
+      24MB 15.39% 83.65%       24MB 15.39%  command-line-arguments.new_slice_in_heap2
+   13.50MB  8.66% 92.30%    13.50MB  8.66%  fmt.Sprint
+      12MB  7.70%   100%       36MB 23.09%  command-line-arguments.new_slice_in_heap1
+(pprof) inuse_objects
+(pprof) top
+Showing nodes accounting for 1611118, 100% of 1611120 total
+Dropped 2 nodes (cum <= 8055)
+      flat  flat%   sum%        cum   cum%
+   1578350 97.97% 97.97%    1611118   100%  command-line-arguments.new_map_in_heap
+     32768  2.03%   100%      32768  2.03%  fmt.Sprint
+```
+
+### 用web指令生成图片
+
+先 在运行`go tool pprof`的环境上安装可视化工具[Graphviz](https://graphviz.org/download/)，在交互模式下输入`web`指令就会生成svg格式的图片并自动在浏览器里打开，如果我们在没有图形桌面的Linux系统上使用这种方式就什么也看不到了。
+
+```bash
+$ go tool pprof http://localhost:6060/debug/pprof/heap
+Fetching profile over HTTP from http://localhost:8080/debug/pprof/heap
+Saved profile in /root/pprof/pprof.runtime.test.alloc_objects.alloc_space.inuse_objects.inuse_space.032.pb.gz
+File: runtime.test
+Type: inuse_space
+Time: Sep 22, 2023 at 8:45am (CST)
+Entering interactive mode (type "help" for commands, "o" for options)
+(pprof) web
+```
+
+所以，更推荐的方式是下面的操作，它会自动启动一个web服务器并在浏览器端打开网页用于查看可视化数据。当我通过VS Code 远程连接到Linux服务器执行这个操作，它也可以自动在本地浏览器打开web页面，这是非常方便的。
+
+```bash
+$ go tool pprof -http=:8000 http://127.0.0.1:6060/debug/pprof/heap
+Fetching profile over HTTP from http://127.0.0.1:6060/debug/pprof/heap
+Saved profile in /root/pprof/pprof.runtime.test.alloc_objects.alloc_space.inuse_objects.inuse_space.035.pb.gz
+Serving web UI on http://localhost:8000
+
+# 或者
+$ go tool pprof -http=:8000 cpu.prof 
+Serving web UI on http://localhost:8000
+
+# 或者
+￥ go tool pprof -http=:8000 pprof.XXX.samples.cpu.001.pb.gz
+```
+
+在如下的web页面中点击VIEW菜单下的按钮就可以看到下面的连线图和火焰图等，点击SAMPLE菜单可以切换数据类型。
+
+![image-20230922090547777](/Users/hunk.he/Library/Application Support/typora-user-images/image-20230922090547777.png)
+
+如上，每个连线图的节点从上往下依次包含了包名、函数名、flat和flat%、cum和cum%。节点的颜色深浅直接反映了消耗资源的多少。线条代表了函数的调用链，线条越粗代表指向的函数消耗的资源越多，反之亦然。实线代表直接调用；虚线代表中间少了几个节点，为间接调用。
+
+关于火焰图的理解参考下面这张图：
+
+![理解火焰图](https://pic4.zhimg.com/80/v2-de5fc5f99ae79afded17375aecb68353_1440w.webp)
+
+1. 条块的横向长度表示cum，相比下一级条块超出的一截就是flat。
+2. 火焰图每一层中的函数都是平等的，下层函数是其对应的上层函数的子函数。
+3. 函数调用栈越长，火焰就越高。
+4. 条块越长、颜色越深，代表当前函数占用CPU时间越久。
+
+### Base基准分析
+
+前面的案例分析都是每次执行一次数据采样然后开始分析，Base基准分析可以用于对比两次采样数据之间的差异。这在用于判断是否发生内存泄漏或者协程泄漏时比较有用。比如下面的函数，每2秒钟创建一个协程然后让其阻塞在读取channel：
+
+```go
+func http_pprof_goroutine() {
+	fmt.Println("Entering http_pprof_goroutine")
+	go run_pprof_server()
+
+	a := make(chan int)
+	for {
+		time.Sleep(2 * time.Second)
+		go func() {
+			<-a
+		}()
+	}
+}
+```
+
+我们先按以前的方式收集两份采样数据pprof.runtime.test.goroutine.003.pb.gz和pprof.runtime.test.goroutine.004.pb.gz：
+
+```bash
+$ go tool pprof http://127.0.0.1:6060/debug/pprof/goroutine
+Fetching profile over HTTP from http://127.0.0.1:6060/debug/pprof/goroutine
+Saved profile in /root/pprof/pprof.runtime.test.goroutine.003.pb.gz
+File: runtime.test
+Build ID: 7b6dc6301b74ff37fab0b55888b78a6ee1430b6b
+Type: goroutine
+Time: Oct 8, 2023 at 4:52pm (CST)
+Entering interactive mode (type "help" for commands, "o" for options)
+(pprof) top
+Showing nodes accounting for 66, 98.51% of 67 total
+Showing top 10 nodes out of 37
+      flat  flat%   sum%        cum   cum%
+        65 97.01% 97.01%         65 97.01%  runtime.gopark
+         1  1.49% 98.51%          1  1.49%  runtime.goroutineProfileWithLabels
+         0     0% 98.51%          1  1.49%  command-line-arguments.TestPprofGoroutine
+         0     0% 98.51%          1  1.49%  command-line-arguments.http_pprof_goroutine
+         0     0% 98.51%         62 92.54%  command-line-arguments.http_pprof_goroutine.func1
+         0     0% 98.51%          1  1.49%  command-line-arguments.run_pprof_server
+         0     0% 98.51%          1  1.49%  internal/poll.(*FD).Accept
+         0     0% 98.51%          1  1.49%  internal/poll.(*pollDesc).wait
+         0     0% 98.51%          1  1.49%  internal/poll.(*pollDesc).waitRead (inline)
+         0     0% 98.51%          1  1.49%  internal/poll.runtime_pollWait
+(pprof) exit
+$ go tool pprof http://127.0.0.1:6060/debug/pprof/goroutine
+Fetching profile over HTTP from http://127.0.0.1:6060/debug/pprof/goroutine
+Saved profile in /root/pprof/pprof.runtime.test.goroutine.004.pb.gz
+File: runtime.test
+Build ID: 7b6dc6301b74ff37fab0b55888b78a6ee1430b6b
+Type: goroutine
+Time: Oct 8, 2023 at 4:52pm (CST)
+Entering interactive mode (type "help" for commands, "o" for options)
+(pprof) top
+Showing nodes accounting for 86, 98.85% of 87 total
+Showing top 10 nodes out of 37
+      flat  flat%   sum%        cum   cum%
+        85 97.70% 97.70%         85 97.70%  runtime.gopark
+         1  1.15% 98.85%          1  1.15%  runtime.goroutineProfileWithLabels
+         0     0% 98.85%          1  1.15%  command-line-arguments.TestPprofGoroutine
+         0     0% 98.85%          1  1.15%  command-line-arguments.http_pprof_goroutine
+         0     0% 98.85%         82 94.25%  command-line-arguments.http_pprof_goroutine.func1
+         0     0% 98.85%          1  1.15%  command-line-arguments.run_pprof_server
+         0     0% 98.85%          1  1.15%  internal/poll.(*FD).Accept
+         0     0% 98.85%          1  1.15%  internal/poll.(*pollDesc).wait
+         0     0% 98.85%          1  1.15%  internal/poll.(*pollDesc).waitRead (inline)
+         0     0% 98.85%          1  1.15%  internal/poll.runtime_pollWait
+(pprof) exit
+```
+
+`runtime.gopark`是协程的休眠函数。第一次采样时，有65个协程处于休眠状态。第二次采样时，有85个协程处于休眠中。如下，用Base基准分析可以直接看到两次采样的差异：多了20个处于休眠状态的协程。
+
+```bash
+$ go tool pprof -base /root/pprof/pprof.runtime.test.goroutine.003.pb.gz /root/pprof/pprof.runtime.test.goroutine.004.pb.gz
+File: runtime.test
+Build ID: 7b6dc6301b74ff37fab0b55888b78a6ee1430b6b
+Type: goroutine
+Time: Oct 8, 2023 at 4:52pm (CST)
+Entering interactive mode (type "help" for commands, "o" for options)
+(pprof) top
+Showing nodes accounting for 20, 100% of 20 total
+      flat  flat%   sum%        cum   cum%
+        20   100%   100%         20   100%  runtime.gopark
+         0     0%   100%         20   100%  command-line-arguments.http_pprof_goroutine.func1
+         0     0%   100%         20   100%  runtime.chanrecv
+         0     0%   100%         20   100%  runtime.chanrecv1
+```
+
+## trace 事件追踪
+
+pprof的分析可以提供一段时间内的CPU占用、内存分配、协程堆栈信息，但是这些信息都是一段时间内数据的汇总，没有提供整个周期内发生的时间，比如指定的Goroutines何时执行、执行了多长时间、何时陷入堵塞、何时解除了堵塞、GC如何影响单个goroutine的执行、STW中断花费的时间是否太长等。Go 1.5之后推出了trace工具可以提供指定时间内程序发生的事件的完整信息：
+
+1. 协程的创建、开始和结束。
+2. 协程的堵塞 - 系统调用、通道和锁。
+3. 网络I/O相关事件。
+4. 系统调用事件。
+5. 垃圾回收相关事件。
+
+收集trace信息的方式和pprof类似，一共有3种方式。
+
+第一种方式是运行`go test`的时候，带上`-trace`参数标记，`go test -trace=trace.out`
+
+第二种方式是在程序中直接调用`runtime/trace`包的接口，这种比较适用于命令行程序：
+
+```go
+import (
+	"fmt"
+	"log"
+	"os"
+	"runtime/trace"
+)
+
+// Example demonstrates the use of the trace package to trace
+// the execution of a Go program. The trace output will be
+// written to the file trace.out
+func main() {
+	f, err := os.Create("trace.out")
+	if err != nil {
+		log.Fatalf("failed to create trace output file: %v", err)
+	}
+	defer func() {
+		if err := f.Close(); err != nil {
+			log.Fatalf("failed to close trace file: %v", err)
+		}
+	}()
+
+	if err := trace.Start(f); err != nil {
+		log.Fatalf("failed to start trace: %v", err)
+	}
+	defer trace.Stop()
+
+	// your program here
+	RunMyProgram()
+}
+
+func RunMyProgram() {
+	fmt.Printf("this function will be traced")
+}
+```
+
+第三种方式是更适用于服务程序的http服务器，`net/http/pprof`包中集成了trace的接口，比如获取20秒内的trace事件：
+
+```bash
+# 收集事件并存储到文件中
+$ curl -o /tmp/trace.out http://127.0.0.1:6060/debug/pprof/trace?seconds=20
+
+# 使用trace工具分析文件，会自动开启一个http服务器并在浏览器打开网页
+$ go tool trace /tmp/trace.out 
+2023/10/17 09:00:36 Parsing trace...
+2023/10/17 09:00:36 Splitting trace...
+2023/10/17 09:00:36 Opening browser. Trace viewer is listening on http://127.0.0.1:42859
+```
+
+网页中包含了很多超链接，我们可以点击这些链接查看相关的trace信息：
+
+![image-20231017091525979](/Users/hunk.he/Library/Application Support/typora-user-images/image-20231017091525979.png)
+
+#### Goroutine analysis
+
+`Goroutine analysis`子页面主要显示每个共享相同主函数的goroutine的集合，如下，有5个goroutine在执行http_pprof_trace这个函数。
+
+![image-20231018091540359](/Users/hunk.he/Library/Application Support/typora-user-images/image-20231018091540359.png)
+
+点击http_pprof_trace这个超链接，进入下面这个goroutine集合的页面，可以看到每个goroutine的运行统计数据。在这个demo程序中，大部分goroutine都因为读同一个没有数据的通道被阻塞。
+
+![image-20231018091848261](/Users/hunk.he/Library/Application Support/typora-user-images/image-20231018091848261.png)
+
+点击goroutine编号可以继续查看单个goroutine基于时间轴的统计信息。在顶部(“STATS”)，有三个额外的时间轴显示统计信息。“gooutines”是现有gooutines计数的时间序列;单击它将显示它们在当时的状态分解：GCWaiting/Runnable/Running。“Heap”是分配的堆内存量(橙色)和下一个GC周期开始时的分配限制(绿色)的时间序列。“Threads”显示了存在的内核线程的数量：每个逻辑处理器总是有一个内核线程，并且为调用非go代码(如系统调用或用C编写的函数)创建了额外的线程。
+
+点击时间轴上的条块，左下角就会切换到对应时间点的数据。
+
+![image-20231018092723993](/Users/hunk.he/Library/Application Support/typora-user-images/image-20231018092723993.png)
+
+#### Profiles
+
+Profiles部分下面由四个超链接，每个链接都是一个可缩放的图片，也可以下载进行离线分析。这四个文件都表示了阻止一个程序在逻辑处理器上运行的延迟原因：因为它正在等待网络、等待互斥锁或通道上的同步操作、等待系统调用或等待逻辑处理器可用。
+
+
+
+关于trace的更多案例参考[Go中trace包的使用](https://zhuanlan.zhihu.com/p/332501892)
+
+# Framework
+
+## Web
 
 * [mux](https://github.com/gorilla/mux) //http router
 
-## 2.2. Plugins
+## Plugins
 
 * [go-plugins-helpers](https://github.com/docker/go-plugins-helpers)
 
-# 3. References
+# References
 
 * 协程模型
   * [Golang源码探索(二) 协程的实现原理](https://www.cnblogs.com/zkweb/p/7815600.html)
