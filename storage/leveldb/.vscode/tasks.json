@@ -1,0 +1,47 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "shell",
+			"label": "[linux]build std active file",
+			"command": "/usr/bin/make",
+			"args": [
+				"-C",
+				"${workspaceFolder}/build"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"dependsOn": "[linux]build leveldbdemo - cmake"
+		},
+		{
+			"type": "shell",
+			"label": "[linux]build leveldbdemo - cmake",
+			"command": "/usr/bin/cmake",
+			"args": [
+				"-S",
+				"${workspaceFolder}/src",
+				"-B",
+				"${workspaceFolder}/build"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
+			//"dependsOn": "[linux]build leveldb library"
+		}
+	]
+}

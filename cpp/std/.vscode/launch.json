@@ -6,7 +6,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "g++.exe - 生成和调试活动文件",
+            "name": "[windows]g++.exe - 生成和调试活动文件",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}\\bin\\std.exe",
@@ -24,7 +24,28 @@
                     "ignoreFailures": true
                 }
             ],
-            "preLaunchTask": "build std active file"
+            "preLaunchTask": "[windows]build std active file"
+        },
+        {
+            "name": "[linux]gdb - 生成和调试活动文件",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/bin/std",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "/usr/bin/gdb",
+            "setupCommands": [
+                {
+                    "description": "为 gdb 启用整齐打印",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "[linux]build std active file"
         }
     ]
 }

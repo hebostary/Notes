@@ -964,6 +964,321 @@ Profiles部分下面由四个超链接，每个链接都是一个可缩放的图
 
 关于trace的更多案例参考[Go中trace包的使用](https://zhuanlan.zhihu.com/p/332501892)
 
+## gdb调试go程序
+
+前段时间，在项目中需要调研我们用golang写的一些工具是否符合FIPS 140-2标准，我们使用了RedHat提供的golang编译工具集（golang-tool-set），RedHat golang-tool-set重写了一些golang原生提供的crypto的库，提供了FIPS版本，它会自动从原生crypto库调用切换到调用FIPS认证的OpenSSL 1.1.1k动态库。
+
+即便如此，还是需要调试验证当真正执行golang相关的加解密代码时，是否真的调用到了OpenSSL的实现，因此用到了用gdb来调试。
+
+在调试过程中，我们需要打一些函数断点，但是直接用golang源代码中的函数名去打断点是无法找到相关的符号的，因为golang代码编译后生成的ELF文件里，源代码函数对应的符号名发生了变化。可以用`readelf`工具去查看二进制的符号表，找到ELF符号表中的符号名去打断点就可以了。
+
+```bash
+nbapp642:/home/maintenance # readelf -a /opt/VRTSoatc/otpm_new > /tmp/otpm.elf
+nbapp642:/home/maintenance # egrep ".symtab|main.main|main.OpenSSL.decrypt" /tmp/otpm.elf
+  [44] .symtab           SYMTAB           0000000000000000  004e21c8
+Symbol table '.symtab' contains 8988 entries:
+  5767: 00000000006fea80  2091 FUNC    LOCAL  DEFAULT   14 main.OpenSSL.decrypt
+  5768: 00000000006ff2c0    77 FUNC    LOCAL  DEFAULT   14 main.OpenSSL.decrypt.func
+  5797: 0000000000705440  1552 FUNC    LOCAL  DEFAULT   14 main.main
+  5798: 0000000000705a60    77 FUNC    LOCAL  DEFAULT   14 main.main.func1
+```
+
+下面是具体调试的过程细节：
+
+```bash
+nbapp642:/home/maintenance # gdb /opt/VRTSoatc/otpm_new
+GNU gdb (GDB) Red Hat Enterprise Linux 8.2-19.el8
+Copyright (C) 2018 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+Type "show copying" and "show warranty" for details.
+This GDB was configured as "x86_64-redhat-linux-gnu".
+Type "show configuration" for configuration details.
+For bug reporting instructions, please see:
+<http://www.gnu.org/software/gdb/bugs/>.
+Find the GDB manual and other documentation resources online at:
+    <http://www.gnu.org/software/gdb/documentation/>.
+ 
+For help, type "help".
+Type "apropos word" to search for commands related to "word"...
+Reading symbols from /opt/VRTSoatc/otpm_new...done.
+warning: File "/usr/lib/golang/src/runtime/runtime-gdb.py" auto-loading has been declined by your `auto-load safe-path' set to "$debugdir:$datadir/auto-load".
+To enable execution of this file add
+        add-auto-load-safe-path /usr/lib/golang/src/runtime/runtime-gdb.py
+line to your configuration file "/root/.gdbinit".
+To completely disable this security protection add
+        set auto-load safe-path /
+line to your configuration file "/root/.gdbinit".
+For more information about this security protection see the
+"Auto-loading safe path" section in the GDB manual.  E.g., run from the shell:
+        info "(gdb)Auto-loading safe path"
+(gdb) set args -unlock " " # 设置二进制启动参数
+(gdb) break main.OpenSSL.decrypt  # 打函数断点
+Breakpoint 1 at 0x6fea80: file /home/dev/workspace/platformx/security/oatc/otpm/openssl.go, line 75.
+(gdb) break EVP_aes_128_ecb
+Function "EVP_aes_128_ecb" not defined.
+Make breakpoint pending on future shared library load? (y or [n]) y
+Breakpoint 2 (EVP_aes_128_ecb) pending.
+(gdb) break /usr/lib/golang/src/vendor/github.com/golang-fips/openssl-fips/openssl/openssl.go:51
+Breakpoint 3 at 0x6051c0: file /usr/lib/golang/src/vendor/github.com/golang-fips/openssl-fips/openssl/openssl.go, line 51.
+(gdb) break /home/dev/workspace/platformx/security/oatc/otpm/otpm.go:182
+Breakpoint 4 at 0x705440: file /home/dev/workspace/platformx/security/oatc/otpm/otpm.go, line 182.
+(gdb) r
+The program being debugged has been started already.
+Start it from the beginning? (y or n) y
+Starting program: /opt/VRTSoatc/otpm_new -unlock " "
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib64/libthread_db.so.1".
+[New Thread 0x7fffd02d3700 (LWP 102935)]
+[New Thread 0x7fffcfad2700 (LWP 102936)]
+[New Thread 0x7fffcf2d1700 (LWP 102937)]
+[New Thread 0x7fffcead0700 (LWP 102938)]
+[New Thread 0x7fffce2cf700 (LWP 102939)]
+[New Thread 0x7fffcdace700 (LWP 102940)]
+ 
+Thread 1 "otpm_new" hit Breakpoint 3, vendor/github.com/golang-fips/openssl-fips/openssl.init.0 () at /usr/lib/golang/src/vendor/github.com/golang-fips/openssl-fips/openssl/openssl.go:51
+51      func init() {
+(gdb) info breakpoints
+Num     Type           Disp Enb Address            What
+1       breakpoint     keep y   0x00000000006fea80 in main.OpenSSL.decrypt at /home/dev/workspace/platformx/security/oatc/otpm/openssl.go:75
+2       breakpoint     keep y   <PENDING>          EVP_aes_128_ecb
+3       breakpoint     keep y   0x00000000006051c0 in vendor/github.com/golang-fips/openssl-fips/openssl.init.0 at /usr/lib/golang/src/vendor/github.com/golang-fips/openssl-fips/openssl/openssl.go:51
+        breakpoint already hit 1 time
+4       breakpoint     keep y   0x0000000000705440 in main.main at /home/dev/workspace/platformx/security/oatc/otpm/otpm.go:182
+(gdb) c
+Continuing.
+ 
+Thread 1 "otpm_new" hit Breakpoint 2, 0x00007fffccf07280 in EVP_aes_128_ecb () from /lib64/libcrypto.so.1.1
+(gdb) where # 查看当前调用栈
+#0  0x00007fffccf07280 in EVP_aes_128_ecb () from /lib64/libcrypto.so.1.1
+#1  0x00007fffccf54835 in drbg_ctr_init () from /lib64/libcrypto.so.1.1
+#2  0x00007fffccf5498a in RAND_DRBG_set () from /lib64/libcrypto.so.1.1
+#3  0x00007fffccf55a45 in rand_drbg_new () from /lib64/libcrypto.so.1.1
+#4  0x00007fffccf563bc in rand_drbg_selftest () from /lib64/libcrypto.so.1.1
+#5  0x00007fffccf23494 in FIPS_selftest () from /lib64/libcrypto.so.1.1
+#6  0x00007fffccf1dd9f in FIPS_module_mode_set () from /lib64/libcrypto.so.1.1
+#7  0x00007fffcce20070 in OPENSSL_init_library () from /lib64/libcrypto.so.1.1
+#8  0x00007ffff7dd6f1a in call_init (l=<optimized out>, argc=argc@entry=3, argv=argv@entry=0x7fffffffd648, env=env@entry=0x7fffffffd668) at dl-init.c:72
+#9  0x00007ffff7dd701a in call_init (env=0x7fffffffd668, argv=0x7fffffffd648, argc=3, l=<optimized out>) at dl-init.c:30
+#10 _dl_init (main_map=0xb18840, argc=3, argv=0x7fffffffd648, env=0x7fffffffd668) at dl-init.c:119
+#11 0x00007ffff774dc6c in _dl_catch_exception () from /lib64/libc.so.6
+#12 0x00007ffff7dde76e in dl_open_worker (a=0x7fffffffd200) at dl-open.c:794
+#13 dl_open_worker (a=0x7fffffffd200) at dl-open.c:757
+#14 0x00007ffff774dc14 in _dl_catch_exception () from /lib64/libc.so.6
+#15 0x00007ffff7dde951 in _dl_open (file=0x7b4dd1 "libcrypto.so.1.1", mode=-2147483390, caller_dlopen=0x715921 <_cgo_0284165e5dc5_Cfunc__goboringcrypto_DLOPEN_OPENSSL+65>, nsid=<optimized out>, argc=3,
+    argv=<optimized out>, env=0x7fffffffd668) at dl-open.c:876
+#16 0x00007ffff79aaf8a in dlopen_doit () from /lib64/libdl.so.2
+#17 0x00007ffff774dc14 in _dl_catch_exception () from /lib64/libc.so.6
+#18 0x00007ffff774dcd3 in _dl_catch_error () from /lib64/libc.so.6
+#19 0x00007ffff79ab52e in _dlerror_run () from /lib64/libdl.so.2
+#20 0x00007ffff79ab02a in dlopen@@GLIBC_2.2.5 () from /lib64/libdl.so.2
+#21 0x0000000000715921 in _goboringcrypto_DLOPEN_OPENSSL () at /_/vendor/github.com/golang-fips/openssl-fips/openssl/goopenssl.h:71
+#22 _cgo_0284165e5dc5_Cfunc__goboringcrypto_DLOPEN_OPENSSL (v=0xc0001e3a38) at cgo-gcc-prolog:128
+#23 0x0000000000472264 in runtime.asmcgocall () at /usr/lib/golang/src/runtime/asm_amd64.s:844
+#24 0x0000000000ae2360 in ?? ()
+#25 0x00007fffffffd508 in ?? ()
+#26 0x0000000000413a8e in runtime.persistentalloc.func1 () at /usr/lib/golang/src/runtime/malloc.go:1340
+#27 0x00000000004704cb in runtime.morestack () at /usr/lib/golang/src/runtime/asm_amd64.s:570
+#28 0x0000000000474ba5 in runtime.newproc (fn=0x7196d0 <__libc_csu_init>) at <autogenerated>:1
+#29 0x0000000000ae1dc0 in ?? ()
+#30 0x00000000007196d0 in ?? ()
+#31 0x00000000004702e5 in runtime.mstart () at /usr/lib/golang/src/runtime/asm_amd64.s:390
+#32 0x000000000047026f in runtime.rt0_go () at /usr/lib/golang/src/runtime/asm_amd64.s:354
+#33 0x0000000000000003 in ?? ()
+#34 0x00007fffffffd648 in ?? ()
+#35 0x00007fffffffd640 in ?? ()
+#36 0x0000000000000003 in ?? ()
+#37 0x00007fffffffd648 in ?? ()
+#38 0x00007ffff761fd85 in __libc_start_main () from /lib64/libc.so.6
+#39 0x000000000040509e in _start ()
+(gdb) c
+Continuing.
+ 
+Thread 1 "otpm_new" hit Breakpoint 2, 0x00007fffccf07280 in EVP_aes_128_ecb () from /lib64/libcrypto.so.1.1
+(gdb) c
+Continuing.
+ 
+Thread 1 "otpm_new" hit Breakpoint 2, 0x00007fffccf07280 in EVP_aes_128_ecb () from /lib64/libcrypto.so.1.1
+(gdb) c
+Continuing.
+ 
+Thread 1 "otpm_new" hit Breakpoint 4, main.main () at /home/dev/workspace/platformx/security/oatc/otpm/otpm.go:182
+182     func main() {
+(gdb) where
+#0  main.main () at /home/dev/workspace/platformx/security/oatc/otpm/otpm.go:182
+(gdb) c
+Continuing.
+[New Thread 0x7fffccb8b700 (LWP 104557)]
+>> Please enter the security key:U2FsdGVkX1+rrFUXVYxM4elpruxM2yzrUnl5DzpnYpx+16r4sQ82tFBcaguvVoqKgxBWc5K8JEvgPBisQOxOAFGD8/JtM1DDYPKzYSqLJ5e1wPHTYLB7L/zbv8y16WCoKPDq9w8VuhhMJKm7V8PvVrvCiAEOOXOYyvsUbtQXJacRFcxyQ9cjYPUlKga7/0f2QsJYLRAgzO
+[Switching to Thread 0x7fffccb8b700 (LWP 104557)]
+ 
+Thread 8 "otpm_new" hit Breakpoint 1, main.OpenSSL.decrypt (o=..., key=..., iv=..., data=..., ~r0=..., ~r1=...) at /home/dev/workspace/platformx/security/oatc/otpm/openssl.go:75
+75      func (o OpenSSL) decrypt(key, iv, data []byte) ([]byte, error) {
+(gdb) n
+76              logger.LoggerEntry()
+(gdb) n
+77              defer logger.LoggerExit()
+(gdb) n
+78              if len(data) == 0 || len(data)%aes.BlockSize != 0 {
+(gdb) n
+81              c, err := aes.NewCipher(key)
+(gdb) s
+crypto/aes.NewCipher (key=..., ~r0=..., ~r1=...) at /usr/lib/golang/src/crypto/aes/cipher.go:33
+33      // AES-128, AES-192, or AES-256.
+(gdb) list 33,45
+33      // AES-128, AES-192, or AES-256.
+34      func NewCipher(key []byte) (cipher.Block, error) {
+35              k := len(key)
+36              switch k {
+37              default:
+38                      return nil, KeySizeError(k)
+39              case 16, 24, 32:
+40                      break
+41              }
+42              if boring.Enabled() {
+43                      return boring.NewAESCipher(key)
+44              }
+45              return newCipher(key)
+(gdb) n
+34      func NewCipher(key []byte) (cipher.Block, error) {
+(gdb) n
+38                      return nil, KeySizeError(k)
+(gdb) n
+39              case 16, 24, 32:
+(gdb) n
+41              }
+(gdb) n
+42              if boring.Enabled() {
+(gdb) s
+vendor/github.com/golang-fips/openssl-fips/openssl.NewAESCipher (key=..., ~r0=..., ~r1=...) at /usr/lib/golang/src/vendor/github.com/golang-fips/openssl-fips/openssl/aes.go:48
+48      func NewAESCipher(key []byte) (cipher.Block, error) {
+(gdb) s
+49              c := &aesCipher{key: make([]byte, len(key))}
+(gdb) list
+44      }
+45
+46      var _ extraModes = (*aesCipher)(nil)
+47
+48      func NewAESCipher(key []byte) (cipher.Block, error) {
+49              c := &aesCipher{key: make([]byte, len(key))}
+50              copy(c.key, key)
+51
+52              switch len(c.key) * 8 {
+53              case 128:
+(gdb) n
+50              copy(c.key, key)
+(gdb) n
+52              switch len(c.key) * 8 {
+(gdb) n
+53              case 128:
+(gdb) n
+55              case 192:
+(gdb) n
+57              case 256:
+(gdb) n
+58                      c.cipher = C._goboringcrypto_EVP_aes_256_ecb()
+(gdb) list
+53              case 128:
+54                      c.cipher = C._goboringcrypto_EVP_aes_128_ecb()
+55              case 192:
+56                      c.cipher = C._goboringcrypto_EVP_aes_192_ecb()
+57              case 256:
+58                      c.cipher = C._goboringcrypto_EVP_aes_256_ecb()
+59              default:
+60                      return nil, errors.New("crypto/cipher: Invalid key size")
+61              }
+62
+(gdb) s
+vendor/github.com/golang-fips/openssl-fips/openssl._Cfunc__goboringcrypto_EVP_aes_256_ecb (r1=0x6feb12 <main.OpenSSL.decrypt+146>) at _cgo_gotypes.go:1215
+1215    _cgo_gotypes.go: No such file or directory.
+(gdb) break /usr/lib/golang/src/runtime/proc.go:3681
+Breakpoint 5 at 0x46de5d: file /usr/lib/golang/src/runtime/proc.go, line 3681.
+(gdb) c
+Continuing.
+[Switching to Thread 0x7fffcead0700 (LWP 102938)]
+ 
+Thread 5 "otpm_new" hit Breakpoint 5, runtime.entersyscall () at /usr/lib/golang/src/runtime/proc.go:3681
+3681                    // Return to mstart, which will release the P and exit
+(gdb) list
+3676            if locked {
+3677                    // The goroutine may have locked this thread because
+3678                    // it put it in an unusual kernel state. Kill it
+3679                    // rather than returning it to the thread pool.
+3680
+3681                    // Return to mstart, which will release the P and exit
+3682                    // the thread.
+3683                    if GOOS != "plan9" { // See golang.org/issue/22227.
+3684                            gogo(&_g_.m.g0.sched)
+3685                    } else {
+(gdb) n
+syscall.Syscall6 (trap=232, a1=9, a2=824636406276, a3=7, a4=18446744073709551615, a5=0, a6=0, r1=0, r2=0, err=0) at /usr/lib/golang/src/syscall/syscall_linux.go:91
+91                              // Root can read and write any file.
+(gdb) c
+Continuing.
+[Switching to Thread 0x7fffccb8b700 (LWP 104557)]
+ 
+Thread 8 "otpm_new" hit Breakpoint 5, runtime.entersyscall () at /usr/lib/golang/src/runtime/proc.go:3681
+3681                    // Return to mstart, which will release the P and exit
+(gdb) where
+#0  runtime.entersyscall () at /usr/lib/golang/src/runtime/proc.go:3681
+#1  0x00000000004091dc in runtime.cgocall (fn=0x7141e0 <_cgo_0284165e5dc5_Cfunc__goboringcrypto_EVP_aes_256_ecb>, arg=0xc00003a000, ~r0=<optimized out>) at /usr/lib/golang/src/runtime/cgocall.go:158
+#2  0x00000000005fdfe9 in vendor/github.com/golang-fips/openssl-fips/openssl._Cfunc__goboringcrypto_EVP_aes_256_ecb (r1=0x0) at _cgo_gotypes.go:1216
+#3  0x00000000006000d5 in vendor/github.com/golang-fips/openssl-fips/openssl.NewAESCipher (key=..., ~r0=..., ~r1=...) at /usr/lib/golang/src/vendor/github.com/golang-fips/openssl-fips/openssl/aes.go:58
+#4  0x00000000006436b0 in crypto/aes.NewCipher (key=..., ~r0=..., ~r1=...) at /usr/lib/golang/src/crypto/aes/cipher.go:42
+#5  0x00000000006fed77 in main.OpenSSL.decrypt (o=..., key=..., iv=..., data=..., ~r0=..., ~r1=...) at /home/dev/workspace/platformx/security/oatc/otpm/openssl.go:81
+#6  0x00000000006fe792 in main.OpenSSL.DecryptBytes (o=..., passphrase=..., encryptedBase64Data=..., ~r0=..., ~r1=...) at /home/dev/workspace/platformx/security/oatc/otpm/openssl.go:72
+#7  0x00000000006fdd98 in main.OpenSSL.DecryptString (o=..., passphrase=..., encryptedBase64String=..., ~r0=..., ~r1=...) at /home/dev/workspace/platformx/security/oatc/otpm/openssl.go:43
+#8  0x0000000000702a86 in main.(*otp).decrypt (o=0xc000229380, sk=..., dec=..., err=...) at /home/dev/workspace/platformx/security/oatc/otpm/otp.go:91
+#9  0x0000000000710ab0 in main.(*support).unlock (s=0xc0001ccab0, secureKey=..., ~r0=...) at /home/dev/workspace/platformx/security/oatc/otpm/support.go:137
+#10 0x0000000000704cc7 in main.handleFlag (f=0xc000192380) at /home/dev/workspace/platformx/security/oatc/otpm/otpm.go:155
+#11 0x00000000006e5a93 in flag.(*FlagSet).Visit (f=0xc000194180, fn={void (flag.Flag *)} 0xc000229e08) at /usr/lib/golang/src/flag/flag.go:461
+#12 0x00000000006e5b0b in flag.Visit (fn={void (flag.Flag *)} 0xc000229e20) at /usr/lib/golang/src/flag/flag.go:468
+#13 0x0000000000705930 in main.main () at /home/dev/workspace/platformx/security/oatc/otpm/otpm.go:199
+(gdb) c
+Continuing.
+[Switching to Thread 0x7fffcead0700 (LWP 102938)]
+ 
+Thread 5 "otpm_new" hit Breakpoint 5, runtime.entersyscall () at /usr/lib/golang/src/runtime/proc.go:3681
+3681                    // Return to mstart, which will release the P and exit
+(gdb) where
+#0  runtime.entersyscall () at /usr/lib/golang/src/runtime/proc.go:3681
+#1  0x00000000004c8aa5 in syscall.Syscall6 (trap=232, a1=9, a2=824636406276, a3=7, a4=18446744073709551615, a5=0, a6=0, r1=0, r2=0, err=0) at /usr/lib/golang/src/syscall/syscall_linux.go:90
+#2  0x00000000004c9039 in syscall.Syscall6 (trap=232, a1=9, a2=824636406276, a3=7, a4=18446744073709551615, a5=0, a6=0, r1=0, r2=0, err=0) at <autogenerated>:1
+#3  0x00000000006ec2d3 in golang.org/x/sys/unix.EpollWait (epfd=9, events=..., msec=-1, n=0, err=...) at /home/dev/workspace/platformx/security/oatc/otpm/vendor/golang.org/x/sys/unix/zsyscall_linux_amd64.go:56
+#4  0x00000000006eeca5 in github.com/fsnotify/fsnotify.(*fdPoller).wait (poller=0xc0001201c0, ~r0=false, ~r1=...)
+    at /home/dev/workspace/platformx/security/oatc/otpm/vendor/github.com/fsnotify/fsnotify/inotify_poller.go:86
+#5  0x00000000006ed785 in github.com/fsnotify/fsnotify.(*Watcher).readEvents (w=0xc000138000) at /home/dev/workspace/platformx/security/oatc/otpm/vendor/github.com/fsnotify/fsnotify/inotify.go:206
+#6  0x00000000006ecdeb in github.com/fsnotify/fsnotify.NewWatcher.func1 () at /home/dev/workspace/platformx/security/oatc/otpm/vendor/github.com/fsnotify/fsnotify/inotify.go:60
+#7  0x00000000004725a1 in runtime.goexit () at /usr/lib/golang/src/runtime/asm_amd64.s:1594
+#8  0x0000000000000000 in ?? ()
+(gdb) n
+syscall.Syscall6 (trap=232, a1=9, a2=824636406276, a3=7, a4=18446744073709551615, a5=0, a6=0, r1=0, r2=0, err=0) at /usr/lib/golang/src/syscall/syscall_linux.go:91
+91                              // Root can read and write any file.
+(gdb) n
+ 
+Thread 8 "otpm_new" hit Breakpoint 5, runtime.entersyscall () at /usr/lib/golang/src/runtime/proc.go:3681
+3681                    // Return to mstart, which will release the P and exit
+(gdb) quit
+A debugging session is active.
+ 
+        Inferior 1 [process 102934] will be killed.
+ 
+Quit anyway? (y or n) y
+```
+
+调试过程中，我们无法真正跟踪进入OpenSSL的库函数，这是因为RedHat将golang调用openssl库的CGO函数写成了内联函数。比如，将OpenSSL的`EVP_aes_256_ecb()`函数封装成`_goboringcrypto_EVP_aes_256_ecb()`这么一个内联CGO函数，在调试进入`_goboringcrypto_EVP_aes_256_ecb()`的时候就会报错： unreadable function C._goboringcrypto_EVP_aes_256_ecb is inlined。
+
+![image-20240204164427902](/Users/hunk.he/Library/Application Support/typora-user-images/image-20240204164427902.png)
+
+我们用`objdump`命令将二进制反汇编后，可以看到相关的CGO函数的定义：
+
+```bash
+nbapp642:/home/maintenance # objdump -S /tmp/otpm >/tmpotpm.S # dump assembly code
+```
+
+![image-20240204165004507](/Users/hunk.he/Library/Application Support/typora-user-images/image-20240204165004507.png)
+
 # Framework
 
 ## Web
@@ -979,6 +1294,8 @@ Profiles部分下面由四个超链接，每个链接都是一个可缩放的图
 * 协程模型
   * [Golang源码探索(二) 协程的实现原理](https://www.cnblogs.com/zkweb/p/7815600.html)
   * [Go 语言调度（一）: 系统调度](https://www.jianshu.com/p/db0aea4d60ed)
+  * [The Go scheduler](https://morsmachine.dk/go-scheduler)
+
 * 内存管理
   * [Golang源码探索(三) GC的实现原理](https://www.cnblogs.com/zkweb/p/7880099.html)
   * [Go 语言内存管理（一）：系统内存管理](https://www.jianshu.com/p/1ffde2de153f)
@@ -987,8 +1304,23 @@ Profiles部分下面由四个超链接，每个链接都是一个可缩放的图
   * [Go 语言内存管理（四）：垃圾回收](https://www.jianshu.com/p/0083a90a8f7e)
   * [Go内存分配机制总结](https://www.jianshu.com/p/34984105175c)
   * [高性能 Go 服务的内存优化(译)](https://www.jianshu.com/p/63404461e520)
+
 * 并发编程
   * [Handling 1 Million Requests per Minute with Go](http://marcio.io/2015/07/handling-1-million-requests-per-minute-with-golang/)
+  * [Go Concurency Patterns](https://talks.golang.org/2012/concurrency.slide#6)
+
 * Documentation & Books
   * http://legendtkl.com/categories/golang/
   * [Go语言设计与实现](https://draveness.me/golang/)
+
+* Go最佳实践 & 编程规范 
+  * [Uber Go语言编程规范](https://zhuanlan.zhihu.com/p/86410535)
+
+  * [Twelve Go Best Practices - Google](https://go.dev/talks/2013/bestpractices.slide#1)
+  * [Effective Go](https://go.dev/doc/effective_go)
+  * [Golang Best Practices (Top 20)](https://medium.com/@golangda/golang-quick-reference-top-20-best-coding-practices-c0cea6a43f20)
+  * [Go Style Best Practices](https://google.github.io/styleguide/go/best-practices.html)
+
+* 面试经验
+
+  * [Go 程序员面试笔试宝典](https://golang.design/go-questions/)

@@ -1039,6 +1039,10 @@ public:
 
 ![image-20200829181629426](https://hunk-pic-store.oss-cn-beijing.aliyuncs.com/img/image-20200829181629426.png)
 
+> Effective C++：被声明为`explicit`的构造函数通常比其 non-explicit 兄弟更受欢迎, 因为它们禁止编译器执行非预期 (往往也不被期望) 的类型转换. 除非我有一个好理由允许构造函数被用于隐式类型转换, 否则我会把它声明为`explicit`. 我鼓励你遵循相同的政策.
+>
+> 关于`explicit`关键字的更多细节可以参考：https://zhuanlan.zhihu.com/p/52152355 和 https://en.cppreference.com/w/cpp/language/explicit
+
 ### 仿函数
 
 仿函数也叫做function-like classes，像函数一样的类。既然有类似于函数的行为，就需要重载函数调用操作符()。比如下面这些标准库中的仿函数设计：
@@ -1079,7 +1083,7 @@ public:
 
 ![image-20200827115543232](https://hunk-pic-store.oss-cn-beijing.aliyuncs.com/img/image-20200827115543232.png)
 
-这也是一种叫做Handle/Body的设计模式，这样设计的好处是拥有相同字符串内容的不同String对象可以共享相同的底层StringRep对象，从而介绍内存空间。
+这也是一种叫做Handle/Body的设计模式，这样设计的好处是拥有相同字符串内容的不同String对象可以共享相同的底层StringRep对象，从而节省内存空间。
 
 1. 在StringRep对象中包含引用计数count，来记录有多少个String对象指向自己，只有当最后一个指向它的String对象被释放时，StringRep对象才会被真正的释放。
 2. 如果String对象需要修改字符串内容，就会创建并指向新的StringRep对象，这也叫写时复制（COW，copy on write）。
@@ -1131,7 +1135,7 @@ Derived::~Derived(...) { ... ~Base() };
 ```c++
 class Shape {
 public:
-	virtual void draw() const = 0; //纯虚函数
+	  virtual void draw() const = 0; //纯虚函数
     virtual error(const std::string& msg); //虚函数
     int objectID() const; //非虚函数
 }
@@ -1291,7 +1295,7 @@ Base :: function2()
 
 ### 关于动态绑定
 
-动态绑定是C++多态现象的底层行为，本知识是一回事，都是建立在虚函数表和虚表指针的基础上。
+动态绑定是C++多态现象的底层行为，本质是一回事，都是建立在虚函数表和虚表指针的基础上。
 
 ![image-20200910090951805](https://hunk-pic-store.oss-cn-beijing.aliyuncs.com/img/image-20200910090951805.png)
 
@@ -1558,14 +1562,14 @@ void Teststringstream()
 
 顺序容器提供控制元素存储和访问顺序的能力，这种顺序不依赖于元素的值，而是与元素加入容器时的位置相对应。
 
-| 类型           | 特点                                                         | 底层数据结构 |
-| -------------- | :----------------------------------------------------------- | ------------ |
-| vector         | 可变大小数组，支持快速随机访问（元素保存在连续的内存空间中）。在尾部之外的位置插入或删除元素可能很慢。 |              |
-| string         | 与vector相似的容器，但专门用于保存字符，随机访问快。在尾部插入/删除速度快。 |              |
-| array（C++11） | 固定大小数组（不能添加或删除元素）。支持快速随机访问。与内置数组相比，array是一种更安全，更容易使用的数组类型。 |              |
-| deque          | 支持快速随机访问。**在两端位置插入/删除速度很快**，在中间位置添加或删除元素的代价很高。 | 双端队列     |
-| list           | 不支持随机访问，只支持双向顺序访问。在list中任何位置进行插入/删除速度都很快。空间的额外开销比较多。 | 双向链表     |
-| forward_list   | 不支持随机访问，只支持单向顺序访问。在链表任何位置进行插入/删除操作都很快。空间的额外开销比较多。 | 单向链表     |
+| 类型                 | 特点                                                         | 底层数据结构 |
+| -------------------- | :----------------------------------------------------------- | ------------ |
+| vector               | 可变大小数组，支持快速随机访问（元素保存在连续的内存空间中）。在尾部之外的位置插入或删除元素可能很慢。 |              |
+| string               | 与vector相似的容器，但专门用于保存字符，随机访问快。在尾部插入/删除速度快。 |              |
+| array（C++11）       | 固定大小数组（编译时确定，不能添加或删除元素）。支持快速随机访问。与内置数组相比，array是一种更安全，更容易使用的数组类型。 |              |
+| deque                | 支持快速随机访问。**在两端位置插入/删除速度很快**，在中间位置添加或删除元素的代价很高。 | 双端队列     |
+| list                 | 不支持随机访问，只支持双向顺序访问。在list中任何位置进行插入/删除速度都很快。空间的额外开销比较多。 | 双向链表     |
+| forward_list C++11） | 不支持随机访问，只支持单向顺序访问。在链表任何位置进行插入/删除操作都很快。空间的额外开销比较多。 | 单向链表     |
 
 #### 顺序容器添加元素
 
@@ -1694,7 +1698,7 @@ cout << "flist: ["; for (auto &&w : flist) cout << w << ", "; cout << "]\n";
    //在循环中删除偶数元素，复制每个奇数元素
    vector<int> vi = {0, 1, 2, 3 ,4};
    auto ite = vi.begin();
-   while( ite != vi.begin() ) {
+   while( ite != vi.end() ) {
        if(*ite % 2) { 
            ite = vi.insert(ite, *ite); //复制当前元素并更新迭代器
            ite += 2;//记得跳过刚插入的新元素
@@ -1786,7 +1790,7 @@ string s2(noNull, 2);//只拷贝两个字符
 cout<<"s2: "<< s2 <<endl;
 
 string s3(noNull);//未定义：noNull不是以空字符结束
-cout<<"s3: "<< s2 <<endl;//Hi
+cout<<"s3: "<< s3 <<endl;//Hi
 
 string s4(s1, 6);
 cout<<"s4: "<< s4 <<endl;//World
@@ -1888,8 +1892,6 @@ string s32 = "pi = 3.14";
 d = stod(s32.substr(s32.find_first_of("+-0123456789")));
 cout << "d = " << d << endl;//3.14
 ```
-
-
 
 #### 选择哪种顺序容器？
 
@@ -2565,6 +2567,10 @@ for (dec1 : coll) { statement }
 ```
 
 ![image-20200830213028503](https://hunk-pic-store.oss-cn-beijing.aliyuncs.com/img/image-20200830213028503.png)
+
+### RAII
+
+
 
 ## C++ 14
 

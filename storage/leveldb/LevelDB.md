@@ -1,6 +1,5 @@
 # Introduction
 
-
 # Architecture
 
 # Demonstration
@@ -10,6 +9,8 @@
 Refer to [Building](https://github.com/google/leveldb) to build leveldb project on a Linux system then we can get following static library in build directory:
 
 ```
+[root@net146-host122 leveldb]# mkdir -p build && cd build
+[root@net146-host122 build]# cmake -DCMAKE_BUILD_TYPE=Debug .. && cmake --build .
 [root@net146-host122 leveldb]# ls build/ | grep liblevel
 libleveldb.a
 ```

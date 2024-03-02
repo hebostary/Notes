@@ -12,10 +12,9 @@ param1=$1
 if [ -z "$param1" ];then
     rm -rf "$buildpath"
     mkdir "$buildpath" > /dev/null
-    cd "$buildpath"
-    cmake "$srcpath"
-    make
-    time ./demo
+    cmake -S "$srcpath" -B "$buildpath"
+    make -C "$buildpath"
+    time "$buildpath"/demo
     cd ..
 elif [ "$param1" == "run" ];then
     time ./"$buildpath"/demo

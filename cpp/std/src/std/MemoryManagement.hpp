@@ -22,4 +22,6 @@ void TestAllocator();
 void TestTextQuery();
 bool prepareText(string file);
 
+void TestValgrind();
+
 #endif

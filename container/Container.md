@@ -428,3 +428,10 @@ v2层次结构下的每个cgroup都包含这`cgroup.controllers`和`cgroup.subtr
 
 
 ##  理解容器单进程模型
+
+
+
+## 容器参考资料
+
+- [An Updated Performance Comparasion of Virtual Machines and Linux Container](https://domino.research.ibm.com/library/cyberdig.nsf/papers/0929052195DD819C85257D2300681E7B/$File/rc25482.pdf )
+

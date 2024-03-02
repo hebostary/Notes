@@ -13,6 +13,9 @@ void TestMemoryManagement()
 
     TestTextQuery();
 
+    //valgrind --tool=memcheck --leak-check=full ./bin/std
+    //TestValgrind();
+
     ExitFunc(__FUNCTION__);
 }
 
@@ -34,6 +37,7 @@ void TestSharedPtr()
     //ptr1 value: AAAA, ptr1 address: 0x941e80
     cout << "ptr4 value: " << *ptr4 << ", ptr4 address: " << &(*ptr4) << endl;
     //ptr2 value: AAAA, ptr2 address: 0x941e80
+    delete ptr3;
 
     //可以看出make_shared和new创建的对象都在堆内存上，区别在于本函数执行结束后：
     //  ptr1和ptr2的生命周期结束，自动被销毁，调用shared_ptr的析构函数时对象引用计数减一，
@@ -90,7 +94,7 @@ void TestSharedPtr()
 //使用智能指针来管理不具有良好定义的析构函数的类
     /* 这是用文件流操作的demo，在成功打开文件流之后我们总是应该close掉它
     但是很可能就忘了调用close，或者程序异常退出，导致ofs没有被正常close掉
-    ofstream ofs( "persons.record.1" );
+    ofstream ofs( "test_files/persons.record.1" );
     if ( ofs )
     {
         ofs << "jack 1234567 12323543543\n";
@@ -100,13 +104,13 @@ void TestSharedPtr()
     //这种情况比如还有打开文件句柄，打开网络连接等，这些资源都不是用new显示创建的动态资源
     //而是有自定义的释放操作，使用智能指针管理时需要传递删除器（deleter）
     //1.传递删除器（函数）
-    ofstream ofs1( "persons.record.1" );
+    ofstream ofs1( "test_files/persons.record.1" );
     if ( ofs1 ) {
         shared_ptr<ofstream> shared_ofs1(&ofs1, closeFstream);
         ofs1 << "jack 1234567 12323543543\n";
     }
     //2.传递lambda表达式
-    ofstream ofs2( "persons.record.2" );
+    ofstream ofs2( "test_files/persons.record.2" );
     if ( ofs2 ) {
         shared_ptr<ofstream> shared_ofs2(&ofs2, [](ofstream *fp) -> void {
             fp->close();
@@ -155,7 +159,7 @@ void TestUniquePtr()
     //1. 因为重载一个unique_ptr中的删除器会影响到unique_ptr类型以及如何构造（或者reset）
     //该类型的对象，所以必须在尖括号中对象类型后面提供删除器类型
     //2. 在创建或者reset一个这种unique_ptr类型的对象时，必须提供一个指定类型的可调用对象（删除器）
-    ofstream ofs1( "persons.record.1" );
+    ofstream ofs1( "test_files/persons.record.1" );
     if ( ofs1 ) {
         //decltype(closeFstream)返回函数类型，所以必须添加*来指出我们正在使用该类型的一个指针
         unique_ptr<ofstream, decltype(closeFstream)*> unique_ofs1(&ofs1, closeFstream);
@@ -289,7 +293,7 @@ void TestTextQuery()
 {
     EnterFunc(__FUNCTION__);
 
-    string fileName("words.txt");
+    string fileName("test_files/words.txt");
     if ( prepareText(fileName) )
     {
         TextQuery tq(fileName);
@@ -331,4 +335,26 @@ bool prepareText(string file)
     ExitFunc(__FUNCTION__);
 
     return true;
+}
+
+void TestValgrind()
+{
+    EnterFunc(__FUNCTION__);
+
+    //CASE1，内存泄漏
+    vector<string> *vs1 = new vector<string>({"hello", "world"});
+
+    //CASE2，使用未初始化的内存
+    vector<string> *vs2;
+    cout << vs2->size() << endl;
+
+    //CASE3, 在内存被释放后读写
+    vector<string> *vs3 = new vector<string>({"hello", "world"});
+    delete vs3;
+    vs3->push_back("yeah");
+
+    //CASE4，多次释放内存
+    delete vs3;
+
+    ExitFunc(__FUNCTION__);
 }

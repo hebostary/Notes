@@ -13,6 +13,9 @@ if [ $? -ne 0 ];then
   yum install libuuid-devel -y
 fi
 
+# for vs code build & debug tasks
+mkdir -p buildpath="$basepath/bin"
+
 # ./build.sh    --clean, make and run
 # ./build.sh run   --just run
 # ./build.sh clean   --just clean build directory

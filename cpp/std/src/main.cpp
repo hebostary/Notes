@@ -29,7 +29,7 @@ int main() {
     //TestIOLibrary();
 
     //测试内存管理
-    //TestMemoryManagement();
+    TestMemoryManagement();
 
     //测试简化版的vector实现
     //TestStrVec();
@@ -37,7 +37,8 @@ int main() {
     //测试可调用对象和function
     //TestFuncitonObject();
 
-    TestTemplate();
+    //测试模版
+    //TestTemplate();
 
     cout<<"[END] testing..."<<endl;
 }

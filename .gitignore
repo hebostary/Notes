@@ -3,3 +3,10 @@
 *.jar
 *.a
 *.o
+cpp/std/build/*
+cpp/std/bin/*
+golang/pkg/*
+storage/mongodb/bin/*
+storage/leveldb/build
+storage/leveldb/pkg/*
+storage/leveldb/third_party/*
