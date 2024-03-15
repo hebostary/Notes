@@ -6,10 +6,31 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "[linux]gdb - build and debug active file",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/linux.bin",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "/usr/bin/gdb",
+            "setupCommands": [
+                {
+                    "description": "为 gdb 启用整齐打印",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "[linux]build active file"
+        },
+        {
             "name": "[windows]g++.exe - 生成和调试活动文件",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}\\bin\\std.exe",
+            "program": "${workspaceFolder}\\std.exe",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
@@ -25,27 +46,6 @@
                 }
             ],
             "preLaunchTask": "[windows]build std active file"
-        },
-        {
-            "name": "[linux]gdb - 生成和调试活动文件",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}/std.bin",
-            "args": [],
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
-            "environment": [],
-            "externalConsole": false,
-            "MIMode": "gdb",
-            "miDebuggerPath": "/usr/bin/gdb",
-            "setupCommands": [
-                {
-                    "description": "为 gdb 启用整齐打印",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                }
-            ],
-            "preLaunchTask": "[linux]build std active file"
         }
     ]
 }

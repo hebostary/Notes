@@ -2,7 +2,11 @@
 
 # 参考资料
 
-[Linux工具快速教程***](https://www.bookstack.cn/read/linuxtools/README.md)
+Linux命令网页工具：
+
+1. [Linux工具快速教程](https://www.bookstack.cn/read/linuxtools/README.md)
+
+2. [Linux命令搜索](https://wangchujiang.com/linux-command/)
 
 # 基本命令
 

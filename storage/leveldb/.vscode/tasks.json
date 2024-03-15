@@ -19,7 +19,7 @@
 				"kind": "build",
 				"isDefault": true
 			},
-			"dependsOn": "[linux]build leveldbdemo - cmake"
+			//"dependsOn": "[linux]build leveldbdemo - cmake"
 		},
 		{
 			"type": "shell",
