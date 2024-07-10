@@ -1,60 +1,63 @@
 #include <iostream>
 #include <cassert>
 #include "leveldb/db.h"
+#include "LevelDBManager.hpp"
 
-using namespace std;
+const std::string db_path = "/tmp/leveldb.test";
 
-static string db_path = "/tmp/testdb";
+int db_manager_test() {
+    LevelDBManager db_manager;
 
-void check_status(leveldb::Status status) {
-    if (!status.ok()) {
-        cout<<"Databse error: "<<status.ToString()<<endl;
-        assert(status.ok());
+    // Open the LevelDB database
+    if (!db_manager.open("test_db")) {
+        std::cerr << "Failed to open database." << std::endl;
+        return 1;
     }
-}
 
-void leveldb_demo1() {
-    leveldb::DB* db;
-    leveldb::Options options;
-    options.create_if_missing = true;
-    leveldb::Status status = leveldb::DB::Open(options, db_path, &db);
+    // Get number of total keys
+    std::cout << "Number of total keys: " << db_manager.getNumKeys() << std::endl;
 
-    check_status(status);
-    status = db->Put(leveldb::WriteOptions(), "name", "hunk");
-    check_status(status);
-    status = db->Put(leveldb::WriteOptions(), "site", "chengdu");
-    check_status(status);
+    // Put some key-value pairs
+    db_manager.put("site", "beijing");
+    db_manager.put("name", "hunk");
 
-    leveldb::Iterator* it = db->NewIterator(leveldb::ReadOptions());
-    for (it->SeekToFirst(); it->Valid(); it->Next()) {
-        cout << it->key().ToString() << ": "  << it->value().ToString() << endl;
-    }
-    check_status(it->status());  // Check for any errors found during the scan
-    delete it;
+    std::string key_alias("alias");
+    db_manager.put(key_alias, "before_snapshot1");
+    // Create first snapshot
+    db_manager.createSnapshot("snapshot1");
+    // Update value
+    db_manager.put(key_alias, "before_snapshot2");
 
-    leveldb::ReadOptions ss_options;
-    ss_options.snapshot = db->GetSnapshot();
+    // Create second snapshot
+    db_manager.createSnapshot("snapshot2");
+    // Update value of key 'alias'
+    db_manager.put(key_alias, "after_snapshot2");
 
-    // Put new value after the snapshot
-    status = db->Put(leveldb::WriteOptions(), "site", "beijing");
-    check_status(status);
+    // Get a value for a key from first snapshot
+    std::string value;
+    if (db_manager.getFromSnapshot(key_alias, "snapshot1", value))
+        std::cout << "Value for alias from snapshot1: " << value << std::endl;
 
-    std::string value1, value2;
-    status = db->Get(leveldb::ReadOptions(), "site", &value1);
-    check_status(status);
-    status = db->Get(ss_options, "site", &value2);
-    check_status(status);
+    // Get a value for a key from second snapshot
+    if (db_manager.getFromSnapshot(key_alias, "snapshot2", value))
+        std::cout << "Value for alias from snapshot2: " << value << std::endl;
 
-    cout<<"Got value from database: "<<value1<<endl; //beijing
-    cout<<"Got value from snapshot: "<<value2<<endl; //chengdu
-    
-    db->ReleaseSnapshot(ss_options.snapshot);
-    delete db;
+    // Delete the snapshot
+    db_manager.deleteSnapshot("snapshot1");
+
+    // Put random key-value pairs
+    db_manager.putRandomKeyValuePairs(10 * 1000);
+
+    // Get number of total keys
+    std::cout << "Number of total keys: " << db_manager.getNumKeys() << std::endl;
+
+    // Close the database (automatically done by destructor)
+    return 0;
 }
 
 
 int main() {
-    cout<<"[BEGIN] testing..."<<endl;
-    leveldb_demo1();
-    cout<<"[END] testing..."<<endl;
+    std::cout<<"[BEGIN] Testing LevelDBManager..."<<std::endl;
+    db_manager_test();
+    std::cout<<"[END] Testing LevelDBManager..."<<std::endl;
 }

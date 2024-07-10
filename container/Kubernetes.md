@@ -435,7 +435,7 @@ $ kubectl delete deployment nginx-deployment
 
 
 
-# Kubernetes基本概念
+# Kubernetes核心概念
 
 ## 容器
 
@@ -769,3 +769,11 @@ spec:
 ```
 
 WAR包是一个**initContainer**类型的容器。在Pod中，所有Init Container容器会按顺序逐一启动，而直到它们都启动并且退出了，spec.containers里的容器才会启动。这就保证了，Tomcat容器启动时，webapps目录下的WAR总是已经ready。
+
+
+
+# Kubernetes 开发
+
+##  存储插件 CSI
+
+[技术分享 | 基于CSI Kubernetes 存储插件的开发实践](https://zhuanlan.zhihu.com/p/51757577)

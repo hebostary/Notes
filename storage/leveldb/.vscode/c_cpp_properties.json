@@ -3,7 +3,8 @@
         {
             "name": "GCC",
             "includePath": [
-                "${workspaceFolder}/src/**"
+                "${workspaceFolder}/src/**",
+                "${workspaceFolder}/third_party/leveldb/include/**"
             ],
             "defines": [
                 "_DEBUG",

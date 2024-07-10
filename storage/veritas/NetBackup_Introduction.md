@@ -4,13 +4,10 @@
 
 
 
-NetBackup accommodates multiple servers that work together under the
-administrative control of one NetBackup master server in the following ways:  
+NetBackup accommodates multiple servers that work together under the administrative control of one NetBackup master server in the following ways:  
 
 1. **Master server**: the master server manages backups, archives, and restores. The master server is responsible for media and device selection for NetBackup. Typically, the master server contains the NetBackup catalog. The catalog contains the internal databases that contain information about NetBackup backups and configuration.
-2. **Media server**s: the media servers provide additional storage by allowing NetBackup to use the
-   storage devices that are attached to them. Media servers can also increase
-   performance by distributing the network load. Media servers can also be referred to by using the following terms:  
+2. **Media server**s: the media servers provide additional storage by allowing NetBackup to use the storage devices that are attached to them. Media servers can also increase performance by distributing the network load. Media servers can also be referred to by using the following terms:  
    1. Device hosts (when tape devices are present)  
    2. Storage servers (when I/O is directly to disk)  
    3. Data movers (when data is sent to independent, external disk devices like OpenStorage appliances)  
@@ -24,19 +21,17 @@ A storage unit is a label that NetBackup associates with physical storage. The l
 
 ### Storage unit types
 
-![img](https://hunk-pic-store.oss-cn-beijing.aliyuncs.com/img/clipboard.png)
-
 ### Disk storage model
 
 The NetBackup model for disk storage accommodates all Enterprise Disk Options. That is, it is the model for all disk types except for the `BasicDisk` type.
 
 The following items describe components of the disk storage model:
 
-**Data mover**
+**1. Data mover**
 
-A data mover transfers data from primary storage (a NetBackup client) to secondary storage during backups. It also can move data back to primary storage during restores and from secondary storage to tertiary storage during duplication. **NetBackup media servers function as data movers.** Depending on the disk option, a NetBackup media server also may function as a storage server.
+A data mover transfers data from primary storage (a NetBackup client) to secondary storage during backups. It also can move data back to primary storage during restores and from secondary storage to tertiary storage during duplication. **NetBackup media servers function as data movers.** Depending on the disk option, a NetBackup media server also may function as a storage server when I/O is directly to disk.
 
-**Storage server**
+**2. Storage server**
 
 An entity that writes data to and reads data from the disk storage. A storage server is the entity that has a mount on the file system on the storage. Depending on the NetBackup option, the storage server is one of the following:
 
@@ -54,7 +49,7 @@ An entity that writes data to and reads data from the disk storage. A storage se
 
 3. A NetBackup media server that hosts storage. Such as NBA.
 
-**Disk pool**
+**3. Disk pool**
 
 A collection of `disk volumes` that are administered as an entity. NetBackup aggregates the `disk volumes` into pools of storage (a disk pool) you can use for backups.
 
@@ -120,11 +115,10 @@ Use nbdevconfig command as example:
    # TODO: need to copy above file to master serevr?
    ```
 
-   Delete the line for each volume that you do not want to be in
-   the disk pool. Do not delete the blank line at the end of the file.
-
+   Delete the line for each volume that you do not want to be in the disk pool. Do not delete the blank line at the end of the file.
+   
    NetBackup does not filter out common file system mount points, such as / and /usr. Therefore, carefully choose the volumes to include in a disk pool.  
-
+   
 4. Configuring disk pool by using the following command:
 
    TODO: Where to execute below command if multiple storage servers.

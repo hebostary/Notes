@@ -12,6 +12,8 @@ void Testiofstream();
 
 void Teststringstream();
 
+void TestStreamBuf();
+
 struct PersonInfo
 {
     string name;

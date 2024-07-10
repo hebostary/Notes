@@ -44,7 +44,7 @@ $ sed "s/^anothervalue=.*/replace=${value}/g" test.txt
 
 # 用户管理
 
-## 创建删除用户
+## 本地用户
 
 ```bash
 $ groupadd -g 200 nexus  		    #添加指定gid的组
@@ -52,7 +52,7 @@ $ useradd -u 200 -g nexus nexus   #添加指定uid的用户
 $ usermod -G root nexus 		    #修改用户加入root组
 ```
 
-## 查询用户信息
+## LDAP
 
 
 
@@ -260,7 +260,7 @@ $ rpm -e --test <package> #测试包是否被其它包依赖
 
 ```bash
 #解压tar.xz包
-$ xz -d xxx.tar.xz -> xxx.tar
+$ xz -d xxx.tar.xz # -> xxx.tar
 $ tar xvf xxx.tar
 ```
 
@@ -418,7 +418,7 @@ $ rm /home/hunk/VirtBlock.img
 
 `nvme`命令是一个用户空间实用程序，为NVM-Express驱动器提供符合标准的工具。它是专门为Linux制作的，因为它依赖于主线内核驱动程序定义的`IOCTLS`。该实用程序具有用于规范中定义的所有admin和io命令以及用于显示控制器寄存器的子命令。
 
-#### nvme-discover - Discover NVMeoF subsystems
+**nvme-discover - Discover NVMeoF subsystems**
 
 Send one or more Get Log Page requests to a `NVMe-over-Fabrics` Discovery Controller.
 
@@ -429,7 +429,7 @@ The NVMe-over-Fabrics specification defines the concept of a `Discovery Controll
 $ nvme discover -t rdma -a 192.168.30.21
 ```
 
-#### nvme-connect - Connect to NVMeoF subsystem
+**nvme-connect - Connect to NVMeoF subsystem**
 
 Create a transport connection to a remote system (specified by --traddr and --trsvcid) and create a NVMe over Fabrics controller for the NVMe subsystem specified by the --nqn option.
 
@@ -440,7 +440,7 @@ $ nvme connect -t rdma -a 192.168.20.21 -s 4420 -n nqn.1992-05.com.wdc.afaapp:nv
 $ nvme list-subsys
 ```
 
-#### name-connect-all - Discover and Connect to NVMeoF subsystems
+**name-connect-all - Discover and Connect to NVMeoF subsystems**
 
 ### StorCLI
 
@@ -496,7 +496,15 @@ $ mount /inst
 $ findmnt -n -F /etc/fstab -o SOURCE,TARGET,FSTYPE,OPTIONS,FREQ,PASSNO /dev/mapper/system-vol
 ```
 
-### 软/硬链接
+### du & df - 空间管理
+
+```bash
+$ du -h --max-depth=1  #查看当前目录的空间使用情况
+$ du -h -P mongodb/ --max-depth=1 #查看指定目录空间使用情况
+$ /bin/df -P /log | tail -1 | xargs | awk '{print substr($5,0,length($5)-1)}' #获取指定分区的空间使用率
+```
+
+### ln - 软链接
 
 ```bash
 $ ln -sf <source file> <target file>  #创建软链接
@@ -520,6 +528,27 @@ $ split  -b 200M /var/log/1.log  1.log.split # 将1.log切割成200MB的文件�
 $ split -d -b 200M httpd.log log # Split the file and name it with numbers
 ```
 
+### wipefs - Wipe disk(MBR & partition)
+
+```bash
+$ wipefs -a /dev/sdb
+/dev/sdb: 2 bytes were erased at offset 0x000001fe (dos): 55 aa
+/dev/sdb: calling ioclt to re-read partition table: Success
+
+$ dd if=/dev/zero of=/dev/sdb count=1
+1+0 records in
+1+0 records out
+512 bytes (512 B) copied, 0.00358192 s, 143 kB/s
+
+# Note: 如果磁盘或者分区被LVM管理，需要先清理LVM的数据：
+$ umount <mount point>
+$ lvremove <lv name>
+$ vgremove <vg anme>
+$ pvremove <disk|partition
+```
+
+
+
 # 网络管理
 
 ## curl
@@ -540,7 +569,7 @@ $ curl -X POST -v --proxy https://proxy.com:3129 --proxy-user genesis:P@ssw0rd -
 
 [全网最好文章：iptables详解（1）：iptables概念](http://www.zsythink.net/archives/1199/)
 
-## DNS
+## nslookup - DNS
 
 ## nmcli
 
@@ -599,7 +628,7 @@ $ netstat -n | awk '/^tcp/' #查看所有tcp连接及状态
 
 ## ssh
 
-### 配置ssh数字签名登陆（免用户密码）
+**配置ssh数字签名登陆（免用户密码）**
 
 示例：host 1使用数字签名登录到host 2。
 
@@ -778,3 +807,18 @@ $ ipmitool -I lanplus -H <IPMI host> -U <IPMI user> -P <password> bmc reset cold
 $ ipmitool -I lanplus -H <IPMI host> -U <IPMI user> -P <password> sensor
 ```
 
+# Troubleshooting
+
+## 文件系统
+
+### No Space Left on Device
+
+应用程序在调用 open 或者 openat这类系统 调用去创建文件时，如果 遇到“No Space Left On Device”这个错误 （必要时可以用 strace命令去跟踪程序的系统调用情况），一般有以下可能原因 ：
+
+1. 文件系统的磁盘空间确实占满了 ，用 `df -h`就可以确认 。
+
+2. 文件系统的 inode被占用完了 ，用 `df -i /xxx`就可以确认 。
+
+3. 文件因为有坏块而损坏 了，可用 `fsck -vcck /dev/sda2`去检查这些坏块 ，注意不能再在相同的文件系统上使用这个命令。
+
+4. 已经删除的文件被进程保留了。有时，一个文件会被删除，但一个进程仍在使用它。 Linux 不会在进程仍在运行时释放与文件关联的存储空间，但我们 可以用` lsof / | grep deleted `找到该进程并重启它。

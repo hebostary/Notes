@@ -6,6 +6,7 @@ basepath=$(cd `dirname $0`; pwd)
 srcpath="$basepath/src"
 buildpath="$basepath/build"
 baseos="redhat"
+exename="cpp.bin"
 
 which apt-get > /dev/null
 if [ $? -eq 0 ];then
@@ -37,10 +38,10 @@ if [ -z "$param1" ];then
     cd "$buildpath"
     cmake "$srcpath"
     make
-    time ./demo
+    time ./$exename
     cd ..
 elif [ "$param1" == "run" ];then
-    time ./"$buildpath"/demo
+    time ./"$buildpath"/$exename
 elif [ "$param1" == "clean" ];then
     rm -r "$buildpath"
 fi

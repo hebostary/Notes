@@ -2,20 +2,8 @@
 #include <iostream> //处理普通流
 #include <fstream> //处理文件流
 #include <sstream> //处理string流
+#include <limits> //used to get numeric limits
 
-
-void TestIOLibrary()
-{
-    EnterFunc(__FUNCTION__);
-
-    //Testiostream();
-
-    Testiofstream();
-
-    Teststringstream();
-
-    ExitFunc(__FUNCTION__);
-}
 
 void Testiostream()
 {
@@ -128,6 +116,56 @@ void Teststringstream()
         }
         cout << "read people nmber: " << people.size() << endl; //3
     }
+
+    ExitFunc(__FUNCTION__);
+}
+
+/*
+TODO：
+所有标准输入和输出设备都包含一个输入和输出缓冲区。在标准 C/C++ 中，流被缓冲。
+例如在标准输入的情况下，当我们按下键盘上的键时，它不会发送到您的程序，而是由操作系统发送到缓冲区，
+直到进程调度时才将其分配给该程序。
+在各种情况下，可能需要清除不需要的缓冲区，以便在所需的程序中立即获取下一个输入，
+而不是在前一个变量的缓冲区中。比如 C 遇到 scanf() 后，需要输入字符数组或字符，C++ 遇到 cin 语句后，
+需要输入字符数组或字符。当我们从键盘获取一个字符串时，我们需要清除输入缓冲区，否则所需的输入被前一个变量的缓冲区占用。
+*/
+void TestStreamBuf()
+{
+    EnterFunc(__FUNCTION__);
+    int a;
+    char ch[80];
+    cin >> a;
+    cin.getline(ch,80);
+    cout << a << endl;
+    cout << ch << endl;
+
+    cin >> a;
+    // 在 cin 语句之后丢弃输入流中的所有内容，包括换行符。
+    cin.ignore(numeric_limits<streamsize>::max(),'\n'); 
+    cin.getline(ch,80);
+    cout << a << endl;
+    cout << ch << endl;
+
+    cin >> a;
+    // 在 cin 语句之后输入 cin>>ws 告诉编译器忽略缓冲区并丢弃字符串或字符数组实际内容之前的所有空格。
+    cin >> ws;
+    cin.getline(ch,80);
+    cout << a << endl;
+    cout << ch << endl;
+    ExitFunc(__FUNCTION__);
+}
+
+void TestIOLibrary()
+{
+    EnterFunc(__FUNCTION__);
+
+    //Testiostream();
+
+    Testiofstream();
+
+    Teststringstream();
+
+    TestStreamBuf();
 
     ExitFunc(__FUNCTION__);
 }

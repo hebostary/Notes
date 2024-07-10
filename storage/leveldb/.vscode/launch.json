@@ -6,7 +6,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "[linux]gdb - 生成和调试活动文件",
+            "name": "[linux]gdb - debug leveldbdemo active file",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/leveldbdemo",
@@ -24,7 +24,8 @@
                     "ignoreFailures": true
                 }
             ],
-            "preLaunchTask": "[linux]build std active file"
+            //"preLaunchTask": "[linux]build leveldbdemo active file"
+            "preLaunchTask": "[linux]build leveldbdemo active file - g++"
         }
     ]
 }

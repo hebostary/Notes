@@ -16,6 +16,7 @@
                 "${workspaceFolder}/src/*.cpp",
                 "${workspaceFolder}/src/io/*.cpp",
 				"${workspaceFolder}/src/memory/*.cpp",
+				"${workspaceFolder}/src/thread/*.cpp",
 				"-l",
 				"aio",
             ],

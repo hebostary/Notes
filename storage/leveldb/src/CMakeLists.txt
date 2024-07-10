@@ -13,11 +13,6 @@ set_property(TARGET libleveldb PROPERTY IMPORTED_LOCATION ../third_party/leveldb
 
 add_executable(leveldbdemo ${DIR_SRCS})
 
-# install package first:
-# yum install e2fsprogs-devel
-# yum install uuid-devel
-# yum install libuuid-devel
-
 #在Linux平台上，依赖其他库的库一定要放到被依赖库的前面，否则链接时会出现找不到符号定义（undefined reference to）的错误
 target_link_libraries(leveldbdemo libleveldb pthread)
 

@@ -10,6 +10,8 @@
 #include "std/StrVec.hpp"
 #include "std/FunctionObject.hpp"
 
+//#include "mempool/MemoryPool.hpp"
+
 int main() {
     cout<<"[BEGIN] testing..."<<endl;
     //TestArray();
@@ -29,7 +31,7 @@ int main() {
     //TestIOLibrary();
 
     //测试内存管理
-    TestMemoryManagement();
+    //TestMemoryManagement();
 
     //测试简化版的vector实现
     //TestStrVec();
@@ -39,6 +41,9 @@ int main() {
 
     //测试模版
     //TestTemplate();
+
+    //TODO: 测试内存池
+    //TestMemoryPool();
 
     cout<<"[END] testing..."<<endl;
 }

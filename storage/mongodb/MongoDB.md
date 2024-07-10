@@ -335,7 +335,7 @@ WiredTiger使用`多版本并发控制(MVCC`)。在操作开始时，WiredTiger�
 
 #### Journal
 
-WiredTiger使用`预写日志`(write-ahead log，即日志)与`checkpoint`相结合来确保数据的持久性。
+WiredTiger使用`预写日志`(WAL, write-ahead log，即日志)与`checkpoint`相结合来确保数据的持久性。
 
 WiredTiger日志在checkpoint之间持久化所有数据修改。如果MongoDB在checkpoint之间退出，它使用使用日志恢复自上次checkpoint以来修改的所有数据。
 
@@ -389,7 +389,7 @@ WiredTiger自动删除旧的日志文件，只维护从上次检查点恢复所�
 
 ## GridFS
 
-GridFS是一种多功能存储系统，适合处理大文件，例如超过16MB的文档大小限制的大文件。
+GridFS是一种多功能存储系统，适合处理大文件，例如超过`16MB`的文档大小限制的大文件。
 
 # MongoDB Backup Methods
 
@@ -439,3 +439,5 @@ $ sudo -u mongod mongod --dbpath /config/mongodb --repair
 [MongoDB’s Pluggable Storage Engine Architecture](https://www.mongodb.com/collateral/storage-engine-white-paper)
 
 [[MONGODB SCHEMA DESIGN](http://learnmongodbthehardway.com/)](http://learnmongodbthehardway.com/schema/introduction/)
+
+https://www.elibaron.com/db/mongodb/mongo-x-overview.html

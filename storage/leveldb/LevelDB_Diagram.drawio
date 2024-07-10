@@ -1,0 +1,149 @@
+<mxfile host="Electron" modified="2024-05-05T13:58:31.445Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/24.2.5 Chrome/120.0.6099.109 Electron/28.1.0 Safari/537.36" etag="mMKGBOrytK-VI-J2RLwm" version="24.2.5" type="device">
+  <diagram name="第 1 页" id="RBPevqp4861CFnyHABqI">
+    <mxGraphModel dx="2901" dy="2373" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="DQ_ZDmdcpS4zzp8ywx4C-1" value="" style="shape=image;verticalLabelPosition=bottom;labelBackgroundColor=default;verticalAlign=top;aspect=fixed;imageAspect=0;image=https://leveldb-handbook.readthedocs.io/zh/latest/_images/sstable_logic.jpeg;" vertex="1" parent="1">
+          <mxGeometry x="460" y="460" width="480" height="332.8" as="geometry" />
+        </mxCell>
+        <mxCell id="DQ_ZDmdcpS4zzp8ywx4C-2" value="" style="shape=image;verticalLabelPosition=bottom;labelBackgroundColor=default;verticalAlign=top;aspect=fixed;imageAspect=0;image=https://leveldb-handbook.readthedocs.io/zh/latest/_images/datablock.jpeg;" vertex="1" parent="1">
+          <mxGeometry x="1040" width="333" height="411.78" as="geometry" />
+        </mxCell>
+        <mxCell id="DQ_ZDmdcpS4zzp8ywx4C-3" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" target="DQ_ZDmdcpS4zzp8ywx4C-2">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="740" y="500" as="sourcePoint" />
+            <mxPoint x="790" y="450" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="DQ_ZDmdcpS4zzp8ywx4C-5" value="Data Block 逻辑结构&lt;div&gt;（不含压缩和CRC信息）&lt;/div&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="DQ_ZDmdcpS4zzp8ywx4C-3">
+          <mxGeometry x="0.2769" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="DQ_ZDmdcpS4zzp8ywx4C-6" value="" style="shape=image;verticalLabelPosition=bottom;labelBackgroundColor=default;verticalAlign=top;aspect=fixed;imageAspect=0;image=https://leveldb-handbook.readthedocs.io/zh/latest/_images/sstable_physic.jpeg;" vertex="1" parent="1">
+          <mxGeometry x="390" y="100" width="460" height="212.37" as="geometry" />
+        </mxCell>
+        <mxCell id="DQ_ZDmdcpS4zzp8ywx4C-7" value="" style="endArrow=classic;html=1;rounded=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" target="DQ_ZDmdcpS4zzp8ywx4C-6">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="620" y="460" as="sourcePoint" />
+            <mxPoint x="1030" y="386" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="DQ_ZDmdcpS4zzp8ywx4C-10" value="除了底部的 Footer，其余四种 Block 结构（Data、Filter、Meta Index、Index）都会有自己的压缩信息和CRC信息，如上图所示" style="shape=document;whiteSpace=wrap;html=1;boundedLbl=1;align=left;labelBorderColor=none;dashed=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="400" y="-30" width="440" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="DQ_ZDmdcpS4zzp8ywx4C-12" value="&lt;span style=&quot;background-color: initial; font-size: 13px;&quot;&gt;1. 因为SSTable中的所有键值对都是严格按序存储的，为了节省存储空间，leveldb不会为每个键值对都存储完整的key值，而是只存储与上一个key值非共享的部分，避免key重复内容的存储；每间隔若干个（默认间隔值为16）键值对，为该条记录重新存储一个完整的key。重复该过程，每个存储完整key的点称之为&lt;/span&gt;&lt;b style=&quot;background-color: initial; font-size: 13px;&quot;&gt;Restart point&lt;/b&gt;&lt;span style=&quot;background-color: initial; font-size: 13px;&quot;&gt;。&lt;/span&gt;&lt;div style=&quot;font-size: 13px;&quot;&gt;&lt;br style=&quot;font-size: 13px;&quot;&gt;&lt;b style=&quot;background-color: initial; font-size: 13px;&quot;&gt;2. Restart point的设计目的在于加速查找，在SSTable中进行数据查找时，可以先利用restart point的数据进行键值比较，以便于快速定位目标数据所在的区域；当确定目标数据所在区域，再依次对区间内的所有数据项逐项比较查找。&lt;/b&gt;&lt;/div&gt;" style="shape=document;whiteSpace=wrap;html=1;boundedLbl=1;align=left;labelBorderColor=none;dashed=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1400" y="190" width="760" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="DQ_ZDmdcpS4zzp8ywx4C-14" value="" style="endArrow=classic;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=0.841;exitY=0.097;exitDx=0;exitDy=0;exitPerimeter=0;" edge="1" parent="1" source="DQ_ZDmdcpS4zzp8ywx4C-2" target="DQ_ZDmdcpS4zzp8ywx4C-13">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1790" y="-72" as="sourcePoint" />
+            <mxPoint x="1790" y="-220" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="DQ_ZDmdcpS4zzp8ywx4C-15" value="键值对数据项格式" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="DQ_ZDmdcpS4zzp8ywx4C-14">
+          <mxGeometry x="0.0627" y="3" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="DQ_ZDmdcpS4zzp8ywx4C-22" value="" style="shape=image;verticalLabelPosition=bottom;labelBackgroundColor=default;verticalAlign=top;aspect=fixed;imageAspect=0;image=https://leveldb-handbook.readthedocs.io/zh/latest/_images/datablock_example_1.jpeg;" vertex="1" parent="1">
+          <mxGeometry x="1400" y="-30" width="854.51" height="202.23" as="geometry" />
+        </mxCell>
+        <mxCell id="DQ_ZDmdcpS4zzp8ywx4C-23" value="" style="endArrow=classic;html=1;rounded=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;exitX=0.521;exitY=1.096;exitDx=0;exitDy=0;exitPerimeter=0;" edge="1" parent="1" source="DQ_ZDmdcpS4zzp8ywx4C-13" target="DQ_ZDmdcpS4zzp8ywx4C-22">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1730" y="-167.95" as="sourcePoint" />
+            <mxPoint x="1920" y="-166.95" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="DQ_ZDmdcpS4zzp8ywx4C-24" value="demo （restart_interval = 2， 即每两个entry 存储一个完整的 key 值）" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="DQ_ZDmdcpS4zzp8ywx4C-23">
+          <mxGeometry x="0.0627" y="3" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="DQ_ZDmdcpS4zzp8ywx4C-25" value="" style="group" vertex="1" connectable="0" parent="1">
+          <mxGeometry x="1400" y="-160" width="730" height="92.05" as="geometry" />
+        </mxCell>
+        <mxCell id="DQ_ZDmdcpS4zzp8ywx4C-13" value="" style="shape=image;verticalLabelPosition=bottom;labelBackgroundColor=default;verticalAlign=top;aspect=fixed;imageAspect=0;image=https://leveldb-handbook.readthedocs.io/zh/latest/_images/entry_format.jpeg;" vertex="1" parent="DQ_ZDmdcpS4zzp8ywx4C-25">
+          <mxGeometry y="30" width="730" height="62.05" as="geometry" />
+        </mxCell>
+        <mxCell id="DQ_ZDmdcpS4zzp8ywx4C-16" value="与前一条记录key共享部分的长度" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="DQ_ZDmdcpS4zzp8ywx4C-25">
+          <mxGeometry x="20" width="100" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="DQ_ZDmdcpS4zzp8ywx4C-17" value="与前一条记录key不共享部分的长度" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="DQ_ZDmdcpS4zzp8ywx4C-25">
+          <mxGeometry x="170" width="100" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="DQ_ZDmdcpS4zzp8ywx4C-18" value="value长度" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="DQ_ZDmdcpS4zzp8ywx4C-25">
+          <mxGeometry x="330" width="100" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="DQ_ZDmdcpS4zzp8ywx4C-19" value="键值非共享部分内容" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="DQ_ZDmdcpS4zzp8ywx4C-25">
+          <mxGeometry x="480" width="70" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="DQ_ZDmdcpS4zzp8ywx4C-20" value="value内容" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="DQ_ZDmdcpS4zzp8ywx4C-25">
+          <mxGeometry x="600" width="100" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="DQ_ZDmdcpS4zzp8ywx4C-27" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" target="DQ_ZDmdcpS4zzp8ywx4C-26">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="730" y="630" as="sourcePoint" />
+            <mxPoint x="780" y="580" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="DQ_ZDmdcpS4zzp8ywx4C-28" value="Filter Block逻辑结构&lt;div&gt;（Optional）&lt;/div&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="DQ_ZDmdcpS4zzp8ywx4C-27">
+          <mxGeometry x="0.4229" y="-2" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="DQ_ZDmdcpS4zzp8ywx4C-30" value="" style="endArrow=classic;html=1;rounded=0;exitX=0.583;exitY=0.631;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="DQ_ZDmdcpS4zzp8ywx4C-1" target="DQ_ZDmdcpS4zzp8ywx4C-31">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1170" y="980" as="sourcePoint" />
+            <mxPoint x="1080" y="830" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="DQ_ZDmdcpS4zzp8ywx4C-31" value="&lt;b&gt;meta index block&lt;/b&gt; 用来存储 filter block 在整个 SSTable 中的索引信息。meta index block 只存储一条记录：（1）该记录的key为：“filter.”与过滤器名字组成的常量字符串。（2）该记录的 value为：filter block 在 SSTable 中的索引信息序列化后的内容，索引信息包括在 SSTbale 中的offset 和 数据长度。" style="shape=document;whiteSpace=wrap;html=1;boundedLbl=1;align=left;labelBorderColor=none;dashed=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1050" y="840" width="470" height="157.2" as="geometry" />
+        </mxCell>
+        <mxCell id="DQ_ZDmdcpS4zzp8ywx4C-34" value="" style="endArrow=classic;html=1;rounded=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" target="DQ_ZDmdcpS4zzp8ywx4C-33">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="570" y="710" as="sourcePoint" />
+            <mxPoint x="620" y="660" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="DQ_ZDmdcpS4zzp8ywx4C-35" value="Index Block 逻辑结构" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="DQ_ZDmdcpS4zzp8ywx4C-34">
+          <mxGeometry x="0.404" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="DQ_ZDmdcpS4zzp8ywx4C-37" value="" style="group" vertex="1" connectable="0" parent="1">
+          <mxGeometry x="-80" y="450" width="436.12" height="478.45" as="geometry" />
+        </mxCell>
+        <mxCell id="DQ_ZDmdcpS4zzp8ywx4C-33" value="" style="shape=image;verticalLabelPosition=bottom;labelBackgroundColor=default;verticalAlign=top;aspect=fixed;imageAspect=0;image=https://leveldb-handbook.readthedocs.io/zh/latest/_images/indexblock_format.jpeg;" vertex="1" parent="DQ_ZDmdcpS4zzp8ywx4C-37">
+          <mxGeometry width="436.12" height="368.45" as="geometry" />
+        </mxCell>
+        <mxCell id="DQ_ZDmdcpS4zzp8ywx4C-36" value="Index Block的每条记录代表一个Data Block 的索引信息，一条索引信息包含：（1）Data Block i 中的最大的 key 值；（2）Data Block i 在SSTable 中的offset；（3）Data Block i 在SSTable 中的长度。" style="shape=document;whiteSpace=wrap;html=1;boundedLbl=1;align=left;labelBorderColor=none;dashed=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;" vertex="1" parent="DQ_ZDmdcpS4zzp8ywx4C-37">
+          <mxGeometry x="30" y="368.45" width="380" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="DQ_ZDmdcpS4zzp8ywx4C-38" value="" style="group" vertex="1" connectable="0" parent="1">
+          <mxGeometry x="990" y="409.85" width="1030" height="382.94999999999993" as="geometry" />
+        </mxCell>
+        <mxCell id="DQ_ZDmdcpS4zzp8ywx4C-26" value="" style="shape=image;verticalLabelPosition=bottom;labelBackgroundColor=default;verticalAlign=top;aspect=fixed;imageAspect=0;image=https://leveldb-handbook.readthedocs.io/zh/latest/_images/filterblock_format.jpeg;" vertex="1" parent="DQ_ZDmdcpS4zzp8ywx4C-38">
+          <mxGeometry width="540" height="382.95" as="geometry" />
+        </mxCell>
+        <mxCell id="DQ_ZDmdcpS4zzp8ywx4C-29" value="1. Filter Block存储的数据主要分为：（1）过滤数据，即Filter Data n（2）索引数据，即Filter n offset 和 Filter offset&#39;s offset。&lt;div style=&quot;font-size: 13px;&quot;&gt;2. 读取 filter block 的内容时，可以先读出 filter offset&#39;s offset 的值，然后依次读取 filter n offset，根据这些offset 分别读出 filter data。&lt;/div&gt;&lt;div style=&quot;font-size: 13px;&quot;&gt;3. Base Lg的默认值为11，表示每 2KB 的数据，创建一个新的布隆过滤器来存放过滤数据。&lt;/div&gt;&lt;div style=&quot;font-size: 13px;&quot;&gt;4. 一个 SSTable 只有一个 filter block，filter_data_k 包含了所有起始位置处于 [base*k, base*(k+1) 范围内的 block 的 key 的集合的 filter 数据，按数据大小而非 block 切分主要是为了尽量均匀，以应对存在一些block的key很多，另一些 block 的key很少的情况。&lt;/div&gt;&lt;div style=&quot;font-size: 13px;&quot;&gt;5. 索引和布隆过滤器等元数据可随 SSTable 文件一起创建和销毁，即直接存在文件里，不用加载时动态计数，不用维护更新。&lt;/div&gt;" style="shape=document;whiteSpace=wrap;html=1;boundedLbl=1;align=left;labelBorderColor=none;dashed=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;" vertex="1" parent="DQ_ZDmdcpS4zzp8ywx4C-38">
+          <mxGeometry x="560" y="20.149999999999977" width="470" height="320" as="geometry" />
+        </mxCell>
+        <mxCell id="DQ_ZDmdcpS4zzp8ywx4C-39" value="" style="shape=image;verticalLabelPosition=bottom;labelBackgroundColor=default;verticalAlign=top;aspect=fixed;imageAspect=0;image=https://leveldb-handbook.readthedocs.io/zh/latest/_images/footer_format.jpeg;" vertex="1" parent="1">
+          <mxGeometry x="530" y="820" width="296" height="200.65" as="geometry" />
+        </mxCell>
+        <mxCell id="DQ_ZDmdcpS4zzp8ywx4C-40" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="1" target="DQ_ZDmdcpS4zzp8ywx4C-39">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="680" y="760" as="sourcePoint" />
+            <mxPoint x="730" y="710" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="DQ_ZDmdcpS4zzp8ywx4C-41" value="Footer 部分占用固定的 48 字节，用来存储 meta index block 和 index block 在SSTable中的索引信息。尾部还会存储一个magic word&lt;b&gt;。&lt;/b&gt;" style="shape=document;whiteSpace=wrap;html=1;boundedLbl=1;align=left;labelBorderColor=none;dashed=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="531" y="1020.65" width="279" height="119.35" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
