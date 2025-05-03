@@ -1,0 +1,20 @@
+{
+    "cmake.sourceDirectory": "${workspaceFolder}/src",
+    "files.associations": {
+        "iostream": "cpp",
+        "algorithm": "cpp",
+        "array": "cpp",
+        "deque": "cpp",
+        "forward_list": "cpp",
+        "list": "cpp",
+        "string": "cpp",
+        "unordered_map": "cpp",
+        "vector": "cpp",
+        "string_view": "cpp",
+        "initializer_list": "cpp",
+        "ostream": "cpp",
+        "iosfwd": "cpp",
+        "fstream": "cpp"
+    },
+    "cmake.configureOnOpen": false
+}

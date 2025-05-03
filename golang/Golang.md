@@ -1,6 +1,6 @@
-# 0. 语言基础
+# 1. 基础语法
 
-## 数据类型
+## 基础数据类型
 
 ### array&slice
 
@@ -140,35 +140,24 @@ Golang的map基于哈希表实现，并采用开放寻址法中的线性探测�
 
 [深入解析Golang的map设计](https://zhuanlan.zhihu.com/p/273666774)
 
-# 1. 项目工程
+# 2. 并发编程
+
+## 2.1 并发编程原语
+
+## 2.2 GMP 模型
+
+## 2.3 内存可见性
+
+
+
+# 3. 项目工程
 
 ## 1.1. 项目结构
 
-golang工程典型目录结构
+golang工程典型目录结构：
 
 ```shell
--- go_project     // go_project为GOPATH目录
-  -- bin
-     -- myApp1  // 编译生成 go build -o ./bin/myApp1 myApp1
-     -- myApp2  // 编译生成
-     -- myApp3  // 编译生成
-  -- pkg
-  -- src
-     -- myApp1     // project1
-        -- models
-        -- controllers
-        -- others
-        -- main.go 
-     -- myApp2     // project2
-        -- models
-        -- controllers
-        -- others
-        -- main.go 
-     -- myApp3     // project3
-        -- models
-        -- controllers
-        -- others
-        -- main.go 
+
 ```
 
 ## 1.2. 插件管理
@@ -492,9 +481,9 @@ $ GODEBUG=installgoroot=all go install std
 $ 
 ```
 
-# 性能分析和调试
+# 4. 性能分析和调试
 
-## pprof特征分析
+## 4.1 pprof特征分析
 
 pprof工具用于对程序运行时重要指标或者特性的分析（Profiling），通过分析不仅可以查找到程序中的错误（内存泄漏、race冲突、协程泄漏），也能对程序进行优化。由于Go语言运行时的指标不对外暴露，因此有标准库`net/http/pprof`和`runtime/pprof`用于与外界交互。
 
@@ -871,7 +860,7 @@ Showing nodes accounting for 20, 100% of 20 total
          0     0%   100%         20   100%  runtime.chanrecv1
 ```
 
-## trace 事件追踪
+## 4.2 trace 事件追踪
 
 pprof的分析可以提供一段时间内的CPU占用、内存分配、协程堆栈信息，但是这些信息都是一段时间内数据的汇总，没有提供整个周期内发生的时间，比如指定的Goroutines何时执行、执行了多长时间、何时陷入堵塞、何时解除了堵塞、GC如何影响单个goroutine的执行、STW中断花费的时间是否太长等。Go 1.5之后推出了trace工具可以提供指定时间内程序发生的事件的完整信息：
 
@@ -1279,7 +1268,7 @@ nbapp642:/home/maintenance # objdump -S /tmp/otpm >/tmpotpm.S # dump assembly co
 
 ![image-20240204165004507](/Users/hunk.he/Library/Application Support/typora-user-images/image-20240204165004507.png)
 
-# Framework
+# 5. Golang 框架&库
 
 ## Web
 
@@ -1289,7 +1278,7 @@ nbapp642:/home/maintenance # objdump -S /tmp/otpm >/tmpotpm.S # dump assembly co
 
 * [go-plugins-helpers](https://github.com/docker/go-plugins-helpers)
 
-# References
+# 6. References
 
 * 协程模型
   * [Golang源码探索(二) 协程的实现原理](https://www.cnblogs.com/zkweb/p/7815600.html)
