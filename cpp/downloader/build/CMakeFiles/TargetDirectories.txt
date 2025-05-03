@@ -1,3 +1,0 @@
-/home/hunk/workspace/src/github.com/Notes/cpp/downloader/build/CMakeFiles/downloader.dir
-/home/hunk/workspace/src/github.com/Notes/cpp/downloader/build/CMakeFiles/edit_cache.dir
-/home/hunk/workspace/src/github.com/Notes/cpp/downloader/build/CMakeFiles/rebuild_cache.dir
