@@ -2,8 +2,6 @@
 
 ## 为什么需要内存池？
 
-
-
 ## TCMalloc
 
 `TCMalloc` (Thread-Caching Malloc）是 Google 开发的内存分配算法库，最初作为Google性能工具库 perftools 的一部分，提供高效的多线程内存管理实现，用于替代操作系统的内存分配相关的函数（malloc、free，new，new[]等），具有减少内存碎片、适用于多核、更好的并行性支持等特性。据称，它的内存分配速度是 glibc2.3 中实现的 malloc的数倍。

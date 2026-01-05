@@ -11,3 +11,5 @@ storage/mongodb/bin/*
 storage/leveldb/build
 storage/leveldb/pkg/*
 storage/leveldb/third_party/*
+linux/bin
+linux/build
